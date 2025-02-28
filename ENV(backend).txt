@@ -1,0 +1,9 @@
+DB_HOST=localhost           # A MySQL szerver hostja
+DB_PORT=3307                # Az alapértelmezett MySQL port
+DB_USER=root                # A MySQL felhasználó (ha nincs jelszó, akkor üresen hagyható)
+DB_PASSWORD=                # A MySQL jelszó, ha szükséges
+DB_NAME=planup              # Az adatbázis neve
+PORT=3001                   # A backend portja
+
+VAPID_PUBLIC_KEY= BIrFEKW1NA56XrsZ2M88WwyNXVAz92eUS0M-geV6nL7TnLyFRWb6vvfbmKUqfx4wqX5NyvyH8GqLDbzyK3BDeno
+VAPID_PRIVATE_KEY= EBZPAz-P4aX0MCSPW9mGpX3oOV0p3QUZTChG-iPwS9M
