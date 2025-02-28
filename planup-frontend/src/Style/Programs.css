@@ -1,0 +1,43 @@
+.card {
+  width: 300px;
+  height: 400px;
+  background-color: lightgrey;
+  border-radius: 10px;
+  padding: 20px;
+  box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+  margin-bottom: 20px;
+}
+
+button {
+  margin-top: 20px;
+  padding: 10px 20px;
+  font-size: 16px;
+  cursor: pointer;
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  margin-right: 10px;
+}
+
+button:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+}
+
+button:nth-of-type(2) {
+  background-color: #f44336;
+}
+.program-item {
+  margin-bottom: 20px;
+  padding: 10px;
+  border-bottom: 1px solid #ccc;
+}
+
+.program-item h2 {
+  color: #8e44ad;
+}
+
+.program-item p {
+  margin: 5px 0;
+}

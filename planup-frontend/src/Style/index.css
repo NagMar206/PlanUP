@@ -1,0 +1,103 @@
+/* Globális alap háttér és szöveg színek */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body {
+  height: 100%;
+  font-family: Arial, sans-serif;
+  background-color: #2c3e50;  /* Sötétkék háttér az egész oldalon */
+  color: #ecf0f1;  /* Világos szövegek */
+}
+
+h1, h2, h3, h4, h5, h6 {
+  color: #8e44ad; /* Sötét lila címsorok */
+}
+
+/* Linkek és gombok színezése */
+a, button {
+  color: #ecf0f1;  /* Világos szín */
+  text-decoration: none;
+  transition: all 0.3s ease;
+}
+
+button:hover, a:hover {
+  opacity: 0.8;
+}
+
+/* Alap gomb stílusok */
+button {
+  background-color: #3498db;  /* Kék háttér */
+  color: #ecf0f1;  /* Fehér szöveg */
+  border: none;
+  padding: 10px 20px;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+button.bg-green-500 {
+  background-color: #27ae60; /* Zöld gomb */
+}
+
+button.bg-red-500 {
+  background-color: #e74c3c; /* Piros gomb */
+}
+
+button.bg-blue-500 {
+  background-color: #3498db; /* Kék gomb */
+}
+
+button:focus {
+  outline: none;
+  border: 1px solid #8e44ad;  /* Fókusz állapotban sötét lila */
+}
+
+/* Általános konténerek, padding és margin */
+.container {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+/* Sötét háttér színe a teljes oldalon */
+.main-content {
+  background-color: #34495e;  /* Sötétebb szürke-kék */
+  padding: 20px;
+  border-radius: 10px;
+}
+
+input, select {
+  padding: 10px;
+  border-radius: 5px;
+  border: 1px solid #8e44ad;
+  background-color: #34495e;
+  color: #ecf0f1;
+  width: 100%;
+  max-width: 300px;
+}
+
+input:focus {
+  outline: none;
+  border-color: #8e44ad;
+}
+
+select:focus {
+  outline: none;
+  border-color: #8e44ad;
+}
+
+/* Új gombok és linkek */
+button, a {
+  font-weight: bold;
+  cursor: pointer;
+  transition: opacity 0.3s;
+}
+
+button:disabled {
+  background-color: #95a5a6; /* Szürke, ha nem aktív */
+  cursor: not-allowed;
+}
+
