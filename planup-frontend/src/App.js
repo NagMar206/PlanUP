@@ -10,6 +10,10 @@ import Profile from './pages/Profile';
 import Navbar from './pages/Navbar';
 import LikedPrograms from './pages/LikedPrograms'; // Új oldal importálása
 import Footer from './pages/Footer';
+import LuckyWheel from './pages/LuckyWheel';
+
+const apiUrl = "http://localhost:3001"; 
+
 
 function App() {
   return (
@@ -24,6 +28,9 @@ function App() {
         <Route path="/profile" element={<Profile />} />
         <Route path="/swipe" element={<ProgramSwipe apiUrl="http://localhost:3001" userId={1} />} />
         <Route path="/liked-programs" element={<LikedPrograms apiUrl="http://localhost:3001" userId={1} />} /> 
+        <Route path="/lucky-wheel" element={<LuckyWheel apiUrl={apiUrl} userId={1} />} />
+
+
       </Routes>
       <Footer/>
     </Router>

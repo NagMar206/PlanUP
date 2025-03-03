@@ -247,7 +247,7 @@ app.get("/programs/liked", async (req, res) => {
   }
 });
 
-//Törlés
+//Liked program reset
 app.delete("/programs/liked/reset", async (req, res) => {
   const { userId } = req.body; // Fontos: req.body-ból kapjuk az adatokat!
   

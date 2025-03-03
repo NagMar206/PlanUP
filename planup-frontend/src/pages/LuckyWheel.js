@@ -9,14 +9,26 @@ function LuckyWheel({ apiUrl, userId }) {
   const [spinning, setSpinning] = useState(false);
 
   useEffect(() => {
+    if (!apiUrl || typeof apiUrl !== "string") {
+      console.error("❌ HIBA: Az apiUrl nincs helyesen beállítva!", apiUrl);
+      return;
+    }
+
+    console.log(`✅ API hívás: ${apiUrl}/programs/liked?userId=${userId}`);
+
     const fetchLikedPrograms = async () => {
       try {
         const response = await axios.get(`${apiUrl}/programs/liked`, {
           params: { userId },
         });
+
+        if (!response.data || response.data.length === 0) {
+          console.warn("⚠️ Nincsenek kedvelt programok!");
+        }
+
         setPrograms(response.data.map(program => ({ option: program.Name })));
       } catch (err) {
-        console.error("Hiba történt a programok betöltésekor:", err);
+        console.error("❌ Hiba történt a programok betöltésekor:", err);
       }
     };
 
@@ -51,7 +63,7 @@ function LuckyWheel({ apiUrl, userId }) {
           {winner && <p className="winner-text">🎉 A nyertes program: {winner}!</p>}
         </>
       ) : (
-        <p>Nincs elérhető program. Lájkold a programokat, hogy pörgethess! 😊</p>
+        <p>⚠️ Nincsenek kedvelt programok! Lájkold a programokat, hogy pörgethess! 😊</p>
       )}
     </div>
   );
