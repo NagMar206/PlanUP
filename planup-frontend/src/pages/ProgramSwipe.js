@@ -21,43 +21,58 @@ function ProgramSwipe({ apiUrl, userId }) {
   };
 
   const fetchFilteredProgram = async () => {
-  try {
-    const params = {};
-
-    if (filterActive) {
-      if (filters.cost) {
-        params.cost = filters.cost === "paid" ? "true" : "false";
+    try {
+      const params = {};
+  
+      if (filterActive) {
+        if (filters.cost) {
+          params.cost = filters.cost === "paid" ? "true" : "false";
+        }
+        if (filters.duration) {
+          params.duration =
+            filters.duration === "half_day" ? 1 :
+            filters.duration === "whole_day" ? 2 :
+            filters.duration === "weekend" ? 3 : undefined;
+        }
       }
-      if (filters.duration) {
-        params.duration =
-          filters.duration === "half_day" ? 1 :
-          filters.duration === "whole_day" ? 2 :
-          filters.duration === "weekend" ? 3 : undefined;
+  
+      let fetchedProgram = null;
+      let attempts = 0;
+      const maxAttempts = 5; // Maximum újrapróbálkozások száma
+  
+      do {
+        const response = await axios.get(`${apiUrl}/programs/random`, { params });
+        fetchedProgram = response.data;
+  
+        if (!fetchedProgram) {
+          break; // Ha nincs több program, kilépünk a ciklusból
+        }
+  
+        attempts++; // Kísérletek számának növelése
+  
+      } while (likedPrograms.has(fetchedProgram.ProgramID) && attempts < maxAttempts);
+  
+      if (!fetchedProgram || likedPrograms.has(fetchedProgram.ProgramID)) {
+        setProgram(null);
+        return;
       }
+  
+      fetchedProgram.Cost = fetchedProgram.Cost ? "paid" : "free";
+      fetchedProgram.Duration =
+        fetchedProgram.Duration === 1 ? "half_day" :
+        fetchedProgram.Duration === 2 ? "whole_day" :
+        fetchedProgram.Duration === 3 ? "weekend" : fetchedProgram.Duration;
+  
+      setProgram(fetchedProgram);
+  
+      // Konzol logolás a megjelenített programról
+      console.log("Megjelenített program:", fetchedProgram.Name, `(ID: ${fetchedProgram.ProgramID})`);
+  
+    } catch (err) {
+      setError("Nem sikerült betölteni a programot.");
     }
-
-
-    const response = await axios.get(`${apiUrl}/programs/random`, { params });
-
-    let fetchedProgram = response.data;
-
-    if (!fetchedProgram || likedPrograms.has(fetchedProgram.ProgramID)) {
-      setProgram(null);
-      return;
-    }
-
-    fetchedProgram.Cost = fetchedProgram.Cost ? "paid" : "free";
-    fetchedProgram.Duration =
-      fetchedProgram.Duration === 1 ? "half_day" :
-      fetchedProgram.Duration === 2 ? "whole_day" :
-      fetchedProgram.Duration === 3 ? "weekend" : fetchedProgram.Duration;
-
-    setProgram(fetchedProgram);
-  } catch (err) {
-    setError("Nem sikerült betölteni a programot.");
-  }
-};
-
+  };
+  
 
   // Figyeljük, ha a szűrés állapota vagy a filterek változnak
   useEffect(() => {
@@ -112,7 +127,7 @@ function ProgramSwipe({ apiUrl, userId }) {
       </div>
 
       {error && <div className="error-message">{error}</div>}
-      {!program && <div className="loading">Nincs találat vagy betöltés...</div>}
+      {!program && <div className="loading">A végére értél!</div>}
 
       {program && (
         <div className="program-card">
