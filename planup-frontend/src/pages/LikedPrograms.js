@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import "../Style/ProgramSwipe.css";
+import LuckyWheel from "./LuckyWheel";
 
 function LikedPrograms({ apiUrl, userId }) {
     const [likedPrograms, setLikedPrograms] = useState([]);
@@ -65,8 +66,9 @@ function LikedPrograms({ apiUrl, userId }) {
   
         <button onClick={() => navigate("/")}>Vissza a főoldalra</button>
         <button onClick={resetLikedPrograms} className="reset-button">🔄 Összes kedvelt program törlése</button>
+        <LuckyWheel apiUrl={apiUrl} userId={userId} />
+
       </div>
     );
 }
-
 export default LikedPrograms;
