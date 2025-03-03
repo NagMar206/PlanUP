@@ -247,14 +247,20 @@ app.get("/programs/liked", async (req, res) => {
   }
 });
 
+//Törlés
+app.delete("/programs/liked/reset", async (req, res) => {
+  const { userId } = req.body; // Fontos: req.body-ból kapjuk az adatokat!
+  
+  if (!userId) return res.status(400).json({ error: "Hiányzó userId!" });
 
-
-
-
-
-
-
-
+  try {
+    await db.query("DELETE FROM UserLikes WHERE UserID = ?", [userId]);
+    res.status(200).json({ message: "Kedvelt programok törölve." });
+  } catch (err) {
+    console.error("Hiba:", err);
+    res.status(500).json({ error: "Hiba történt a törlés során." });
+  }
+});
 
 
 

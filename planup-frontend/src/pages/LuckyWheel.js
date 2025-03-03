@@ -11,8 +11,10 @@ function LuckyWheel({ apiUrl, userId }) {
   useEffect(() => {
     const fetchLikedPrograms = async () => {
       try {
-        const response = await axios.get(`${apiUrl}/user/${userId}/liked-programs`);
-        setPrograms(response.data.map(program => ({ option: program.ProgramName })));
+        const response = await axios.get(`${apiUrl}/programs/liked`, {
+          params: { userId },
+        });
+        setPrograms(response.data.map(program => ({ option: program.Name })));
       } catch (err) {
         console.error("Hiba történt a programok betöltésekor:", err);
       }
