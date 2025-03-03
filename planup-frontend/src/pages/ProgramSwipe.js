@@ -40,21 +40,29 @@ function ProgramSwipe({ apiUrl, userId }) {
   
       let fetchedProgram = null;
       let attempts = 0;
-      const maxAttempts = 8; // Maximum újrapróbálkozások száma
+      const maxAttempts = 8; // Maximum próbálkozások száma
   
       do {
         const response = await axios.get(`${apiUrl}/programs/random`, { params });
         fetchedProgram = response.data;
   
         if (!fetchedProgram) {
-          break; // Ha nincs több program, kilépünk a ciklusból
+          console.log("⚠️ Nincs több elérhető program.");
+          setProgram(null);
+          return;
         }
   
-        attempts++; // Kísérletek számának növelése
+        attempts++;
+  
+        // Ha mégis egy már like-olt programot kapunk, újrapróbálkozunk
+        if (likedPrograms.has(fetchedProgram.ProgramID)) {
+          console.warn(`⚠️ A backend egy már like-olt programot adott vissza (ID: ${fetchedProgram.ProgramID}), újrapróbálkozás...`);
+        }
   
       } while (likedPrograms.has(fetchedProgram.ProgramID) && attempts < maxAttempts);
   
       if (!fetchedProgram || likedPrograms.has(fetchedProgram.ProgramID)) {
+        console.log("❌ Sikertelen próbálkozások, nincs új program.");
         setProgram(null);
         return;
       }
@@ -67,27 +75,24 @@ function ProgramSwipe({ apiUrl, userId }) {
   
       setProgram(fetchedProgram);
   
-      // Konzol logolás a megjelenített programról
-      console.log("Megjelenített program:", fetchedProgram.Name, `(ID: ${fetchedProgram.ProgramID})`);
+      console.log("🎯 Megjelenített program:", fetchedProgram.Name, `(ID: ${fetchedProgram.ProgramID})`);
   
     } catch (err) {
       setError("Nem sikerült betölteni a programot.");
     }
   };
+  
 
   useEffect(() => {
     fetchFilteredProgram();
   }, [filterActive, filters]);
 
   const handleSwipe = async (action) => {
-    if (!program) {
-      console.warn("⚠️ Nem történt swipe, mert nincs aktív program.");
-      return;
-    }
-  
-    console.log(`🔼 Like/dislike küldése: UserID = ${userId}, ProgramID = ${program.ProgramID}, Action = ${action}`);
+    if (!program) return;
   
     try {
+      console.log(`🔼 Like/dislike küldése: UserID = ${userId}, ProgramID = ${program.ProgramID}, Action = ${action}`);
+  
       const response = await axios.post(`${apiUrl}/programs/${program.ProgramID}/${action}`, { userId });
   
       console.log("✅ Like/dislike művelet válasza:", response.data);
@@ -96,12 +101,15 @@ function ProgramSwipe({ apiUrl, userId }) {
         setLikedPrograms((prev) => new Set([...prev, program.ProgramID]));
       }
   
-      fetchFilteredProgram(); // Új program betöltése
+      // Közvetlenül új program betöltése késleltetés nélkül
+      fetchFilteredProgram();
+  
     } catch (err) {
       console.error("❌ Nem sikerült végrehajtani a műveletet:", err);
       setError("Nem sikerült végrehajtani a műveletet.");
     }
   };
+  
   
   return (
     <div className="program-swipe-container">

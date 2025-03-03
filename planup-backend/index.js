@@ -146,21 +146,51 @@ if (duration !== undefined) {
 });
 
 // 🔹 Véletlenszerű program lekérése
-app.get('/programs/random', async (req, res) => {
-  try {
-    const [program] = await req.db.execute('SELECT * FROM Programs ORDER BY RAND() LIMIT 1');
 
-    if (program[0]) {
-      program[0].Cost = Boolean(program[0].Cost);
-      program[0].Image = `/images/${program[0].Image}`;
+app.get("/programs/random", async (req, res) => {
+  const { userId } = req.query;
+
+  if (!userId) {
+    console.error("❌ Hiányzó userId paraméter!");
+    return res.status(400).json({ error: "Hiányzó userId paraméter." });
+  }
+
+  try {
+    console.log(`🔍 Random program lekérése UserID = ${userId}`);
+
+    // Lekérdezzük az összes programot, amit a felhasználó már like-olt
+    const [likedPrograms] = await db.execute(
+      "SELECT ProgramID FROM UserLikes WHERE UserID = ?",
+      [userId]
+    );
+
+    const likedProgramIds = likedPrograms.map(p => p.ProgramID);
+
+    // Ha nincs liked program, akkor egyszerű random programot választunk
+    let sqlQuery = `SELECT * FROM Programs WHERE ProgramID NOT IN (?) ORDER BY RAND() LIMIT 1`;
+    let queryParams = [likedProgramIds.length > 0 ? likedProgramIds : [-1]];
+
+    if (likedProgramIds.length === 0) {
+      sqlQuery = `SELECT * FROM Programs ORDER BY RAND() LIMIT 1`;
+      queryParams = [];
     }
 
-    res.status(200).json(program[0] || {});
+    const [randomProgram] = await db.execute(sqlQuery, queryParams);
+
+    if (randomProgram.length === 0) {
+      console.log("⚠️ Nincs több elérhető program.");
+      return res.json(null); // Ha nincs több program, küldjön üres választ
+    }
+
+    console.log("🎯 Visszaküldött random program:", randomProgram[0].Name, `(ID: ${randomProgram[0].ProgramID})`);
+    res.json(randomProgram[0]);
+
   } catch (error) {
-    console.error('Hiba a véletlenszerű program lekérdezése során:', error.message);
-    res.status(500).json({ error: 'Hiba történt egy véletlenszerű program lekérdezése során.' });
+    console.error("🔥 Hiba történt a random program lekérésekor:", error);
+    res.status(500).json({ error: "Szerverhiba a program betöltésekor." });
   }
 });
+
 
 // 🔹 Program kedvelése   
 app.post("/programs/:programId/like", async (req, res) => {
