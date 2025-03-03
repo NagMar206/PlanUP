@@ -8,6 +8,7 @@ import ProgramSwipe from './pages/ProgramSwipe';
 import Rooms from './pages/Rooms';
 import Profile from './pages/Profile';
 import Navbar from './pages/Navbar';
+import Footer from './pages/Footer';
 
 
 function App() {
@@ -24,6 +25,7 @@ function App() {
 <Route path="/profile" element={<Profile />} />
 <Route path="/swipe" element={<ProgramSwipe apiUrl="http://localhost:3001" userId={1} />} />
 </Routes>
+<Footer/>
 </Router>
   );
 }
