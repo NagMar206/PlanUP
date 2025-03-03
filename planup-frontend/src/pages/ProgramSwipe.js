@@ -109,7 +109,8 @@ function ProgramSwipe({ apiUrl, userId }) {
       setError("Nem sikerült végrehajtani a műveletet.");
     }
   };
-  
+
+  //ezt még tweakelni
   
   return (
     <div className="program-swipe-container">
