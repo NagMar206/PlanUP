@@ -8,25 +8,24 @@ import ProgramSwipe from './pages/ProgramSwipe';
 import Rooms from './pages/Rooms';
 import Profile from './pages/Profile';
 import Navbar from './pages/Navbar';
-
+import LikedPrograms from './pages/LikedPrograms'; // Új oldal importálása
 
 function App() {
-  
   return (
     <Router>
       <Navbar />
       <Routes>
-<Route path="/" element={<HomePage />} />
-<Route path="/login" element={<Login />} />
-<Route path="/register" element={<Registration />} />
-<Route path="/programs" element={<Programs />} />
-<Route path="/rooms" element={<Rooms apiUrl="http://localhost:3001" userId={1} />} />
-<Route path="/profile" element={<Profile />} />
-<Route path="/swipe" element={<ProgramSwipe apiUrl="http://localhost:3001" userId={1} />} />
-</Routes>
-</Router>
+        <Route path="/" element={<HomePage />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Registration />} />
+        <Route path="/programs" element={<Programs />} />
+        <Route path="/rooms" element={<Rooms apiUrl="http://localhost:3001" userId={1} />} />
+        <Route path="/profile" element={<Profile />} />
+        <Route path="/swipe" element={<ProgramSwipe apiUrl="http://localhost:3001" userId={1} />} />
+        <Route path="/liked-programs" element={<LikedPrograms apiUrl="http://localhost:3001" userId={1} />} /> 
+      </Routes>
+    </Router>
   );
 }
-
 
 export default App;

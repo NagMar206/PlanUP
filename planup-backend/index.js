@@ -162,23 +162,43 @@ app.get('/programs/random', async (req, res) => {
   }
 });
 
-// 🔹 Program kedvelése   (updated: RoomAPI UserID)
-app.post('/programs/:id/like', async (req, res) => {
-  const { id } = req.params;
+// 🔹 Program kedvelése   
+app.post("/programs/:programId/like", async (req, res) => {
+  const { programId } = req.params;
   const { userId } = req.body;
 
-  if (!userId) {
-    return res.status(400).json({ error: 'UserID szükséges!' });
+  if (!userId || !programId) {
+    console.error("❌ Hiányzó userId vagy programId a like kérésben!");
+    return res.status(400).json({ error: "Hiányzó userId vagy programId." });
   }
 
   try {
-    await req.db.execute('INSERT INTO SwipeActions (UserID, ProgramID, Action) VALUES (?, ?, "like")', [userId, id]);
-    res.status(200).json({ message: 'A program sikeresen kedvelve lett.' });
+    console.log(`🔍 Like kérés beérkezett: UserID = ${userId}, ProgramID = ${programId}`);
+
+    // Ellenőrizzük, hogy a user már like-olta-e ezt a programot
+    const [existingLike] = await db.execute(
+      "SELECT * FROM UserLikes WHERE UserID = ? AND ProgramID = ?",
+      [userId, programId]
+    );
+
+    if (existingLike.length > 0) {
+      console.log(`⚠️ UserID (${userId}) már like-olta ezt a programot (ProgramID: ${programId})`);
+      return res.status(400).json({ error: "A program már like-olva van." });
+    }
+
+    // Like mentése az adatbázisba
+    await db.execute("INSERT INTO UserLikes (UserID, ProgramID) VALUES (?, ?)", [userId, programId]);
+
+    console.log(`👍 Program (${programId}) sikeresen like-olva UserID (${userId}) által`);
+
+    res.json({ success: true, message: "Program sikeresen like-olva." });
   } catch (error) {
-    console.error('Kedvelési hiba:', error.message);
-    res.status(500).json({ error: 'Hiba történt a program kedvelése során.' });
+    console.error("🔥 Hiba történt a like mentésekor:", error);
+    res.status(500).json({ error: "Szerverhiba a like mentésekor." });
   }
 });
+
+
 
 // 🔹 Program elutasítása
 app.post('/programs/:id/dislike', async (req, res) => {
@@ -197,6 +217,44 @@ app.post('/programs/:id/dislike', async (req, res) => {
     res.status(500).json({ error: 'Hiba történt a program nem kedvelése során.' });
   }
 });
+
+// 🔹 Összegzés
+app.get("/programs/liked", async (req, res) => {
+  const { userId } = req.query;
+
+  if (!userId) {
+    console.error("❌ Hiányzó userId paraméter!");
+    return res.status(400).json({ error: "Hiányzó userId paraméter." });
+  }
+
+  console.log(`🔍 Aktív felhasználó ID: ${userId}`);
+
+  try {
+    const [likedPrograms] = await db.execute(`
+      SELECT p.*, COUNT(ul.ProgramID) AS LikesCount
+      FROM Programs p
+      JOIN UserLikes ul ON p.ProgramID = ul.ProgramID
+      WHERE ul.UserID = ?
+      GROUP BY p.ProgramID
+      ORDER BY LikesCount DESC
+    `, [userId]);
+
+    console.log("✅ Lekérdezett kedvelt programok:", likedPrograms);
+    res.json(likedPrograms);
+  } catch (error) {
+    console.error("🔥 Hiba történt a kedvelt programok lekérésekor:", error);
+    res.status(500).json({ error: "Szerverhiba a kedvelt programok betöltésekor." });
+  }
+});
+
+
+
+
+
+
+
+
+
 
 
 
