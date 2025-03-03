@@ -38,7 +38,7 @@ function ProgramSwipe({ apiUrl, userId }) {
   
       let fetchedProgram = null;
       let attempts = 0;
-      const maxAttempts = 5; // Maximum újrapróbálkozások száma
+      const maxAttempts = 8; // Maximum újrapróbálkozások száma
   
       do {
         const response = await axios.get(`${apiUrl}/programs/random`, { params });
@@ -127,20 +127,28 @@ function ProgramSwipe({ apiUrl, userId }) {
       </div>
 
       {error && <div className="error-message">{error}</div>}
-      {!program && <div className="loading">A végére értél!</div>}
-
+      {!program && (
+        <div className="no-program">
+          <div className="no-program-box">
+            <h2>🎉 Gratulálunk! 🎉</h2>
+            <p>Minden elérhető programot végignéztél.</p>
+            <p>🔄 Próbálj új keresést, vagy nézz vissza később új lehetőségekért!</p>
+            <button className="reload-button" onClick={fetchFilteredProgram}>🔄 Újrapróbálkozás</button>
+          </div>
+        </div>
+      )}
       {program && (
         <div className="program-card">
           <img src={`http://localhost:3001/images/${program.Image}`} alt={program.Name} className="program-image" />
           <h2>{program.Name}</h2>
           <p>{program.Description}</p>
-          <p>Helyszín: {program.Location}</p>
-          <p>Időtartam: {magyarIdotartam[program.Duration] || "Ismeretlen időtartam"}</p>
-          <p>Költség: {magyarKoltseg[program.Cost] || "Ismeretlen"}</p>
+          <p>📍 Helyszín: {program.Location}</p>
+          <p>⏳ Időtartam: {magyarIdotartam[program.Duration] || "Ismeretlen időtartam"}</p>
+          <p>💰 Költség: {magyarKoltseg[program.Cost] || "Ismeretlen"}</p>
         </div>
       )}
 
-      <div className="swipe-buttons">
+<div className="swipe-buttons">
         <button className="dislike-button" onClick={() => handleSwipe("dislike")}>
           Nem tetszik
         </button>
