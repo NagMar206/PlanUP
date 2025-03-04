@@ -8,24 +8,60 @@ const userRoutes = require('./routes/users');
 const roomRoutes = require('./routes/rooms'); // Router importálása
 const profileRoutes = require('./routes/profiles');
 const cookieParser = require("cookie-parser"); //Cookie-k kezelése
-const session = require("express-session");
-require('dotenv').config();
-
+const session = require('express-session');
+const authRoutes = require('./routes/auth');
 
 // Az app inicializálása
 const app = express();
 
+
+require('dotenv').config();
+
+if (!process.env.SESSION_SECRET) {
+    console.error("❌ SESSION_SECRET nincs beállítva az .env fájlban! A szerver leáll.");
+    process.exit(1); // Kilépünk a szerverből
+}
+
+// API végpontok regisztrálása
+app.use('/api/users', userRoutes);
+app.use('/api/auth', require('./routes/auth'));
+app.use('/rooms', roomRoutes);
+app.use('/profile', profileRoutes);
+app.use('/programs', programRoutes);
+
+
+
 // Middleware-ek
 app.use(express.json());
-app.use(cors());
+app.use(cookieParser());
+
+const corsOptions = {
+    origin: "http://localhost:3000", // 🔹 Engedélyezi a frontend kéréseit
+    credentials: true, // 🔹 Engedélyezi a sütik küldését
+    methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
+    allowedHeaders: "Content-Type,Authorization"
+};
+
+app.use(cors(corsOptions));
+
+app.use((req, res, next) => {
+  res.header("Access-Control-Allow-Origin", "http://localhost:3000");
+  res.header("Access-Control-Allow-Credentials", "true");
+  res.header("Access-Control-Allow-Methods", "GET,HEAD,PUT,PATCH,POST,DELETE");
+  res.header("Access-Control-Allow-Headers", "Content-Type,Authorization");
+
+  if (req.method === "OPTIONS") {
+    return res.sendStatus(200);
+}
+next();
+});
+
 
 // 🔹 Statikus fájlok kiszolgálása (FONTOS!)
 app.use('/images', express.static('public/images'));
 app.use('/images', express.static(__dirname + '/public/images'));
 
-// 🔹 Route-ok regisztrálása
-app.use('/rooms', roomRoutes);
-app.use('/profile', profileRoutes);
+
 
 // 🔹 **Globálisan definiáljuk a db változót**
 let db;
@@ -45,9 +81,6 @@ app.use(async (req, res, next) => {
   }
 });
 
-// Útvonalak regisztrálása
-app.use('/programs', programRoutes);
-app.use('/rooms', roomRoutes);
 
 // Regisztráció
 app.post('/auth/register', async (req, res) => {
@@ -70,35 +103,7 @@ app.post('/auth/register', async (req, res) => {
   }
 });
 
-// Bejelentkezés (régi)
-/*
-app.post('/login', async (req, res) => {
-  const { email, password } = req.body;
 
-  if (!email || !password) {
-    return res.status(400).json({ error: 'Felhasználónév és jelszó szükséges!' });
-  }
-
-  try {
-    const [users] = await req.db.execute('SELECT * FROM Users WHERE Email = ?', [email]);
-
-    if (users.length === 0) {
-      return res.status(401).json({ error: 'Érvénytelen hitelesítő adatok' });
-    }
-
-    const user = users[0];
-    const isPasswordValid = bcrypt.compareSync(password, user.PasswordHash);
-
-    if (!isPasswordValid) {
-      return res.status(401).json({ error: 'Érvénytelen hitelesítő adatok' });
-    }
-
-    res.status(200).json({ message: 'Sikeres bejelentkezés', userID: user.UserID });
-  } catch (error) {
-    console.error('Bejelentkezési hiba:', error.message);
-    res.status(500).json({ error: 'Bejelentkezés sikertelen', details: error.message });
-  }
-}); */
 
 // Teszt útvonal
 app.get('/', (req, res) => {
@@ -306,7 +311,7 @@ app.use(cookieParser());
 
 // Session middleware beállítása
 app.use(session({
-  secret: process.env.SESSION_SECRET || "titkoskulcs", // Titkos kulcs beállítása
+  secret: process.env.SESSION_SECRET, // Titkos kulcs beállítása
   resave: false,
   saveUninitialized: false,
   cookie: {
@@ -316,30 +321,52 @@ app.use(session({
   }
 }));
 
-// Bejelentkezés API
-app.post("/login", (req, res) => {
-  const { email, password } = req.body;
-  
-  db.query("SELECT id, email FROM users WHERE email = ? AND password = ?", 
-      [email, password], (err, result) => {
-      if (err) return res.status(500).json({ error: "Szerverhiba" });
-      if (result.length === 0) return res.status(401).json({ error: "Hibás adatok" });
+//Bejelentkezés API
 
-      req.session.user = result[0]; // Session mentése
-      res.json({ message: "Sikeres bejelentkezés!" });
-  });
+app.post("/api/users/login", async (req, res) => {
+  const { email, password } = req.body;
+
+  if (!email || !password) {
+    return res.status(400).json({ error: "Hiányzó adatok!" });
+  }
+
+  try {
+    const [users] = await req.db.execute(
+      "SELECT UserID, Email, PasswordHash FROM Users WHERE Email = ?",
+      [email]
+    );
+
+    if (users.length === 0) {
+      return res.status(401).json({ error: "Hibás bejelentkezési adatok!" });
+    }
+
+    const user = users[0];
+    const passwordMatch = await bcrypt.compare(password, user.PasswordHash);
+
+    if (!passwordMatch) {
+      return res.status(401).json({ error: "Hibás jelszó!" });
+    }
+
+    req.session.user = { id: user.UserID, email: user.Email };
+    res.json({ message: "✅ Sikeres bejelentkezés!", user: req.session.user });
+  } catch (error) {
+    console.error("🔥 Bejelentkezési hiba:", error.message);
+    res.status(500).json({ error: "Szerverhiba!" });
+  }
 });
 
 // Ellenőrzés, hogy be van-e jelentkezve
-app.get("/user", (req, res) => {
-  if (!req.session.user) return res.status(401).json({ error: "Nincs bejelentkezve" });
-  res.json(req.session.user);
-});
+app.get("/api/users/status", (req, res) => {
+  if (!req.session.user) {
+    return res.status(401).json({ loggedIn: false, error: "Nincs bejelentkezve!" });
+  }
+  res.json({ loggedIn: true, user: req.session.user });
+})
 
 // Kijelentkezés API
-app.post("/logout", (req, res) => {
+app.post("/api/users/logout", (req, res) => {
   req.session.destroy(() => {
-      res.json({ message: "Sikeres kijelentkezés!" });
+    res.json({ message: "👋 Sikeres kijelentkezés!" });
   });
 });
 
