@@ -22,7 +22,7 @@ function Navbar() {
             </div>
             <div className="pa2">
                 <img
-                    src="../images/logo.jpg"
+                    src=""
                     className="br-100 ba h2 w2 dib"
                     alt="avatar"
                 />
