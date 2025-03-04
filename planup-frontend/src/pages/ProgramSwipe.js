@@ -2,12 +2,15 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom"; // Navigáció importálása
 import "../Style/ProgramSwipe.css";
+import { useRef } from "react"; //useffect fetch hogy ne 2x hivja meg
 
 function ProgramSwipe({ apiUrl, userId }) {
   const [program, setProgram] = useState(null);
   const [error, setError] = useState("");
   const [filters, setFilters] = useState({ duration: "", cost: "" });
   const [likedPrograms, setLikedPrograms] = useState(new Set());
+  const [dislikedPrograms, setDislikedPrograms] = useState(new Set());
+  const [processedPrograms, setProcessedPrograms] = useState(new Set()); // Lájk dislike közös lista
   const [filterActive, setFilterActive] = useState(false);
   const navigate = useNavigate(); // Navigáció kezelése
 
@@ -23,9 +26,11 @@ function ProgramSwipe({ apiUrl, userId }) {
   };
 
   const fetchFilteredProgram = async () => {
+    console.log("🟢 fetchFilteredProgram() meghívva...");
+
     try {
       const params = {};
-  
+
       if (filterActive) {
         if (filters.cost) {
           params.cost = filters.cost === "paid" ? "true" : "false";
@@ -37,80 +42,96 @@ function ProgramSwipe({ apiUrl, userId }) {
             filters.duration === "weekend" ? 3 : undefined;
         }
       }
-  
+
       let fetchedProgram = null;
       let attempts = 0;
-      const maxAttempts = 8; // Maximum próbálkozások száma
-  
+      const maxAttempts = 10; // Maximum próbálkozások száma
+
       do {
         const response = await axios.get(`${apiUrl}/programs/random`, { params });
         fetchedProgram = response.data;
-  
+
         if (!fetchedProgram) {
           console.log("⚠️ Nincs több elérhető program.");
           setProgram(null);
           return;
         }
-  
+
         attempts++;
-  
-        // Ha mégis egy már like-olt programot kapunk, újrapróbálkozunk
-        if (likedPrograms.has(fetchedProgram.ProgramID)) {
-          console.warn(`⚠️ A backend egy már like-olt programot adott vissza (ID: ${fetchedProgram.ProgramID}), újrapróbálkozás...`);
+
+        // Ha mégis egy már feldolgozott programot kapunk, újrapróbálkozunk
+        if (processedPrograms.has(fetchedProgram.ProgramID)) {
+          console.warn(`⚠️ A backend egy már feldolgozott programot adott vissza (ID: ${fetchedProgram.ProgramID}), újrapróbálkozás...`);
         }
-  
-      } while (likedPrograms.has(fetchedProgram.ProgramID) && attempts < maxAttempts);
-  
-      if (!fetchedProgram || likedPrograms.has(fetchedProgram.ProgramID)) {
+
+      } while (processedPrograms.has(fetchedProgram.ProgramID) && attempts < maxAttempts);
+
+      if (!fetchedProgram || processedPrograms.has(fetchedProgram.ProgramID)) {
         console.log("❌ Sikertelen próbálkozások, nincs új program.");
         setProgram(null);
         return;
       }
-  
+
       fetchedProgram.Cost = fetchedProgram.Cost ? "paid" : "free";
       fetchedProgram.Duration =
         fetchedProgram.Duration === 1 ? "half_day" :
         fetchedProgram.Duration === 2 ? "whole_day" :
         fetchedProgram.Duration === 3 ? "weekend" : fetchedProgram.Duration;
-  
+
       setProgram(fetchedProgram);
-  
+
       console.log("🎯 Megjelenített program:", fetchedProgram.Name, `(ID: ${fetchedProgram.ProgramID})`);
-  
+
     } catch (err) {
       setError("Nem sikerült betölteni a programot.");
     }
   };
-  
 
+  // ✅ Frissített useEffect, hogy ne fusson le kétszer
+
+  const didFetch = useRef(false);
+  
   useEffect(() => {
-    fetchFilteredProgram();
+    if (!didFetch.current) {
+      console.log("✅ fetchFilteredProgram() lefut egyszer");
+      fetchFilteredProgram();
+      didFetch.current = true;
+    } else {
+      console.log("⚠️ fetchFilteredProgram() kihagyva (már lefutott)");
+    }
   }, [filterActive, filters]);
+  
+  
 
   const handleSwipe = async (action) => {
     if (!program) return;
-  
+
     try {
       console.log(`🔼 Like/dislike küldése: UserID = ${userId}, ProgramID = ${program.ProgramID}, Action = ${action}`);
-  
+
       const response = await axios.post(`${apiUrl}/programs/${program.ProgramID}/${action}`, { userId });
-  
+
       console.log("✅ Like/dislike művelet válasza:", response.data);
-  
-      if (action === "like") {
-        setLikedPrograms((prev) => new Set([...prev, program.ProgramID]));
+
+      // ✅ Egyben kezeljük a like és dislike-olt programokat
+      setProcessedPrograms((prev) => new Set([...prev, program.ProgramID]));
+
+      // ✅ Biztosítjuk, hogy új programot csak akkor kérjünk, ha az aktuális már feldolgozott
+      if (!processedPrograms.has(program.ProgramID)) {
+        fetchFilteredProgram();
       }
-  
-      // Közvetlenül új program betöltése késleltetés nélkül
-      fetchFilteredProgram();
-  
+
     } catch (err) {
       console.error("❌ Nem sikerült végrehajtani a műveletet:", err);
       setError("Nem sikerült végrehajtani a műveletet.");
+      
+      console.warn("⚠️ Hiba történt, új program betöltése...");
+      fetchFilteredProgram();
     }
   };
-
-  //ezt még tweakelni
+  
+  //most már jobban működik a random, de néha még előfordul hogy 2x megjelenik ugyanaz, de továbblépésnél megfelel
+  //dislike-olt programok kezelése (talán megoldja az ismétlődést is!!!)
   
   return (
     <div className="program-swipe-container">

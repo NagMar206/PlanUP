@@ -21,6 +21,8 @@ function LikedPrograms({ apiUrl, userId }) {
             params: { userId: validUserId },
           });
   
+          // Console log a like-olt programok számáról
+          console.log(`👍 A felhasználó (${userId}) összesen ${response.data.length} programot lájkolt.`);
           console.log("API válasza:", response.data);
           setLikedPrograms(response.data);
         } catch (err) {

@@ -163,32 +163,57 @@ app.get("/programs/random", async (req, res) => {
   try {
     console.log(`🔍 Random program lekérése UserID = ${userId}`);
 
-    // Lekérdezzük az összes programot, amit a felhasználó már like-olt
-    const [likedPrograms] = await db.execute(
-      "SELECT ProgramID FROM UserLikes WHERE UserID = ?",
+    // Lekérdezzük az összes programot, amit a felhasználó már like-olt vagy dislike-olt
+    const [processedPrograms] = await db.execute(
+      "SELECT ProgramID FROM SwipeActions WHERE UserID = ?",
       [userId]
     );
 
-    const likedProgramIds = likedPrograms.map(p => p.ProgramID);
+    const processedProgramIds = processedPrograms.map(p => p.ProgramID);
 
-    // Ha nincs liked program, akkor egyszerű random programot választunk
-    let sqlQuery = `SELECT * FROM Programs WHERE ProgramID NOT IN (?) ORDER BY RAND() LIMIT 1`;
-    let queryParams = [likedProgramIds.length > 0 ? likedProgramIds : [-1]];
+    // Megnézzük, hány program van összesen az adatbázisban
+    const [totalPrograms] = await db.execute("SELECT COUNT(*) AS count FROM Programs");
 
-    if (likedProgramIds.length === 0) {
-      sqlQuery = `SELECT * FROM Programs ORDER BY RAND() LIMIT 1`;
-      queryParams = [];
+    // Ha az összes programot feldolgozta (like vagy dislike), küldjünk üres választ
+    if (processedProgramIds.length >= totalPrograms[0].count) {
+      console.log("⚠️ A felhasználó az összes programot feldolgozta (like/dislike).");
+      return res.json(null);
     }
 
-    const [randomProgram] = await db.execute(sqlQuery, queryParams);
+    let fetchedProgram = null;
+    let attempts = 0;
+    const maxAttempts = 10; // Maximum próbálkozások száma
 
-    if (randomProgram.length === 0) {
-      console.log("⚠️ Nincs több elérhető program.");
-      return res.json(null); // Ha nincs több program, küldjön üres választ
+    do {
+      const [randomProgram] = await db.execute(
+        `SELECT * FROM Programs
+         WHERE ProgramID NOT IN (?) 
+         ORDER BY RAND() 
+         LIMIT 1`, 
+        [processedProgramIds.length > 0 ? processedProgramIds : [-1]] 
+      );
+
+      if (randomProgram.length === 0) {
+        console.log("⚠️ Nincs több elérhető program.");
+        return res.json(null);
+      }
+
+      fetchedProgram = randomProgram[0];
+      attempts++;
+
+      if (processedProgramIds.includes(fetchedProgram.ProgramID)) {
+        console.warn(`⚠️ A backend egy már feldolgozott programot választott (ID: ${fetchedProgram.ProgramID}), újrapróbálkozás...`);
+      }
+
+    } while (processedProgramIds.includes(fetchedProgram.ProgramID) && attempts < maxAttempts);
+
+    if (!fetchedProgram || processedProgramIds.includes(fetchedProgram.ProgramID)) {
+      console.log("❌ Sikertelen próbálkozások, nincs új program.");
+      return res.json(null);
     }
 
-    console.log("🎯 Visszaküldött random program:", randomProgram[0].Name, `(ID: ${randomProgram[0].ProgramID})`);
-    res.json(randomProgram[0]);
+    console.log("🎯 Visszaküldött random program:", fetchedProgram.Name, `(ID: ${fetchedProgram.ProgramID})`);
+    res.json(fetchedProgram);
 
   } catch (error) {
     console.error("🔥 Hiba történt a random program lekérésekor:", error);
