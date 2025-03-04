@@ -14,6 +14,7 @@ function HomePage() {
     <button className="explore-button">Fedezd fel most!</button>
   </Link>
     </div>
+   
   );
 }
 
