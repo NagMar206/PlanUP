@@ -73,6 +73,8 @@ Hardver követelmények:
 
 PlanUp Webfelület (Weboldal) = 25-2-12
 
+Főoldal		planup.hu
+
 Megnyitáskor a főoldalon találjuk magunkat, ahol üdvözöl az alkalmazás, és a menüpontok mellett a Fedezd fel most! gombbal lehet elindítani a programot. Viszont mindenek előtt érdemes lehet regisztrálni az oldalra!
 
 Regisztrációs felület	planup.hu/register
@@ -106,7 +108,12 @@ A legelső dolog ami szembetűnhet a kártyán az az illusztráció ami a progra
 
 Tetszik/Nem Tetszik:
 
-A programkártya alatt megjelenő "Nem teszik" és "Tetszik" gombbal dönthetünk arról, hogy a kártyán megjelent program érdekeli-e a felhasználót, vagy sem. Ezt az adatot elmenti az adatbázis. A kedvelt programokat a "Profile" oldalon lehet visszatekinteni.
+A programkártya alatt megjelenő "Nem teszik" és "Tetszik" gombbal dönthetünk arról, hogy a kártyán megjelent program érdekeli-e a felhasználót, vagy sem. Ezt az adatot elmenti az adatbázis. Miután elfogytak a programok, megjelenik egy "Összegzés megtekintése" gomb, amivel meg lehet tekinteni a kedvelt programokat.
+
+Kedvelt programok összegzése	planup.hu/liked-programs	03-05
+
+Az oldal feldob minden programot, ami kedvelve volt bármelyik felhasználó által. Minden kártya ugyanúgy jelenik meg mint a válogatásnál, annyi különbséggel, hogy a kártya alján láthatjuk, hogy a szobából hányan kedvelték az adott programot. (Ha a felhasználó egyedül pörget, akkor a kedvelések száma mindig 1 lesz, és csak az ő preferált programjai fognak megjelenni az oldalon).
+Ezután lehetőség nyílik a választásra, kétféle módon. Ha a felhasználók a kedvelések alapján döntésre jutnak, akkor az általuk választott programról további információkat kaphatnak ha rákattintanak a kártyára. Alternatívaként, ha még a lájkok száma ellenére sem tudnak döntésre jutni - vagy döntetlen helyzet áll fent két vagy több program között - akkor az oldal alján lehetőség van egy szerencsekerék pörgetésre. Ezen a keréken az összes program megjelenik ami kedvelve volt, és a programok amik nagyobb népszerűséget élveztek a választásoknál több teret kapnak. Itt lehetőség van pörgetni egyet, és a kerék szerencse alapon kidob egy programot. 
 
 Szobák felület	planup.hu/rooms
 
