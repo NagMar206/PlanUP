@@ -1,0 +1,100 @@
+.liked-programs-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+    text-align: center;
+  }
+  
+  .program-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr); /* 🟢 Fix 3 oszlop széles kijelzőn */
+    gap: 30px;
+    justify-content: center;
+    align-items: stretch;
+  }
+  
+  @media (max-width: 1024px) {
+    .program-grid {
+      grid-template-columns: repeat(2, 1fr); /* 🟢 Kisebb kijelzőn 2 oszlop */
+    }
+  }
+  
+  @media (max-width: 768px) {
+    .program-grid {
+      grid-template-columns: repeat(1, 1fr); /* 🟢 Mobilon 1 oszlop */
+    }
+  }
+  
+  .program-card {
+    background: #1e1e2e;
+    color: #ffffff;
+    padding: 20px;
+    border-radius: 12px;
+    box-shadow: 0 4px 8px rgba(255, 255, 255, 0.1);
+    text-align: center;
+    transition: transform 0.2s ease-in-out;
+    max-width: 400px;
+    width: 100%; /* 🟢 Minden doboz egyforma széles */
+    min-height: 580px; /* 🟢 Egyenlő magasság */
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    margin: 0 auto;
+  }
+  
+  .program-card:hover {
+    transform: translateY(-5px);
+  }
+  
+  .program-image {
+    width: 100%;
+    height: 220px;
+    object-fit: cover;
+    border-radius: 10px;
+    margin-bottom: 10px;
+  }
+  
+  .program-card h3 {
+    font-size: 20px;
+    margin: 10px 0;
+    flex-grow: 1;
+  }
+  
+  .program-card p {
+    flex-grow: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    min-height: 50px;
+  }
+  
+  .program-details {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+  
+  .button-container {
+    margin-top: 20px;
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+  }
+  
+  .back-button, .reset-button {
+    background-color: #3b82f6;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background 0.3s;
+  }
+  
+  .back-button:hover, .reset-button:hover {
+    background-color: #2563eb;
+  }
+  
