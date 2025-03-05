@@ -24,63 +24,65 @@ function ProgramSwipe({ apiUrl, userId }) {
 
   const fetchFilteredProgram = async () => {
     try {
-      const params = {};
-  
-      if (filterActive) {
-        if (filters.cost) {
-          params.cost = filters.cost === "paid" ? "true" : "false";
+        const params = { userId }; // 🔹 userId biztosan elküldve a backendnek
+
+        if (filterActive) {
+            if (filters.cost) {
+                params.cost = filters.cost === "paid" ? "true" : "false";
+            }
+            if (filters.duration) {
+                params.duration =
+                    filters.duration === "half_day" ? 1 :
+                    filters.duration === "whole_day" ? 2 :
+                    filters.duration === "weekend" ? 3 : undefined;
+            }
         }
-        if (filters.duration) {
-          params.duration =
-            filters.duration === "half_day" ? 1 :
-            filters.duration === "whole_day" ? 2 :
-            filters.duration === "weekend" ? 3 : undefined;
+
+        let fetchedProgram = null;
+        let attempts = 0;
+        const maxAttempts = 8; // Maximum próbálkozások száma
+
+        do {
+            const response = await axios.get(`${apiUrl}/programs/random`, { params });
+            fetchedProgram = response.data;
+
+            if (!fetchedProgram) {
+                console.log("⚠️ Nincs több elérhető program.");
+                setProgram(null);
+                return;
+            }
+
+            attempts++;
+
+            // Ha mégis egy már like-olt programot kapunk, újrapróbálkozunk
+            if (likedPrograms.has(fetchedProgram.ProgramID)) {
+                console.warn(`⚠️ A backend egy már like-olt programot adott vissza (ID: ${fetchedProgram.ProgramID}), újrapróbálkozás...`);
+            }
+
+        } while (likedPrograms.has(fetchedProgram.ProgramID) && attempts < maxAttempts);
+
+        if (!fetchedProgram || likedPrograms.has(fetchedProgram.ProgramID)) {
+            console.log("❌ Sikertelen próbálkozások, nincs új program.");
+            setProgram(null);
+            return;
         }
-      }
-  
-      let fetchedProgram = null;
-      let attempts = 0;
-      const maxAttempts = 8; // Maximum próbálkozások száma
-  
-      do {
-        const response = await axios.get(`${apiUrl}/programs/random`, { params });
-        fetchedProgram = response.data;
-  
-        if (!fetchedProgram) {
-          console.log("⚠️ Nincs több elérhető program.");
-          setProgram(null);
-          return;
-        }
-  
-        attempts++;
-  
-        // Ha mégis egy már like-olt programot kapunk, újrapróbálkozunk
-        if (likedPrograms.has(fetchedProgram.ProgramID)) {
-          console.warn(`⚠️ A backend egy már like-olt programot adott vissza (ID: ${fetchedProgram.ProgramID}), újrapróbálkozás...`);
-        }
-  
-      } while (likedPrograms.has(fetchedProgram.ProgramID) && attempts < maxAttempts);
-  
-      if (!fetchedProgram || likedPrograms.has(fetchedProgram.ProgramID)) {
-        console.log("❌ Sikertelen próbálkozások, nincs új program.");
-        setProgram(null);
-        return;
-      }
-  
-      fetchedProgram.Cost = fetchedProgram.Cost ? "paid" : "free";
-      fetchedProgram.Duration =
-        fetchedProgram.Duration === 1 ? "half_day" :
-        fetchedProgram.Duration === 2 ? "whole_day" :
-        fetchedProgram.Duration === 3 ? "weekend" : fetchedProgram.Duration;
-  
-      setProgram(fetchedProgram);
-  
-      console.log("🎯 Megjelenített program:", fetchedProgram.Name, `(ID: ${fetchedProgram.ProgramID})`);
-  
+
+        fetchedProgram.Cost = fetchedProgram.Cost ? "paid" : "free";
+        fetchedProgram.Duration =
+            fetchedProgram.Duration === 1 ? "half_day" :
+            fetchedProgram.Duration === 2 ? "whole_day" :
+            fetchedProgram.Duration === 3 ? "weekend" : fetchedProgram.Duration;
+
+        setProgram(fetchedProgram);
+
+        console.log("🎯 Megjelenített program:", fetchedProgram.Name, `(ID: ${fetchedProgram.ProgramID})`);
+
     } catch (err) {
-      setError("Nem sikerült betölteni a programot.");
+        console.error("❌ Hiba a program lekérésekor:", err);
+        setError("Nem sikerült betölteni a programot.");
     }
-  };
+};
+
   
 
   useEffect(() => {

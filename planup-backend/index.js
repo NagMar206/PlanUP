@@ -1,8 +1,7 @@
 const express = require('express');
 const mysql = require('mysql2/promise');
-const cors = require('cors');
 const bcrypt = require('bcrypt');
-const dbConfig = require('./config/dbConfig'); // Adatbázis konfiguráció importálása
+const db = require('./config/dbConfig'); 
 const programRoutes = require('./routes/programs'); 
 const userRoutes = require('./routes/users');
 const roomRoutes = require('./routes/rooms'); // Router importálása
@@ -14,6 +13,17 @@ const authRoutes = require('./routes/auth');
 // Az app inicializálása
 const app = express();
 
+app.use((req, res, next) => {
+  res.header("Access-Control-Allow-Origin", "http://localhost:3000");
+  res.header("Access-Control-Allow-Credentials", "true");
+  res.header("Access-Control-Allow-Methods", "GET,HEAD,PUT,PATCH,POST,DELETE");
+  res.header("Access-Control-Allow-Headers", "Content-Type,Authorization");
+
+  if (req.method === "OPTIONS") {
+      return res.sendStatus(200);
+  }
+  next();
+});
 
 require('dotenv').config();
 
@@ -35,6 +45,8 @@ app.use('/programs', programRoutes);
 app.use(express.json());
 app.use(cookieParser());
 
+const cors = require("cors");
+
 const corsOptions = {
     origin: "http://localhost:3000", // 🔹 Engedélyezi a frontend kéréseit
     credentials: true, // 🔹 Engedélyezi a sütik küldését
@@ -44,27 +56,14 @@ const corsOptions = {
 
 app.use(cors(corsOptions));
 
-app.use((req, res, next) => {
-  res.header("Access-Control-Allow-Origin", "http://localhost:3000");
-  res.header("Access-Control-Allow-Credentials", "true");
-  res.header("Access-Control-Allow-Methods", "GET,HEAD,PUT,PATCH,POST,DELETE");
-  res.header("Access-Control-Allow-Headers", "Content-Type,Authorization");
 
-  if (req.method === "OPTIONS") {
-    return res.sendStatus(200);
-}
-next();
-});
+
 
 
 // 🔹 Statikus fájlok kiszolgálása (FONTOS!)
 app.use('/images', express.static('public/images'));
 app.use('/images', express.static(__dirname + '/public/images'));
 
-
-
-// 🔹 **Globálisan definiáljuk a db változót**
-let db;
 
 // Middleware: az adatbázis kapcsolat biztosítása minden kéréshez
 app.use(async (req, res, next) => {
@@ -113,7 +112,7 @@ app.get('/', (req, res) => {
 // Szerver indítása
 const PORT = 3001;
 app.listen(PORT, () => {
-  console.log(`Szerver fut a http://localhost:${PORT} címen`);
+  console.log(`✅ Sikeres adatbázis kapcsolat! http://localhost:${PORT} `);
 });
 
 // 🔹 Program funkciók
@@ -151,50 +150,69 @@ if (duration !== undefined) {
 });
 
 // 🔹 Véletlenszerű program lekérése
-
 app.get("/programs/random", async (req, res) => {
-  const { userId } = req.query;
-
-  if (!userId) {
-    console.error("❌ Hiányzó userId paraméter!");
-    return res.status(400).json({ error: "Hiányzó userId paraméter." });
-  }
-
   try {
-    console.log(`🔍 Random program lekérése UserID = ${userId}`);
+    const { userId } = req.query;
 
-    // Lekérdezzük az összes programot, amit a felhasználó már like-olt
-    const [likedPrograms] = await db.execute(
-      "SELECT ProgramID FROM UserLikes WHERE UserID = ?",
-      [userId]
-    );
+    if (!userId) {
+      console.error("❌ Hiányzó userId paraméter!");
+      return res.status(400).json({ error: "Hiányzó userId paraméter." });
+    }
 
-    const likedProgramIds = likedPrograms.map(p => p.ProgramID);
+    console.log(`🔍 Véletlenszerű program lekérése UserID = ${userId}`);
 
-    // Ha nincs liked program, akkor egyszerű random programot választunk
-    let sqlQuery = `SELECT * FROM Programs WHERE ProgramID NOT IN (?) ORDER BY RAND() LIMIT 1`;
-    let queryParams = [likedProgramIds.length > 0 ? likedProgramIds : [-1]];
+    let likedPrograms = [];
+    try {
+      const [likedProgramsRows] = await db.execute(
+        "SELECT ProgramID FROM UserLikes WHERE UserID = ?",
+        [userId]
+      );
+      likedPrograms = likedProgramsRows.map(p => p.ProgramID);
+      console.log("👍 Like-olt programok:", likedPrograms);
+    } catch (dbError) {
+      console.error("⚠️ Hiba a like-olt programok lekérésekor:", dbError);
+      return res.status(500).json({ error: "Hiba a like-olt programok lekérésekor.", details: dbError.message });
+    }
 
-    if (likedProgramIds.length === 0) {
+    let sqlQuery, queryParams;
+
+    if (likedPrograms.length > 0) {
+      sqlQuery = `SELECT * FROM Programs WHERE ProgramID NOT IN (?) ORDER BY RAND() LIMIT 1`;
+      queryParams = [likedPrograms];
+    } else {
       sqlQuery = `SELECT * FROM Programs ORDER BY RAND() LIMIT 1`;
       queryParams = [];
     }
 
-    const [randomProgram] = await db.execute(sqlQuery, queryParams);
+    console.log("🔍 SQL Lekérdezés:", sqlQuery, queryParams);
 
-    if (randomProgram.length === 0) {
-      console.log("⚠️ Nincs több elérhető program.");
-      return res.json(null); // Ha nincs több program, küldjön üres választ
+    let randomProgram;
+    try {
+      const [randomProgramRows] = await db.execute(sqlQuery, queryParams);
+      randomProgram = randomProgramRows.length > 0 ? randomProgramRows[0] : null;
+    } catch (sqlError) {
+      console.error("⚠️ Hiba az SQL lekérdezés végrehajtásakor:", sqlError);
+      return res.status(500).json({ error: "SQL hiba a program lekérésekor.", details: sqlError.message });
     }
 
-    console.log("🎯 Visszaküldött random program:", randomProgram[0].Name, `(ID: ${randomProgram[0].ProgramID})`);
-    res.json(randomProgram[0]);
+    if (!randomProgram) {
+      console.log("⚠️ Nincs több elérhető program.");
+      return res.json(null);
+    }
+
+    console.log("🎯 Visszaküldött program:", randomProgram);
+    res.json(randomProgram);
 
   } catch (error) {
-    console.error("🔥 Hiba történt a random program lekérésekor:", error);
-    res.status(500).json({ error: "Szerverhiba a program betöltésekor." });
+    console.error("🔥 Általános hiba történt a random program lekérésekor:", error);
+    res.status(500).json({ error: "Szerverhiba a program betöltésekor.", details: error.message });
   }
 });
+
+
+
+
+
 
 
 // 🔹 Program kedvelése   
@@ -298,17 +316,6 @@ app.delete("/programs/liked/reset", async (req, res) => {
 });
 
 
-
-//Rooms API UserID cuccok
-
-// CORS beállítás, hogy a frontend elérhesse a szervert
-app.use(cors({
-  origin: "http://localhost:3000",
-  credentials: true
-}));
-app.use(express.json());
-app.use(cookieParser());
-
 // Session middleware beállítása
 app.use(session({
   secret: process.env.SESSION_SECRET, // Titkos kulcs beállítása
@@ -369,4 +376,3 @@ app.post("/api/users/logout", (req, res) => {
     res.json({ message: "👋 Sikeres kijelentkezés!" });
   });
 });
-

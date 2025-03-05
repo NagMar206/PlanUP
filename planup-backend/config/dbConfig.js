@@ -1,8 +1,14 @@
-module.exports = {
+const mysql = require('mysql2/promise');
+
+const db = mysql.createPool({
     host: 'localhost',
     user: 'root',
-    password: '', 
+    password: '',
     database: 'PlanUp',
-    port: 3307 // Ez az alapértelmezett port, ellenőrizd, hogy egyezik-e
-  };
-  
+    port: 3307,
+    waitForConnections: true,
+    connectionLimit: 10,
+    queueLimit: 0
+});
+
+module.exports = db; // 🔹 Ezt kell exportálni!
