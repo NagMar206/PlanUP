@@ -61,6 +61,9 @@ function LikedPrograms({ apiUrl, userId }) {
                         <p>⏳ Időtartam: {program.Duration}</p>
                         <p>💰 Költség: {program.Cost === "paid" ? "Fizetős" : "Ingyenes"}</p>
                         <p>👍 Kedvelések száma: <strong>{program.LikesCount}</strong></p>
+                        <a href={program.MoreInfoLink} target="" rel="">
+                    <button>További információk</button>
+                </a>
                     </div>
                 ))}
             </div>
