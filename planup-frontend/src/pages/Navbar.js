@@ -20,7 +20,8 @@ function Navbar() {
   return (
     <nav className="navbar">
       {/* Title or Logo */}
-      <div className="navbar-title">PlanUp</div>
+      
+      <Link className="navbar-title" to="/">PlanUp</Link>
 
       {/* Hamburger Icon */}
       <div className="hamburger" onClick={() => setMenuOpen(!menuOpen)}>
