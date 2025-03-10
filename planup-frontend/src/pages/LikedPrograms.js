@@ -8,11 +8,11 @@ function LikedPrograms({ apiUrl, userId }) {
     const [likedPrograms, setLikedPrograms] = useState([]);
     const [error, setError] = useState("");
     const navigate = useNavigate();
-  
+
     const validUserId = userId || 1; // Ha nincs userId, állítsuk be 1-re
-  
+
     useEffect(() => {
-        console.log(`🟢 Aktív userID a frontendben: ${userId}`);
+        console.log(`🟢 Aktív userID a frontendben: ${validUserId}`);
 
         const fetchLikedPrograms = async () => {
             try {
@@ -23,7 +23,7 @@ function LikedPrograms({ apiUrl, userId }) {
                 console.log("API válasza:", response.data);
                 setLikedPrograms(response.data);
             } catch (err) {
-                console.error("Hiba történt a kedvelt programok lekérésekor:", err);
+                console.error("❌ Hiba történt a kedvelt programok lekérésekor:", err);
                 setError("Nem sikerült betölteni a kedvelt programokat.");
             }
         };
@@ -70,7 +70,12 @@ function LikedPrograms({ apiUrl, userId }) {
                 <button onClick={resetLikedPrograms} className="reset-button">🔄 Összes kedvelt program törlése</button>
             </div>
 
-            <LuckyWheel apiUrl={apiUrl} userId={userId} />
+            {/* 🔥 LuckyWheel csak akkor jelenik meg, ha vannak programok */}
+            {likedPrograms.length > 0 ? (
+                <LuckyWheel apiUrl={apiUrl} userId={validUserId} />
+            ) : (
+                <p className="no-programs-message">⚠️ Lájkold a programokat, hogy pörgethess! 😊</p>
+            )}
         </div>
     );
 }

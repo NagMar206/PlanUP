@@ -7,6 +7,7 @@ function LuckyWheel({ apiUrl, userId }) {
   const [programs, setPrograms] = useState([]);
   const [winner, setWinner] = useState(null);
   const [spinning, setSpinning] = useState(false);
+  const [prizeIndex, setPrizeIndex] = useState(null); // 🔥 Nyertes index állapotként
 
   useEffect(() => {
     if (!apiUrl || typeof apiUrl !== "string") {
@@ -37,13 +38,19 @@ function LuckyWheel({ apiUrl, userId }) {
 
   const handleSpin = () => {
     if (programs.length === 0 || spinning) return;
+
+    const randomIndex = Math.floor(Math.random() * programs.length);
+    setPrizeIndex(randomIndex); // 🔥 Előre beállítjuk a nyertes indexet
+    setWinner(null); // 🔥 Reseteljük a nyertest
     setSpinning(true);
 
+    console.log(`🎰 Pörgetés... A nyertes indexe: ${randomIndex}`);
+
     setTimeout(() => {
-      const randomIndex = Math.floor(Math.random() * programs.length);
       setWinner(programs[randomIndex].option);
       setSpinning(false);
-    }, 3000);
+      console.log(`🎉 Pörgetés vége! Nyertes: ${programs[randomIndex].option}`);
+    }, 3500); // 🕒 Időzítés az animációhoz
   };
 
   return (
@@ -53,7 +60,7 @@ function LuckyWheel({ apiUrl, userId }) {
         <>
           <Wheel 
             mustStartSpinning={spinning} 
-            prizeNumber={Math.floor(Math.random() * programs.length)} 
+            prizeNumber={prizeIndex ?? 0} // 🔥 Nincs random újragenerálás!
             data={programs} 
             onStopSpinning={() => setSpinning(false)}
           />

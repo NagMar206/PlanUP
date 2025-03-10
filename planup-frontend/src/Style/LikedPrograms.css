@@ -1,100 +1,135 @@
+/* Fő konténer */
 .liked-programs-container {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 20px;
-    text-align: center;
-  }
-  
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+  text-align: center;
+}
+
+/* Programkártyák rácsos elrendezése */
+.program-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); /* 📏 Dinamikus oszlopok */
+  gap: 30px;
+  justify-content: center;
+  align-items: stretch;
+  padding: 10px;
+}
+
+/* 📱 Reszponzív beállítások */
+@media (max-width: 1024px) {
   .program-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr); /* 🟢 Fix 3 oszlop széles kijelzőn */
-    gap: 30px;
-    justify-content: center;
-    align-items: stretch;
-  }
-  
-  @media (max-width: 1024px) {
-    .program-grid {
       grid-template-columns: repeat(2, 1fr); /* 🟢 Kisebb kijelzőn 2 oszlop */
-    }
   }
-  
-  @media (max-width: 768px) {
-    .program-grid {
-      grid-template-columns: repeat(1, 1fr); /* 🟢 Mobilon 1 oszlop */
-    }
+}
+
+@media (max-width: 768px) {
+  .program-grid {
+      grid-template-columns: repeat(1, 1fr); /* 📱 Mobilon 1 oszlop */
   }
-  
-  .program-card {
-    background: #1e1e2e;
-    color: #ffffff;
-    padding: 20px;
-    border-radius: 12px;
-    box-shadow: 0 4px 8px rgba(255, 255, 255, 0.1);
-    text-align: center;
-    transition: transform 0.2s ease-in-out;
-    max-width: 400px;
-    width: 100%; /* 🟢 Minden doboz egyforma széles */
-    min-height: 580px; /* 🟢 Egyenlő magasság */
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    margin: 0 auto;
-  }
-  
-  .program-card:hover {
-    transform: translateY(-5px);
-  }
-  
-  .program-image {
-    width: 100%;
-    height: 220px;
-    object-fit: cover;
-    border-radius: 10px;
-    margin-bottom: 10px;
-  }
-  
-  .program-card h3 {
-    font-size: 20px;
-    margin: 10px 0;
-    flex-grow: 1;
-  }
-  
-  .program-card p {
-    flex-grow: 1;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    text-align: center;
-    min-height: 50px;
-  }
-  
-  .program-details {
-    flex-grow: 1;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-  }
-  
+}
+
+/* Egyedi programkártya stílus */
+.program-card {
+  background: #1e1e2e;
+  color: #ffffff;
+  padding: 20px;
+  border-radius: 12px;
+  box-shadow: 0 4px 10px rgba(255, 255, 255, 0.15);
+  text-align: center;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  width: 100%;
+  min-height: 600px; /* 📏 Egyenlő magasság */
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  margin: 0 auto;
+}
+
+/* 🖱️ Hover hatás */
+.program-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 6px 12px rgba(255, 255, 255, 0.25);
+}
+
+/* Kép stílus */
+.program-image {
+  width: 100%;
+  height: 220px;
+  object-fit: cover;
+  border-radius: 10px;
+  margin-bottom: 10px;
+}
+
+/* Programcím */
+.program-card h3 {
+  font-size: 22px;
+  font-weight: bold;
+  margin: 15px 0;
+  flex-grow: 1;
+}
+
+/* Programleírás */
+.program-card p {
+  flex-grow: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  min-height: 50px;
+}
+
+/* További részletek */
+.program-details {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+/* 🔘 Gombok konténer */
+.button-container {
+  margin-top: 20px;
+  display: flex;
+  justify-content: center;
+  gap: 15px;
+}
+
+/* 🎨 Alap gombstílus */
+.back-button, .reset-button {
+  background-color: #3b82f6;
+  color: white;
+  padding: 12px 22px;
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+/* 🖱️ Hover effekt */
+.back-button:hover, .reset-button:hover {
+  background-color: #2563eb;
+  transform: scale(1.05);
+}
+
+/* 🔴 Reset gomb figyelmeztető szín */
+.reset-button {
+  background-color: #e74c3c;
+}
+
+.reset-button:hover {
+  background-color: #c0392b;
+}
+
+/* 📱 Kisebb kijelzőkön középre rendezett gombok */
+@media (max-width: 480px) {
   .button-container {
-    margin-top: 20px;
-    display: flex;
-    justify-content: center;
-    gap: 15px;
+      flex-direction: column;
+      gap: 10px;
   }
-  
+
   .back-button, .reset-button {
-    background-color: #3b82f6;
-    color: white;
-    padding: 10px 20px;
-    border: none;
-    border-radius: 8px;
-    font-size: 16px;
-    cursor: pointer;
-    transition: background 0.3s;
+      width: 100%;
   }
-  
-  .back-button:hover, .reset-button:hover {
-    background-color: #2563eb;
-  }
-  
+}
