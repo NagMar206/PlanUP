@@ -28,8 +28,7 @@ app.use((req, res, next) => {
 require('dotenv').config();
 
 if (!process.env.SESSION_SECRET) {
-    console.error("❌ SESSION_SECRET nincs beállítva az .env fájlban! A szerver leáll.");
-    process.exit(1); // Kilépünk a szerverből
+    console.error("❌ SESSION_SECRET nincs beállítva az .env fájlban! ");
 }
 
 // API végpontok regisztrálása

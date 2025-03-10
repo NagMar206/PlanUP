@@ -30,9 +30,6 @@ function Navbar() {
 
       {/* Navigation Links */}
       <ul className={`navbar-links ${menuOpen ? "open" : ""}`}>
-        <li>
-          <Link to="/">Kezdőlap</Link>
-        </li>
         {!isLoggedIn ? (
           <>
             <li>
