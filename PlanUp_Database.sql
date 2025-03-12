@@ -84,7 +84,8 @@ VALUES ('testuser', 'hashedpassword', 'test@example.com');
 
  
 -- Insert sample data into Programs table
-INSERT INTO Programs (Name, Description, Duration, Cost, Location, Image, MoreInfoLink) VALUES
+INSERT INTO Programs (Name, Description, Price, Cost, Location, Image, MoreInfoLink) 
+VALUES 
 ('Duna hajókirándulás', 'Városnéző hajóút Budapest látványosságai mentén.', 1, TRUE, 'Vigadó téri hajóállomás', 'duna-hajokirandulas.jpg', 'https://www.cruise-holidays.hu/hu/tipusok/dunai-hajoutak'),
 ('Hop-On Hop-Off buszos városnézés', 'Fedezd fel Budapest nevezetességeit kényelmes busszal.', 2, TRUE, 'Clark Ádám tér', 'hop-on-hop-off-buszos-varosnezes.jpg', 'https://www.bigbustours.com/hu/budapest/budapesti-buszos-varosnezesek'),
 ('Szent István Bazilika látogatás', 'Fedezd fel Budapest legnagyobb templomát és a kupolát.', 1, FALSE, 'Szent István Bazilika', 'szent-istvan-bazilika.jpg', 'https://bazilikabudapest.hu/'),
@@ -124,16 +125,15 @@ INSERT INTO Programs (Name, Description, Duration, Cost, Location, Image, MoreIn
 ('Ingyenes múzeumi nap', 'Fedezd fel Budapest múzeumait a havonta egyszer ingyenes napokon.', 3, FALSE, 'Ludwig Múzeum', 'ingyenes-muzeum.jpg', 'https://minimatine.hu/mikor-ingyenesek-a-muzeumok/'),
 ('Szabadtéri koncertek', 'Élvezd a város különböző pontjain megrendezett ingyenes koncerteket.', 3, FALSE, 'Kobuci Kert', 'szabadteri-koncert.jpg', 'https://www.budapestpark.hu/'),
 ('Bringás túra a Budai-hegységben', 'Ingyenes szervezett kerékpártúra a Budai-hegységben.', 3, FALSE, 'Normafa', 'bringastura-normafa.jpg', 'https://www.welovecycling.com/hu/biciklivel-tesztelve/budai-hegyek-tura-normafa-harshegy-huvosvolgy/'),
-('Utcazenei fesztivál', 'Hallgasd Budapest legjobb utcazenészeit ingyenes fesztiválokon.', 3, FALSE, 'Gozsdu Udvar', 'utcazene-fesztival.jpg'),
+('Utcazenei fesztivál', 'Hallgasd Budapest legjobb utcazenészeit ingyenes fesztiválokon.', 3, FALSE, 'Gozsdu Udvar', 'utcazene-fesztival.jpg', 'https://facebook.com' ),
 ('Természetjárás a Róka-hegyen', 'Kirándulj a Róka-hegyre és fedezd fel Budapest rejtett természeti szépségeit.', 3, FALSE, 'Róka-hegy', 'termeszetjaras-rokahegy.jpg', 'https://www.termeszetjaro.hu/hu/tour/gyalogtura/ko-koevoen-foeldtoerteneti-seta-a-roka-hegy-sziklaudvaraiban/29624082/'),
 ('Ingyenes városnéző séta', 'Csatlakozz egy ingyenes idegenvezetéses városnézéshez.', 3, FALSE, 'Váci utca', 'ingyenes-varosnezes.jpg', 'http://www.budapestvarosnezes.hu/varosnezesek.php'),
 ('Kulturális fesztivál a Várkert Bazárban', 'Élvezd a színes kulturális eseményeket Budapest egyik legszebb helyszínén.', 3, FALSE, 'Várkert Bazár', 'kulturalis-fesztival.jpg', 'https://varkertbazar.hu/'),
-('Ingyenes sportnap a Városligetben', 'Vegyél részt ingyenes edzéseken és sportprogramokon.', 3, FALSE, 'Városliget', 'ingyenes-sportnap.jpg'),
+('Ingyenes sportnap a Városligetben', 'Vegyél részt ingyenes edzéseken és sportprogramokon.', 3, FALSE, 'Városliget', 'ingyenes-sportnap.jpg','https://facebook.com' ),
 ('Gourmet Street Food Nap', 'Próbáld ki a legjobb street food ételeket ingyenes kóstolókkal.', 3, FALSE, 'Bálna Budapest', 'gourmet-street-food.jpg', 'https:// ourmetfesztival.hu/hu/'),
 ('Kézműves vásár', 'Fedezd fel Budapest helyi kézműveseinek termékeit.', 3, FALSE, 'Fény Utcai Piac', 'kezmuves-vasar.jpg', 'https://hellopiac.hu/'),
-('Nyílt nap az Operában', 'Tekints be a Magyar Állami Operaház kulisszatitkaiba ingyenesen.', 3, FALSE, 'Magyar Állami Operaház', 'nyilt-nap-opera.jpg', '
-https://www.opera.hu/hu/musor/2024-2025/a-magyar-nemzeti-balett-nyilt-napjai-20242025-2024/77665-eloadas-202504261100/'),
-('Történelmi séta Budapesten', 'Vezetett túra Budapest történelmi emlékhelyein.', 3, FALSE, 'Budai Vár', 'tortenelmi-seta.jpg'),
+('Nyílt nap az Operában', 'Tekints be a Magyar Állami Operaház kulisszatitkaiba ingyenesen.', 3, FALSE, 'Magyar Állami Operaház', 'nyilt-nap-opera.jpg', 'https://www.opera.hu/hu/musor/2024-2025/a-magyar-nemzeti-balett-nyilt-napjai-20242025-2024/77665-eloadas-202504261100/'),
+('Történelmi séta Budapesten', 'Vezetett túra Budapest történelmi emlékhelyein.', 3, FALSE, 'Budai Vár', 'tortenelmi-seta.jpg', 'https://facebook.com'),
 ('Ingyenes kiállítás a Millenárison', 'Fedezd fel az aktuális művészeti kiállításokat.', 3, FALSE, 'Millenáris Park', 'ingyenes-kiallitas.jpg', 'https://millenaris.hu/programok/'),
 ('Dunakorzó esti séta', 'Csodáld meg a Duna-part fényeit egy kellemes esti sétán.', 3, FALSE, 'Dunakorzó', 'dunakorz-est.jpg', 'https://maps.app.goo.gl/ZF9JAjT6CRgMRqLr9'),
 ('Paintball', 'Vegyétek fel a harcot, küzdjetek meg egymással, ne hagyjátok hogy egy cseppnyi festék is érjen titeket!', 3, TRUE, 'Budapest', 'paintball.jpg', 'https://patriotspaintball.hu/'),

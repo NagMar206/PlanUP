@@ -1,21 +1,23 @@
 const express = require('express');
 const router = express.Router();
-const db = require('../config/dbConfig'); // ✅ HELYES ÚTVONAL
-
+const db = require('../config/dbConfig'); // Ensure this path is correct
+if (!db) {
+  console.error('Nincs adatbázis kapcsolat.');
+  return res.status(500).json({ error: 'Nincs adatbázis kapcsolat.' });
+}
 
 // Programok lekérdezése
 router.get('/', async (req, res) => {
   try {
-    if (!req.db) {
-      return res.status(500).json({ error: 'Nincs adatbázis kapcsolat.' });
-    }
     const [program] = await db.execute('SELECT * FROM Programs ORDER BY RAND() LIMIT 1');
-    res.status(200).json(programs);
+    res.status(200).json(program); // Use 'program' instead of 'programs'
   } catch (error) {
     console.error('Hiba történt a programok lekérdezése során:', error.message);
     res.status(500).json({ error: 'Hiba történt a programok lekérdezése során.' });
   }
 });
+
+
 
 // Véletlenszerű program lekérdezése
 router.get('/random', async (req, res) => {
