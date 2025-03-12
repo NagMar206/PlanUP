@@ -1,14 +1,14 @@
 const mysql = require('mysql2/promise');
 
 const db = mysql.createPool({
-    host: '10.3.1.65',
-    user: 'mollev545',
-    password: '72576822545',
-    database: 'mollev545',
-    port: 3306,
+    host: 'localhost', // XAMPP esetén ez maradjon "localhost"
+    user: 'root', // XAMPP alapértelmezett felhasználó
+    password: '', // XAMPP esetén nincs jelszó, hagyd üresen
+    database: 'planup', // Az adatbázis neve (ellenőrizd phpMyAdminban!)
+    port: 3307, // Ha a MySQL más porton fut, módosítsd
     waitForConnections: true,
     connectionLimit: 10,
     queueLimit: 0
 });
 
-module.exports = db; // 🔹 Ezt kell exportálni!
+module.exports = db;

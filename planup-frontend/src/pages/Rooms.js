@@ -1,13 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import '../Style/Rooms.css';
+import { v4 as uuidv4 } from 'uuid'; // Szobakód generálás
 
 function Rooms({ apiUrl, userId }) {
   const [rooms, setRooms] = useState([]);
   const [roomName, setRoomName] = useState('');
+  const [roomCode, setRoomCode] = useState('');
   const [error, setError] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
-
 
   useEffect(() => {
     fetchRooms();
@@ -21,33 +22,28 @@ function Rooms({ apiUrl, userId }) {
       setError('Nem sikerült betölteni a szobákat.');
     }
   };
+
   const createRoom = async () => {
     if (!roomName) return;
+    const generatedRoomCode = uuidv4().substring(0, 8).toUpperCase(); // Egyedi szobakód
     try {
-      await axios.post(`${apiUrl}/rooms`, { name: roomName, userId });
-      setRoomName('');
-      fetchRooms(); // Frissíti a szobák listáját
+        const response = await axios.post(`${apiUrl}/rooms`, { name: roomName, userId, roomCode: generatedRoomCode });
+        setRoomName('');
+        setRoomCode(generatedRoomCode);
+        setSuccessMessage(`Szoba létrehozva! Kód: ${generatedRoomCode}`);
+        setTimeout(() => setSuccessMessage(''), 5000);
+        fetchRooms();
     } catch (err) {
-      console.error('Hiba történt a szoba létrehozásakor:', err.message);
+        console.error('Hiba történt a szoba létrehozásakor:', err.message);
     }
-  };
-  
+};
 
-  const deleteRoom = async (roomId) => {
-    try {
-      await axios.delete(`${apiUrl}/rooms/${roomId}`);
-      setSuccessMessage('Szoba sikeresen törölve!');
-      setTimeout(() => setSuccessMessage(''), 3000);
-      fetchRooms();
-    } catch (err) {
-      setError('Nem sikerült törölni a szobát.');
-    }
-  };
 
-  const joinRoom = async (roomId) => {
+  const joinRoom = async () => {
+    if (!roomCode) return;
     try {
-      await axios.post(`${apiUrl}/rooms/join`, { roomId, userId });
-      setSuccessMessage('Sikeresen csatlakoztál a szobához!');
+      await axios.post(`${apiUrl}/rooms/join`, { roomCode, userId });
+      setSuccessMessage(`Sikeresen csatlakoztál a szobához (${roomCode})!`);
       setTimeout(() => setSuccessMessage(''), 3000);
     } catch (err) {
       setError('Nem sikerült csatlakozni a szobához.');
@@ -59,19 +55,32 @@ function Rooms({ apiUrl, userId }) {
       <h2 className="title">Szobák</h2>
       {error && <div className="error-message">{error}</div>}
       {successMessage && <div className="success-message">{successMessage}</div>}
-      <div className="create-room">
-  <input
-    type="text"
-    value={roomName} // Az input mező értéke a roomName állapot
-    onChange={(e) => setRoomName(e.target.value)} // Az állapot frissítése az onChange esemény alapján
-    placeholder="Új szoba neve"
-    className="room-input" // Opcionális osztály a stílushoz
-  />
-  <button onClick={createRoom} className="create-room-button">
-    Szoba létrehozása
-  </button>
-</div>
 
+      <div className="create-room">
+        <input
+          type="text"
+          value={roomName}
+          onChange={(e) => setRoomName(e.target.value)}
+          placeholder="Új szoba neve"
+          className="room-input"
+        />
+        <button onClick={createRoom} className="create-room-button">
+          Szoba létrehozása
+        </button>
+      </div>
+
+      <div className="join-room">
+        <input
+          type="text"
+          value={roomCode}
+          onChange={(e) => setRoomCode(e.target.value)}
+          placeholder="Szobakód beírása"
+          className="room-input"
+        />
+        <button onClick={joinRoom} className="join-room-button">
+          Csatlakozás
+        </button>
+      </div>
 
       <div className="rooms-list">
         {rooms.length === 0 ? (
@@ -79,13 +88,10 @@ function Rooms({ apiUrl, userId }) {
         ) : (
           rooms.map((room) => (
             <div key={room.RoomID} className="room-item">
-              <span className="room-name">{room.RoomCode || 'Névtelen szoba'}</span>
+              <span className="room-name">Kód: {room.RoomCode} - {room.RoomName}</span>
               <div className="room-actions">
-                <button className="join-button" onClick={() => joinRoom(room.RoomID)}>
-                  Csatlakozás
-                </button>
-                <button className="delete-button" onClick={() => deleteRoom(room.RoomID)}>
-                  Törlés
+                <button className="join-button" onClick={() => setRoomCode(room.RoomCode)}>
+                  Másolás
                 </button>
               </div>
             </div>
@@ -97,4 +103,3 @@ function Rooms({ apiUrl, userId }) {
 }
 
 export default Rooms;
-
