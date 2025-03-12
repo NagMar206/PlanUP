@@ -4,67 +4,60 @@ const bcrypt = require('bcrypt');
 const db = require('./config/dbConfig'); 
 const programRoutes = require('./routes/programs'); 
 const userRoutes = require('./routes/users');
-const roomRoutes = require('./routes/rooms'); // Router importálása
+const roomRoutes = require('./routes/rooms');
 const profileRoutes = require('./routes/profiles');
-const cookieParser = require("cookie-parser"); //Cookie-k kezelése
+const cookieParser = require("cookie-parser");
 const session = require('express-session');
 const authRoutes = require('./routes/auth');
 
-// Az app inicializálása
+require('dotenv').config();
+
 const app = express();
 
+// 🔹 1) MINDIG ELŐSZÖR a middleware-ek:
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+app.use(cookieParser());
+
+// CORS beállítás
+const cors = require("cors");
+const corsOptions = {
+    origin: "http://localhost:3000",
+    credentials: true,
+    methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
+    allowedHeaders: "Content-Type,Authorization"
+};
+app.use(cors(corsOptions));
+
+// Ha van más “header override”, mint pl. Access-Control-Allow, azt is tedd ide
 app.use((req, res, next) => {
   res.header("Access-Control-Allow-Origin", "http://localhost:3000");
   res.header("Access-Control-Allow-Credentials", "true");
   res.header("Access-Control-Allow-Methods", "GET,HEAD,PUT,PATCH,POST,DELETE");
   res.header("Access-Control-Allow-Headers", "Content-Type,Authorization");
-
   if (req.method === "OPTIONS") {
-      return res.sendStatus(200);
+    return res.sendStatus(200);
   }
   next();
 });
 
-require('dotenv').config();
-
+// Session beállítás
 if (!process.env.SESSION_SECRET) {
-    console.error("❌ SESSION_SECRET nincs beállítva az .env fájlban! ");
+  console.error("❌ SESSION_SECRET nincs beállítva az .env fájlban! ");
 }
+app.use(session({
+  secret: process.env.SESSION_SECRET || 'secret_fallback',
+  resave: false,
+  saveUninitialized: false,
+  cookie: {
+    secure: false,
+    httpOnly: true,
+    maxAge: 1000 * 60 * 60 * 24
+  }
+}));
 
-// API végpontok regisztrálása
-app.use('/api/users', userRoutes);
-app.use('/api/auth', require('./routes/auth'));
-app.use('/rooms', roomRoutes);
-app.use('/profile', profileRoutes);
-app.use('/programs', programRoutes);
-
-
-
-// Middleware-ek
-app.use(express.json());
-app.use(cookieParser());
-
-const cors = require("cors");
-
-const corsOptions = {
-    origin: "http://localhost:3000", // 🔹 Engedélyezi a frontend kéréseit
-    credentials: true, // 🔹 Engedélyezi a sütik küldését
-    methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
-    allowedHeaders: "Content-Type,Authorization"
-};
-
-app.use(cors(corsOptions));
-
-
-
-
-
-// 🔹 Statikus fájlok kiszolgálása (FONTOS!)
-app.use('/images', express.static('public/images'));
-app.use('/images', express.static(__dirname + '/public/images'));
-
-
-// Middleware: az adatbázis kapcsolat biztosítása minden kéréshez
+// 🔹 2) Ezután jöjjenek a ROUTE-ok
+// Adatbázis kapcsolat betöltése minden kéréshez
 app.use(async (req, res, next) => {
   try {
     if (!db) {
@@ -79,27 +72,60 @@ app.use(async (req, res, next) => {
   }
 });
 
+// Itt regisztráld a routes
+app.use('/api/users', userRoutes);
+app.use('/api/auth', authRoutes);
+app.use('/rooms', roomRoutes);
+app.use('/profile', profileRoutes);
+app.use('/programs', programRoutes);
 
-// Regisztráció
+// Ha van 1 db “app.post('/auth/register' ...)” route, tedd inkább a users.js-be
+// vagy auth.js-be. Ha mindenképp itt akarod, ide rakd.
+
+
+// 🔹 3) Statikus fájlok (ha kell)
+app.use('/images', express.static('public/images'));
+
+// 🔹 4) Végül a szerver indítása
+const PORT = 3001;
+app.listen(PORT, () => {
+  console.log(`✅ Szerver fut: http://localhost:${PORT}`);
+});
+
+
+
+
+// 🔹 Statikus fájlok kiszolgálása (FONTOS!)
+app.use('/images', express.static('public/images'));
+app.use('/images', express.static(__dirname + '/public/images'));
+
+
+// Regisztráció   
 app.post('/auth/register', async (req, res) => {
-  const { username, password, email } = req.body;
+  const { username, email, password } = req.body;
 
-  if (!username || !password || !email) {
-    return res.status(400).json({ error: 'Minden mező kitöltése kötelező!' });
+  console.log("🔍 Regisztráció indult, beérkező adatok:", req.body);
+
+  if (!username || !email || !password) {
+    console.error("⚠️ Hiányzó adat!");
+    return res.status(400).json({ error: "Minden mező kitöltése kötelező!" });
   }
 
   try {
-    const hashedPassword = bcrypt.hashSync(password, 10);
-    const [result] = await req.db.execute(
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const [result] = await db.execute(
       'INSERT INTO Users (Username, PasswordHash, Email) VALUES (?, ?, ?)',
       [username, hashedPassword, email]
     );
-    res.status(201).json({ message: 'User registered successfully', userID: result.insertId });
+
+    console.log("✅ Sikeres regisztráció! UserID:", result.insertId);
+    res.status(201).json({ message: "Sikeres regisztráció!", userID: result.insertId });
   } catch (error) {
-    console.error('Regisztrációs hiba:', error.message);
-    res.status(500).json({ error: 'Failed to register user', details: error.message });
+    console.error("🔥 Hiba a regisztráció során:", error.message);
+    res.status(500).json({ error: "Nem sikerült a regisztráció", details: error.message });
   }
 });
+
 
 
 
@@ -108,11 +134,6 @@ app.get('/', (req, res) => {
   res.send('Express.js backend működik!');
 });
 
-// Szerver indítása
-const PORT = 3001;
-app.listen(PORT, () => {
-  console.log(`✅ Sikeres adatbázis kapcsolat! http://localhost:${PORT} `);
-});
 
 // 🔹 Program funkciók
 app.get('/programs', async (req, res) => {
@@ -327,8 +348,9 @@ app.use(session({
   }
 }));
 
-//Bejelentkezés API
+//Bejelentkezés API (régi)
 
+/*
 app.post("/api/users/login", async (req, res) => {
   const { email, password } = req.body;
 
@@ -375,3 +397,60 @@ app.post("/api/users/logout", (req, res) => {
     res.json({ message: "👋 Sikeres kijelentkezés!" });
   });
 });
+
+*/
+
+// Backend: index.js (JWT autentikáció + cookie-k kezelése integrálva)
+const jwt = require('jsonwebtoken');
+
+// Bejelentkezés (JWT + cookie)
+app.post('/api/users/login', async (req, res) => {
+  const { email, password } = req.body;
+
+  if (!email || !password) {
+    return res.status(400).json({ error: "Hiányzó adatok!" });
+  }
+
+  try {
+    const [users] = await req.db.execute(
+      "SELECT UserID, Email, PasswordHash FROM Users WHERE Email = ?",
+      [email]
+    );
+
+    if (users.length === 0) {
+      return res.status(401).json({ error: "Hibás email vagy jelszó!" });
+    }
+
+    const user = users[0];
+    const passwordMatch = await bcrypt.compare(password, user.PasswordHash);
+
+    if (!passwordMatch) {
+      return res.status(401).json({ error: "Hibás jelszó!" });
+    }
+
+    const token = jwt.sign({ userId: user.UserID }, "jwt_secret_key", { expiresIn: '7d' });
+
+    res.cookie('planup_token', token, { 
+      httpOnly: true, 
+      secure: false,
+      maxAge: 7 * 24 * 3600 * 1000
+    });
+
+    res.json({ message: "Sikeres bejelentkezés!", userId: user.UserID });
+  } catch (err) {
+    res.status(500).json({ error: "Szerverhiba történt!" });
+  }
+});
+
+// Felhasználó ellenőrzése JWT alapján
+app.get('/api/auth/status', (req, res) => {
+  const token = req.cookies.planup_auth_token;
+
+  if (!token) return res.json({ loggedIn: false });
+
+  jwt.verify(token, "jwt_secret_key", (err, decoded) => {
+    if (err) return res.json({ loggedIn: false });
+    res.json({ loggedIn: true, userId: decoded.userId });
+  });
+});
+

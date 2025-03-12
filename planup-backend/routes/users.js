@@ -40,9 +40,12 @@ router.post('/login', async (req, res) => {
     }
 });
 
-// Regisztráció
 router.post('/register', async (req, res) => {
     const { username, email, password } = req.body;
+
+    if (!username || !email || !password) {
+        return res.status(400).json({ error: "Minden mező kitöltése kötelező!" });
+    }
 
     try {
         const hashedPassword = await bcrypt.hash(password, 10);
@@ -55,5 +58,6 @@ router.post('/register', async (req, res) => {
         res.status(500).json({ error: 'Hiba történt a regisztráció során.' });
     }
 });
+
 
 module.exports = router;
