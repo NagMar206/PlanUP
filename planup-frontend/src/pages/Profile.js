@@ -11,6 +11,8 @@ function Profile({ user, setUser }) {
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
+  const [showModal, setShowModal] = useState(false);
+
 
   useEffect(() => {
     if (!user) return;
@@ -73,14 +75,23 @@ function Profile({ user, setUser }) {
 
   const handleLogout = async () => {
     try {
+      // Send logout request to server
       await axios.post("http://localhost:3001/api/auth/logout", {}, { withCredentials: true });
-      setUser(null); // Clear user state
-      navigate("/login"); // Redirect to login page
+      
+      // Clear the user state
+      setUser(null);
+      
+      // Show modal
+      setShowModal(true); // This triggers the modal
+      setTimeout(() => {
+        navigate("/login"); // Redirect after 2 seconds
+      }, 2000); // 2-second delay for the modal to be visible
     } catch (error) {
       console.error("❌ Hiba a kijelentkezésnél:", error);
       setMessage("⚠️ Hiba történt a kijelentkezés során.");
     }
   };
+  
 
   return (
     <div className="profile-container">
