@@ -1,84 +1,119 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import axios from "axios";
+import "../Style/Profile.css";
 
-const Profile = () => {
-  const [name, setName] = useState("");
-  const [isDeleting, setIsDeleting] = useState(false);
+function Profile({ user }) {
+  const [username, setUsername] = useState("");
+  const [newName, setNewName] = useState("");
+  const [oldPassword, setOldPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [message, setMessage] = useState("");
+  const [loading, setLoading] = useState(true);
 
-  // Function to handle name update
+  useEffect(() => {
+    if (!user) return;
+
+    axios
+      .get(`http://localhost:3001/profile/${user}`, { withCredentials: true })
+      .then((response) => {
+        setUsername(response.data.username);
+        setLoading(false);
+      })
+      .catch((error) => {
+        console.error("❌ Hiba a profil lekérésekor:", error);
+        setLoading(false);
+      });
+  }, [user]);
+
   const handleUpdateName = async () => {
-    try {
-      const response = await axios.put("/api/user/update-name", { name });
-      alert("Sikeresen frissítetted a nevedet!");
-    } catch (error) {
-      console.error("Nem sikerült frissíteni a nevedet:", error);
-      alert("Nem sikerült frissíteni a nevedet. Kérjük próbálja újra később!");
-    }
-  };
-
-  // Function to handle profile deletion
-  const handleDeleteProfile = async () => {
-    if (!window.confirm("Biztos hogy törölni szeretnéd a profilodat? Ez később nem lesz visszavonható!")) {
+    if (!newName.trim()) {
+      setMessage("⚠️ A név nem lehet üres!");
       return;
     }
 
-    setIsDeleting(true);
+    try {
+      const response = await axios.put(
+        "http://localhost:3001/profile/update-name",
+        { userId: user, name: newName },
+        { withCredentials: true }
+      );
+
+      setUsername(newName);
+      setNewName("");
+      setMessage("✅ Név sikeresen frissítve!");
+    } catch (error) {
+      console.error("❌ Hiba a névváltoztatáskor:", error);
+      setMessage("⚠️ Hiba történt a név frissítésekor.");
+    }
+  };
+
+  const handleChangePassword = async () => {
+    if (!oldPassword || !newPassword) {
+      setMessage("⚠️ Mindkét mező kitöltése kötelező!");
+      return;
+    }
 
     try {
-      await axios.delete("/api/user/delete-profile");
-      alert("Profil sikeresen törölve. Visszairányítás a főoldalra...");
-      window.location.href = "/"; // Redirect to homepage after deletion
+      const response = await axios.put(
+        "http://localhost:3001/api/auth/change-password", // 🔹 API endpoint
+        { oldPassword, newPassword },
+        { withCredentials: true }
+      );
+
+      setMessage(response.data.message);
+      setOldPassword("");
+      setNewPassword("");
     } catch (error) {
-      console.error("Nem sikerült törölni a profilt:", error);
-      alert("Nem sikerült törölni a profilt. Kérjük próbálja újra később!");
-    } finally {
-      setIsDeleting(false);
+      setMessage(error.response?.data?.error || "⚠️ Hiba történt!");
     }
   };
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen p-4 bg-gray-100">
-      <Card className="w-full max-w-md p-4">
-        <CardContent>
-          <h1 className="text-2xl font-bold mb-4">Profile Settings</h1>
+    <div className="profile-container">
+      <h2>👤 Profil</h2>
 
-          {/* Update Name Section */}
-          <div className="mb-6">
-            <label htmlFor="name" className="block text-sm font-medium text-gray-700">
-              Update Your Name
-            </label>
-            <Input
-              id="name"
+      {loading ? (
+        <p className="loading">🔄 Betöltés...</p>
+      ) : username ? (
+        <>
+          <p><strong>Felhasználónév:</strong> {username}</p>
+          
+          {/* Név módosítása */}
+          <div className="profile-actions">
+            <input
               type="text"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder="Irja be a nevét"
-              className="mt-1 w-full"
+              placeholder="Új név"
+              value={newName}
+              onChange={(e) => setNewName(e.target.value)}
             />
-            <Button onClick={handleUpdateName} className="mt-3 w-full">
-              Név frissítése
-            </Button>
+            <button onClick={handleUpdateName}>✏️ Név frissítése</button>
           </div>
 
-          {/* Delete Profile Section */}
-          <div className="mt-6 border-t pt-4">
-            <h2 className="text-lg font-medium text-red-600 mb-2">Delete Profile</h2>
-            <p className="text-sm text-gray-600 mb-4">
-              Warning: Deleting your profile is permanent and cannot be undone.
-            </p>
-            <Button
-              onClick={handleDeleteProfile}
-              className="w-full bg-red-600 text-white hover:bg-red-700"
-              disabled={isDeleting}
-            >
-              {isDeleting ? "Törlés..." : "Profil törlése"}
-            </Button>
+          {/* Jelszó módosítása */}
+          <div className="profile-actions">
+            <h3>🔒 Jelszó módosítása</h3>
+            <input
+              type="password"
+              placeholder="Régi jelszó"
+              value={oldPassword}
+              onChange={(e) => setOldPassword(e.target.value)}
+            />
+            <input
+              type="password"
+              placeholder="Új jelszó"
+              value={newPassword}
+              onChange={(e) => setNewPassword(e.target.value)}
+            />
+            <button onClick={handleChangePassword}>🔄 Jelszó frissítése</button>
           </div>
-        </CardContent>
-      </Card>
+        </>
+      ) : (
+        <p>⚠️ Nem található felhasználói adat.</p>
+      )}
+
+      {message && <p className="message">{message}</p>}
     </div>
   );
-};
-
+}
 
 export default Profile;

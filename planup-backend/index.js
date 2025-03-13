@@ -5,7 +5,7 @@ const db = require('./config/dbConfig');
 const programRoutes = require('./routes/programs'); 
 const userRoutes = require('./routes/users');
 const roomRoutes = require('./routes/rooms');
-const profileRoutes = require('./routes/profiles');
+const profileRoutes = require('./routes/profile');
 const cookieParser = require("cookie-parser");
 const session = require('express-session');
 const authRoutes = require('./routes/auth');
@@ -74,13 +74,11 @@ app.use(async (req, res, next) => {
 
 // Itt regisztráld a routes
 app.use('/api/users', userRoutes);
-app.use('/api/auth', authRoutes);
+app.use("/api/auth", authRoutes);
 app.use('/rooms', roomRoutes);
 app.use('/profile', profileRoutes);
 app.use('/programs', programRoutes);
 
-// Ha van 1 db “app.post('/auth/register' ...)” route, tedd inkább a users.js-be
-// vagy auth.js-be. Ha mindenképp itt akarod, ide rakd.
 
 
 // 🔹 3) Statikus fájlok (ha kell)

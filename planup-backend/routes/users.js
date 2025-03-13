@@ -24,14 +24,20 @@ router.post('/login', async (req, res) => {
         }
 
         // JWT token generálás
-        const token = jwt.sign({ id: user.UserID, email: user.Email }, 'secret_key', { expiresIn: '1h' });
-
+        const token = jwt.sign(
+            { userId: user.UserID },
+            "jwt_secret_key",
+            { expiresIn: "1h" } // Token 1 órán át érvényes
+        );
         // 🔹 Token beállítása HttpOnly sütiben
-        res.cookie('token', token, {
-            httpOnly: true,
-            secure: false, // Ha HTTPS lenne, akkor true
-            maxAge: 1000 * 60 * 60 * 1, // 1 óra
+        res.cookie("token", token, {
+            httpOnly: true,   // Nem elérhető JavaScript-ből
+            secure: false,    // Ha HTTPS lenne, akkor true
+            maxAge: 3600000,  // 1 óra (miliszekundumban)
+            sameSite: "Lax"
         });
+        console.log("Generated Token:", token);
+
 
         res.json({ message: 'Sikeres bejelentkezés!', userId: user.UserID });
     } catch (error) {
