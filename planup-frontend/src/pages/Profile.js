@@ -1,14 +1,16 @@
 import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import "../Style/Profile.css";
 
-function Profile({ user }) {
+function Profile({ user, setUser }) {
   const [username, setUsername] = useState("");
   const [newName, setNewName] = useState("");
   const [oldPassword, setOldPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
 
   useEffect(() => {
     if (!user) return;
@@ -25,6 +27,7 @@ function Profile({ user }) {
       });
   }, [user]);
 
+  // Define handleUpdateName
   const handleUpdateName = async () => {
     if (!newName.trim()) {
       setMessage("⚠️ A név nem lehet üres!");
@@ -32,7 +35,7 @@ function Profile({ user }) {
     }
 
     try {
-      const response = await axios.put(
+      await axios.put(
         "http://localhost:3001/profile/update-name",
         { userId: user, name: newName },
         { withCredentials: true }
@@ -55,7 +58,7 @@ function Profile({ user }) {
 
     try {
       const response = await axios.put(
-        "http://localhost:3001/api/auth/change-password", // 🔹 API endpoint
+        "http://localhost:3001/api/auth/change-password",
         { oldPassword, newPassword },
         { withCredentials: true }
       );
@@ -68,6 +71,17 @@ function Profile({ user }) {
     }
   };
 
+  const handleLogout = async () => {
+    try {
+      await axios.post("http://localhost:3001/api/auth/logout", {}, { withCredentials: true });
+      setUser(null); // Clear user state
+      navigate("/login"); // Redirect to login page
+    } catch (error) {
+      console.error("❌ Hiba a kijelentkezésnél:", error);
+      setMessage("⚠️ Hiba történt a kijelentkezés során.");
+    }
+  };
+
   return (
     <div className="profile-container">
       <h2>👤 Profil</h2>
@@ -77,8 +91,8 @@ function Profile({ user }) {
       ) : username ? (
         <>
           <p><strong>Felhasználónév:</strong> {username}</p>
-          
-          {/* Név módosítása */}
+
+          {/* Name Update */}
           <div className="profile-actions">
             <input
               type="text"
@@ -89,7 +103,7 @@ function Profile({ user }) {
             <button onClick={handleUpdateName}>✏️ Név frissítése</button>
           </div>
 
-          {/* Jelszó módosítása */}
+          {/* Password Change */}
           <div className="profile-actions">
             <h3>🔒 Jelszó módosítása</h3>
             <input
@@ -105,6 +119,11 @@ function Profile({ user }) {
               onChange={(e) => setNewPassword(e.target.value)}
             />
             <button onClick={handleChangePassword}>🔄 Jelszó frissítése</button>
+          </div>
+
+          {/* Logout Button */}
+          <div className="profile-actions">
+            <button className="logout-btn" onClick={handleLogout}>🚪 Kijelentkezés</button>
           </div>
         </>
       ) : (

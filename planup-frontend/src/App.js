@@ -42,7 +42,7 @@ function App() {
         <Route path="/register" element={<Registration />} />
         <Route path="/programs" element={<Programs />} />
         <Route path="/rooms" element={<Rooms apiUrl={apiUrl} userId={user} />} />
-        <Route path="/profile" element={<Profile user={user} />} />
+        <Route path="/profile" element={<Profile user={user} setUser={setUser} />} />
         <Route path="/swipe" element={<ProgramSwipe apiUrl={apiUrl} userId={user} />} />
         <Route path="/liked-programs" element={<LikedPrograms apiUrl={apiUrl} userId={user} />} />
         <Route path="/lucky-wheel" element={<LuckyWheel apiUrl={apiUrl} userId={user} />} />

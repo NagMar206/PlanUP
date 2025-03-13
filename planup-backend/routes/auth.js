@@ -35,10 +35,19 @@ router.get("/status", authenticateToken, (req, res) => {
 
 // 🔹 Kijelentkezés API
 router.post("/logout", (req, res) => {
-    console.log(`👋 Kijelentkezés történt. UserID: ${req.user ? req.user.userId : "Ismeretlen"}`);
+    const token = req.cookies?.token;  // Ellenőrizzük, hogy van-e token
+
+    if (!token) {
+        console.log("🔴 Kijelentkezés sikertelen: Nincs token!");
+        return res.json({ message: "❌ Nincs aktív bejelentkezés.", loggedIn: false });
+    }
+
     res.clearCookie("token", { httpOnly: true, secure: false });
-    res.json({ message: "👋 Sikeres kijelentkezés!", loggedIn: false });
+    console.log("👋 Sikeres kijelentkezés!");
+    res.json({ message: "✅ Sikeresen kijelentkeztél!", loggedIn: false });
 });
+
+
 
 // 🔹 Jelszóváltoztatás API
 // 🔹 Jelszóváltoztatás API
