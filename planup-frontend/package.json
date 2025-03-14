@@ -7,6 +7,7 @@
     "react": "^18.2.0",
     "react-custom-roulette": "^1.4.1",
     "react-dom": "^18.2.0",
+    "react-icons": "^5.5.0",
     "react-router-dom": "^7.0.2",
     "react-spring": "^9.7.4",
     "tachyons": "^4.12.0",
