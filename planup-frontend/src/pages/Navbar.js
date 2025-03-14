@@ -1,8 +1,9 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import "../Style/Navbar.css";
-import loginImage from ""; // Bejelentkezés nélküli kép
-import logoutImage from ""; // Bejelentkezett kép
+import loginImage from "../images/login.jpg"
+import logoutImage from "../images/logout.jpg"
+
 
 function Navbar({ user }) {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -42,7 +43,7 @@ function Navbar({ user }) {
 
       {/* Állapotjelző kép */}
       <div className="status-icon">
-        <img src={user ? logoutImage : loginImage} alt="User Status" />
+        <img src={user ? loginImage : logoutImage} alt="User Status" />
       </div>
     </nav>
   );
