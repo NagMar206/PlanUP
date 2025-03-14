@@ -25,6 +25,12 @@ function Navbar({ user }) {
             <li>
               <Link to="/login">Bejelentkezés</Link>
             </li>
+             {/* Állapotjelző ikont használjuk a "Profil" gomb helyett */}
+             <li className="status-icon">
+              <Link to="/profile">
+                <img src={user ? loginImage : logoutImage} alt="Profil" />
+              </Link>
+            </li>
           </>
         ) : (
           <>
