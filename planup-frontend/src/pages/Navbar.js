@@ -1,7 +1,8 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import "../Style/Navbar.css";
-import "tachyons/css/tachyons.min.css";
+import loginImage from ""; // Bejelentkezés nélküli kép
+import logoutImage from ""; // Bejelentkezett kép
 
 function Navbar({ user }) {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -38,6 +39,11 @@ function Navbar({ user }) {
           </>
         )}
       </ul>
+
+      {/* Állapotjelző kép */}
+      <div className="status-icon">
+        <img src={user ? logoutImage : loginImage} alt="User Status" />
+      </div>
     </nav>
   );
 }
