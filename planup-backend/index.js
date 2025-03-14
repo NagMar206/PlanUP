@@ -9,8 +9,7 @@ const profileRoutes = require('./routes/profile');
 const cookieParser = require("cookie-parser");
 const session = require('express-session');
 const authRoutes = require('./routes/auth');
-
-require('dotenv').config();
+SESSION_SECRET="125eef9d70e5e65deb3e877eca66f1d805463e8062390de14b33bdad0ba58b8a";
 
 const app = express();
 
@@ -41,12 +40,8 @@ app.use((req, res, next) => {
   next();
 });
 
-// Session beállítás
-if (!process.env.SESSION_SECRET) {
-  console.error("❌ SESSION_SECRET nincs beállítva az .env fájlban! ");
-}
 app.use(session({
-  secret: process.env.SESSION_SECRET || 'secret_fallback',
+  secret: SESSION_SECRET,
   resave: false,
   saveUninitialized: false,
   cookie: {
@@ -55,6 +50,7 @@ app.use(session({
     maxAge: 1000 * 60 * 60 * 24
   }
 }));
+
 
 // 🔹 2) Ezután jöjjenek a ROUTE-ok
 // Adatbázis kapcsolat betöltése minden kéréshez
@@ -334,17 +330,7 @@ app.delete("/programs/liked/reset", async (req, res) => {
 });
 
 
-// Session middleware beállítása
-app.use(session({
-  secret: process.env.SESSION_SECRET, // Titkos kulcs beállítása
-  resave: false,
-  saveUninitialized: false,
-  cookie: {
-      secure: false, // HTTPS esetén legyen true
-      httpOnly: true,
-      maxAge: 1000 * 60 * 60 * 24 // 1 napos lejárat
-  }
-}));
+
 
 //Bejelentkezés API (régi)
 
