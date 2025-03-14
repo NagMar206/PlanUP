@@ -147,3 +147,45 @@
     font-size: 1.2rem;
   }
   
+  .room-users {
+    margin-top: 20px;
+    padding: 15px;
+    background-color: #2c2c3e;
+    border-radius: 12px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+}
+
+.room-users h3 {
+    color: #a78bfa;
+    text-align: center;
+}
+
+.room-users ul {
+    list-style-type: none;
+    padding: 0;
+    color: white;
+}
+
+.room-users li {
+    padding: 5px 0;
+    text-align: center;
+}
+
+.program-button {
+    display: block;
+    width: 100%;
+    padding: 12px;
+    margin-top: 10px;
+    background-color: #8b5cf6;
+    color: #ffffff;
+    border: none;
+    border-radius: 8px;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.program-button:hover {
+    background-color: #6d28d9;
+}
+
