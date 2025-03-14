@@ -34,19 +34,20 @@ function Navbar({ user }) {
             <li>
               <Link to="/liked-programs">Kedvelt Programok</Link>
             </li>
-            <li>
-              <Link to="/profile">Profil</Link>
+            {/* Állapotjelző ikont használjuk a "Profil" gomb helyett */}
+            <li className="status-icon">
+              <Link to="/profile">
+                <img src={user ? loginImage : logoutImage} alt="Profil" />
+              </Link>
             </li>
           </>
         )}
       </ul>
-
-      {/* Állapotjelző kép */}
-      <div className="status-icon">
-        <img src={user ? loginImage : logoutImage} alt="User Status" />
-      </div>
     </nav>
-  );
+);
+
+
+
 }
 
 export default Navbar;
