@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
+import { FaUser, FaEdit, FaLock, FaSignOutAlt, FaSpinner } from "react-icons/fa";
 import "../Style/Profile.css";
 
 function Profile({ user, setUser }) {
@@ -95,52 +96,31 @@ function Profile({ user, setUser }) {
 
   return (
     <div className="profile-container">
-      <h2>👤 Profil</h2>
-
+      <h2><FaUser /> Profil</h2>
       {loading ? (
-        <p className="loading">🔄 Betöltés...</p>
+        <p className="loading"><FaSpinner className="spinner" /> Betöltés...</p>
       ) : username ? (
         <>
-          <p><strong>Felhasználónév:</strong> {username}</p>
-
-          {/* Name Update */}
-          <div className="profile-actions">
-            <input
-              type="text"
-              placeholder="Új név"
-              value={newName}
-              onChange={(e) => setNewName(e.target.value)}
-            />
-            <button onClick={handleUpdateName}>✏️ Név frissítése</button>
+          <div className="profile-card">
+            <p><strong><FaUser /> Felhasználónév:</strong> {username}</p>
           </div>
-
-          {/* Password Change */}
           <div className="profile-actions">
-            <h3>🔒 Jelszó módosítása</h3>
-            <input
-              type="password"
-              placeholder="Régi jelszó"
-              value={oldPassword}
-              onChange={(e) => setOldPassword(e.target.value)}
-            />
-            <input
-              type="password"
-              placeholder="Új jelszó"
-              value={newPassword}
-              onChange={(e) => setNewPassword(e.target.value)}
-            />
-            <button onClick={handleChangePassword}>🔄 Jelszó frissítése</button>
+            <input type="text" placeholder="Új név" value={newName} onChange={(e) => setNewName(e.target.value)} />
+            <button onClick={handleUpdateName} className="update-btn"><FaEdit /> Név frissítése</button>
           </div>
-
-          {/* Logout Button */}
+          <h3><FaLock /> Jelszó módosítása</h3>
           <div className="profile-actions">
-            <button className="logout-btn" onClick={handleLogout}>🚪 Kijelentkezés</button>
+            <input type="password" placeholder="Régi jelszó" value={oldPassword} onChange={(e) => setOldPassword(e.target.value)} />
+            <input type="password" placeholder="Új jelszó" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} />
+            <button onClick={handleChangePassword} className="password-btn"><FaLock /> Jelszó frissítése</button>
+          </div>
+          <div className="profile-actions">
+            <button className="logout-btn" onClick={handleLogout}><FaSignOutAlt /> Kijelentkezés</button>
           </div>
         </>
       ) : (
         <p>⚠️ Nem található felhasználói adat.</p>
       )}
-
       {message && <p className="message">{message}</p>}
     </div>
   );

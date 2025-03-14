@@ -1,32 +1,47 @@
+.wrapper {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh; /* Teljes magasság lefedése */
+}
+
+.page-content {
+  flex: 1; /* Kitölti a helyet a footer előtt */
+  padding-bottom: 70px; /* Helyet hagy a footernek */
+}
+
 .footer {
-    background-color: #1a1a1a;
-    color: #ffffff;
-    text-align: center;
-    padding: 15px 0;
-    font-size: 14px;
-    width: 100%;
-    box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.2);
-    position: relative;
-    animation: slideUp 0.5s ease-in-out;
-  }
-  
-  .footer a {
-    color: #00aaff;
-    text-decoration: none;
-    transition: color 0.3s ease;
-  }
-  
-  .footer a:hover {
-    color: #66d9ff;
-  }
-  
-  @keyframes slideUp {
-    from {
+  background-color: #1a1a1a;
+  color: #ffffff;
+  text-align: center;
+  padding: 15px 0;
+  font-size: 14px;
+  width: 100%;
+  box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.2);
+  position: relative; /* Footer az oldal legaljára kerül */
+  bottom: 0;
+  left: 0;
+  min-height: 50px;
+  z-index: 1000;
+  margin-top: auto; /* Footer mindig az oldal végére kerül */
+} 
+
+.footer a {
+  color: #00aaff;
+  text-decoration: none;
+  transition: color 0.3s ease;
+}
+
+.footer a:hover {
+  color: #66d9ff;
+}
+
+@keyframes slideUp {
+  from {
       transform: translateY(100%);
       opacity: 0;
-    }
-    to {
+  }
+  to {
       transform: translateY(0);
       opacity: 1;
-    }
   }
+}
