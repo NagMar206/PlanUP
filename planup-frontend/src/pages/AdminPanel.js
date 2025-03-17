@@ -1,68 +1,76 @@
-// src/pages/AdminPanel.js
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 
 const AdminPanel = () => {
-  const [users, setUsers] = useState([]);
-  const [newUser, setNewUser] = useState({ name: '', email: '' });
+  const [newProgram, setNewProgram] = useState({
+    name: '',
+    description: '',
+    price: '',
+    cost: '',
+    location: '',
+    image: '',
+    moreInfoLink: '',
+  });
 
-  useEffect(() => {
-    const fetchUsers = async () => {
-      try {
-        const response = await axios.get('http://localhost:3001/api/admin/users', { withCredentials: true });
-        setUsers(response.data);
-      } catch (error) {
-        console.error('Hiba a felhasználók lekérésekor:', error);
-      }
-    };
-    fetchUsers();
-  }, []);
-
-  const handleAddUser = async () => {
+  const handleAddProgram = async () => {
     try {
-      await axios.post('http://localhost:3001/api/admin/add-user', newUser, { withCredentials: true });
-      setUsers([...users, newUser]);
-      setNewUser({ name: '', email: '' });
+      await axios.post('http://localhost:3001/api/admin/add-program', newProgram, { withCredentials: true });
+      setNewProgram({
+        name: '',
+        description: '',
+        price: '',
+        cost: '',
+        location: '',
+        image: '',
+        moreInfoLink: '',
+      });
     } catch (error) {
-      console.error('Hiba történt a felhasználó hozzáadásakor:', error);
-    }
-  };
-
-  const handleDeleteUser = async (id) => {
-    try {
-      await axios.delete(`http://localhost:3001/api/admin/delete-user/${id}`, { withCredentials: true });
-      setUsers(users.filter(user => user.id !== id));
-    } catch (error) {
-      console.error('Hiba történt a felhasználó törlésekor:', error);
+      console.error('Hiba történt a program hozzáadásakor:', error);
     }
   };
 
   return (
     <div>
-      <h2>Admin Felület</h2>
-      <h3>Felhasználók listája:</h3>
-      <ul>
-        {users.map(user => (
-          <li key={user.id}>
-            {user.name} ({user.email})
-            <button onClick={() => handleDeleteUser(user.id)}>Törlés</button>
-          </li>
-        ))}
-      </ul>
+      {/* ... más funkciók ... */}
 
-      <h3>Új felhasználó hozzáadása:</h3>
+      <h3>Új program hozzáadása:</h3>
       <form>
         <label>
           Név:
-          <input type="text" value={newUser.name} onChange={(e) => setNewUser({ ...newUser, name: e.target.value })} />
+          <input type="text" value={newProgram.name} onChange={(e) => setNewProgram({ ...newProgram, name: e.target.value })} />
         </label>
         <br />
         <label>
-          E-mail:
-          <input type="email" value={newUser.email} onChange={(e) => setNewUser({ ...newUser, email: e.target.value })} />
+          Leírás:
+          <textarea value={newProgram.description} onChange={(e) => setNewProgram({ ...newProgram, description: e.target.value })} />
         </label>
         <br />
-        <button type="button" onClick={handleAddUser}>Hozzáadás</button>
+        <label>
+          Ár:
+          <input type="number" value={newProgram.price} onChange={(e) => setNewProgram({ ...newProgram, price: e.target.value })} />
+        </label>
+        <br />
+        <label>
+          Közvetlen költség:
+          <input type="checkbox" checked={newProgram.cost === 'true'} onChange={(e) => setNewProgram({ ...newProgram, cost: e.target.checked ? 'true' : 'false' })} />
+        </label>
+        <br />
+        <label>
+          Helyszín:
+          <input type="text" value={newProgram.location} onChange={(e) => setNewProgram({ ...newProgram, location: e.target.value })} />
+        </label>
+        <br />
+        <label>
+          Kép URL:
+          <input type="text" value={newProgram.image} onChange={(e) => setNewProgram({ ...newProgram, image: e.target.value })} />
+        </label>
+        <br />
+        <label>
+          További információk link:
+          <input type="text" value={newProgram.moreInfoLink} onChange={(e) => setNewProgram({ ...newProgram, moreInfoLink: e.target.value })} />
+        </label>
+        <br />
+        <button type="button" onClick={handleAddProgram}>Hozzáadás</button>
       </form>
     </div>
   );

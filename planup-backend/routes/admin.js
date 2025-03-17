@@ -34,5 +34,15 @@ router.delete('/delete-user/:id', async (req, res) => {
     res.status(500).json({ error: 'Hiba történt a felhasználó törlésekor.' });
   }
 });
+router.post('/add-program', async (req, res) => {
+    const { name, description, price, cost, location, image, moreInfoLink } = req.body;
+    try {
+      const [result] = await db.execute('INSERT INTO Programs (Name, Description, Price, Cost, Location, Image, MoreInfoLink) VALUES (?, ?, ?, ?, ?, ?, ?)', [name, description, price, cost, location, image, moreInfoLink]);
+      res.json({ message: 'Program sikeresen hozzáadva.', programId: result.insertId });
+    } catch (error) {
+      console.error('Hiba történt a program hozzáadásakor:', error);
+      res.status(500).json({ error: 'Nem sikerült a program hozzáadása.' });
+    }
+  });
 
 module.exports = router;
