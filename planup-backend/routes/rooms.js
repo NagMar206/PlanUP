@@ -117,14 +117,15 @@ router.post('/leave', async (req, res) => {
         const roomId = roomResult[0].RoomID;
 
         // Ellenőrizzük, hogy a felhasználó valóban benne van-e a szobában
-        const [checkUser] = await db.execute('SELECT * FROM RoomParticipants WHERE RoomID = ? AND UserID = ?', [roomId, userId]);
-        if (checkUser.length === 0) {
-            return res.status(404).json({ error: 'A felhasználó nem volt a szobában, vagy már kilépett.' });
+        const [userCheck] = await db.execute('SELECT * FROM RoomParticipants WHERE RoomID = ? AND UserID = ?', [roomId, userId]);
+        if (userCheck.length === 0) {
+            req.session.roomCode = null;
+            req.session.userId = null;
+            return res.status(200).json({ message: 'A felhasználó már nem volt a szobában, kilépés sikeres.' });
         }
-
         // Töröljük a felhasználót a szobából
         await db.execute('DELETE FROM RoomParticipants WHERE RoomID = ? AND UserID = ?', [roomId, userId]);
-
+        console.log(`✅ Felhasználó (${userId}) sikeresen törölve a ${roomCode} szobából.`);
         console.log(`✅ Felhasználó (ID: ${userId}) sikeresen kilépett a szobából (Kód: ${roomCode})`);
 
         // Session törlése, hogy az oldal újratöltése után ne léptessen vissza
