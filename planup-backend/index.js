@@ -1,4 +1,6 @@
 const express = require('express');
+const http = require('http');
+const socketIo = require('socket.io');
 const mysql = require('mysql2/promise');
 const bcrypt = require('bcrypt');
 const db = require('./config/dbConfig'); 
@@ -12,6 +14,13 @@ const authRoutes = require('./routes/auth');
 SESSION_SECRET="125eef9d70e5e65deb3e877eca66f1d805463e8062390de14b33bdad0ba58b8a";
 
 const app = express();
+const server = http.createServer(app);
+const io = socketIo(server, {
+  cors: {
+      origin: "http://localhost:3000",
+      credentials: true,
+  }
+});
 
 // 🔹 1) MINDIG ELŐSZÖR a middleware-ek:
 app.use(express.json());
@@ -81,11 +90,11 @@ app.use('/programs', programRoutes);
 app.use('/images', express.static('public/images'));
 
 // 🔹 4) Végül a szerver indítása
-const PORT = 3001;
+/* const PORT = 3001;
 app.listen(PORT, () => {
   console.log(`✅ Szerver fut: http://localhost:${PORT}`);
 });
-
+*/
 
 
 
@@ -438,3 +447,29 @@ app.get('/api/auth/status', (req, res) => {
   });
 });
 
+io.on('connection', (socket) => {
+  console.log('🔌 Felhasználó csatlakozott:', socket.id);
+
+  socket.on('joinRoom', (roomCode) => {
+      socket.join(roomCode);
+      console.log(`👥 Felhasználó csatlakozott a szobához: ${roomCode}`);
+
+      // Frissítjük a szobában lévő felhasználók listáját mindenki számára
+      io.to(roomCode).emit('updateUsers', `Frissített lista a ${roomCode} szobában`);
+  });
+
+  socket.on('leaveRoom', (roomCode) => {
+      socket.leave(roomCode);
+      console.log(`🚪 Felhasználó kilépett a szobából: ${roomCode}`);
+
+      io.to(roomCode).emit('updateUsers', `Felhasználó kilépett a ${roomCode} szobából`);
+  });
+
+  socket.on('disconnect', () => {
+      console.log('❌ Felhasználó lecsatlakozott:', socket.id);
+  });
+});
+
+server.listen(3001, () => {
+  console.log('✅ Szerver fut a 3001-es porton');
+});
