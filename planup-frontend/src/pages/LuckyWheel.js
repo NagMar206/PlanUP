@@ -7,7 +7,7 @@ function LuckyWheel({ apiUrl, userId }) {
   const [programs, setPrograms] = useState([]);
   const [winner, setWinner] = useState(null);
   const [spinning, setSpinning] = useState(false);
-  const [prizeIndex, setPrizeIndex] = useState(null); // 🔥 Nyertes index állapotként
+  const [prizeIndex, setPrizeIndex] = useState(null);
 
   useEffect(() => {
     if (!apiUrl || typeof apiUrl !== "string") {
@@ -40,34 +40,37 @@ function LuckyWheel({ apiUrl, userId }) {
     if (programs.length === 0 || spinning) return;
 
     const randomIndex = Math.floor(Math.random() * programs.length);
-    setPrizeIndex(randomIndex); // 🔥 Előre beállítjuk a nyertes indexet
-    setWinner(null); // 🔥 Reseteljük a nyertest
+    setPrizeIndex(randomIndex);
+    setWinner(null);
     setSpinning(true);
 
     console.log(`🎰 Pörgetés... A nyertes indexe: ${randomIndex}`);
 
     setTimeout(() => {
       setWinner(programs[randomIndex].option);
+    }, 3000); // Nyertes kiírás késleltetése
+
+    setTimeout(() => {
       setSpinning(false);
       console.log(`🎉 Pörgetés vége! Nyertes: ${programs[randomIndex].option}`);
-    }, 3500); // 🕒 Időzítés az animációhoz
+    }, 3500); // Pörgetés befejezése
   };
 
   return (
     <div className="lucky-wheel-container">
-      <h2>🎡 Szerencsekerék</h2>
+      <h2 className="lucky-wheel-header">🎡 Szerencsekerék</h2>
       {programs.length > 0 ? (
         <>
+          {winner && <p className="winner-text">🎉 A nyertes program: {winner}!</p>}
           <Wheel 
             mustStartSpinning={spinning} 
-            prizeNumber={prizeIndex ?? 0} // 🔥 Nincs random újragenerálás!
+            prizeNumber={prizeIndex ?? 0}
             data={programs} 
             onStopSpinning={() => setSpinning(false)}
           />
           <button className="spin-button" onClick={handleSpin} disabled={spinning}>
             {spinning ? "Pörgetés..." : "Pörgesd meg!"}
           </button>
-          {winner && <p className="winner-text">🎉 A nyertes program: {winner}!</p>}
         </>
       ) : (
         <p>⚠️ Nincsenek kedvelt programok! Lájkold a programokat, hogy pörgethess! 😊</p>
