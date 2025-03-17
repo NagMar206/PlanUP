@@ -16,7 +16,11 @@ function Rooms({ apiUrl, userId }) {
 
     useEffect(() => {
         socket.on('updateUsers', (updatedUsers) => {
-            setRoomUsers(updatedUsers);
+            if (Array.isArray(updatedUsers)) {
+                setRoomUsers(updatedUsers);
+            } else {
+                setRoomUsers([]);
+            }
         });
     }, [socket]);
 
@@ -81,7 +85,7 @@ function Rooms({ apiUrl, userId }) {
     const fetchRoomUsers = async (roomCode) => {
         try {
             const response = await axios.get(`${apiUrl}/rooms/${roomCode}/users`);
-            const uniqueUsers = [...new Map(response.data.users.map(user => [user.UserID, user])).values()];
+            const uniqueUsers = Array.isArray(response.data.users) ? [...new Map(response.data.users.map(user => [user.UserID, user])).values()] : [];
             setRoomUsers(uniqueUsers);
             setRoomCreator(response.data.creator || 'Ismeretlen felhasználó');
             socket.emit('refreshUsers', roomCode);
@@ -112,9 +116,9 @@ function Rooms({ apiUrl, userId }) {
                     <p className="room-code-display">Szobakód: {roomCode}</p>
                     <p><strong>Szoba létrehozója:</strong> {roomCreator || 'Ismeretlen felhasználó'}</p>
                     <ul>
-                        {roomUsers.map(user => (
+                        {roomUsers.length > 0 ? roomUsers.map(user => (
                             <li key={user.UserID}>{user.Username}</li>
-                        ))}
+                        )) : <li>Nincs jelenleg másik felhasználó a szobában.</li>}
                     </ul>
                     <button onClick={() => navigate('/programswipe')} className="program-button">Válogass a programok közül</button>
                     <button onClick={leaveRoom} className="leave-room-button">Kilépés a szobából</button>
