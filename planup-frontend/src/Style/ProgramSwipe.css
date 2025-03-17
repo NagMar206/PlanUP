@@ -178,3 +178,11 @@
   transform: scale(1.08);
   box-shadow: 0 6px 12px rgba(0, 0, 0, 0.4);
 }
+
+.program-swipe-container {
+  padding-bottom: 80px; /* Alsó margó növelése, hogy ne érjen bele a footer */
+}
+
+.swipe-buttons {
+  margin-bottom: 50px; /* Extra távolság a footer és a gombok között */
+}

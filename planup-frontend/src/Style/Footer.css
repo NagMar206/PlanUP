@@ -1,12 +1,19 @@
+html, body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+}
+
 .wrapper {
   display: flex;
   flex-direction: column;
-  min-height: 100vh; /* Teljes magasság lefedése */
+  min-height: 100vh; /* Az oldal teljes magassága */
 }
 
 .page-content {
-  flex: 1; /* Kitölti a helyet a footer előtt */
-  padding-bottom: 70px; /* Helyet hagy a footernek */
+  flex: 1; /* Kitölti a rendelkezésre álló helyet */
 }
 
 .footer {
@@ -17,13 +24,12 @@
   font-size: 14px;
   width: 100%;
   box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.2);
-  position: relative; /* Footer az oldal legaljára kerül */
+  position: fixed; /* Fixálás az oldal aljára */
   bottom: 0;
   left: 0;
   min-height: 50px;
   z-index: 1000;
-  margin-top: auto; /* Footer mindig az oldal végére kerül */
-} 
+}
 
 .footer a {
   color: #00aaff;
@@ -35,13 +41,3 @@
   color: #66d9ff;
 }
 
-@keyframes slideUp {
-  from {
-      transform: translateY(100%);
-      opacity: 0;
-  }
-  to {
-      transform: translateY(0);
-      opacity: 1;
-  }
-}
