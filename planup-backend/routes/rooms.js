@@ -8,7 +8,6 @@ const { v4: uuidv4 } = require('uuid');
 // Szoba létrehozása - most már random kóddal
 router.post('/', async (req, res) => {
     const { userId } = req.body;
-
     if (!userId) {
         return res.status(400).json({ error: 'A felhasználói azonosító kötelező!' });
     }
@@ -16,6 +15,9 @@ router.post('/', async (req, res) => {
     try {
         const roomCode = uuidv4().substring(0, 8).toUpperCase();
         await db.execute('INSERT INTO Rooms (RoomCode, CreatedByUserID) VALUES (?, ?)', [roomCode, userId]);
+        req.session.roomCode = roomCode;
+        req.session.userId = userId;
+        req.session.createdAt = Date.now();
         res.status(200).json({ message: 'Szoba létrehozva!', roomCode });
     } catch (error) {
         console.error('🔥 Hiba a szoba létrehozásakor:', error.message);
@@ -37,26 +39,51 @@ router.post('/join', async (req, res) => {
         }
 
         const roomId = roomResult[0].RoomID;
+        const [existingUser] = await db.execute('SELECT * FROM RoomParticipants WHERE RoomID = ? AND UserID = ?', [roomId, userId]);
+
+        if (existingUser.length > 0) {
+            return res.status(200).json({ message: 'Már bent vagy ebben a szobában!', roomCode });
+        }
+
         await db.execute('INSERT INTO RoomParticipants (RoomID, UserID) VALUES (?, ?)', [roomId, userId]);
-        res.status(200).json({ message: 'Sikeresen csatlakoztál a szobához!' });
+        req.session.roomCode = roomCode;
+        req.session.userId = userId;
+        req.session.createdAt = Date.now();
+        res.status(200).json({ message: 'Sikeresen csatlakoztál a szobához!', roomCode });
     } catch (error) {
         console.error('Hiba a szobához csatlakozás során:', error.message);
         res.status(500).json({ error: 'Hiba történt a szobához csatlakozás során.', details: error.message });
     }
 });
 
-// Szobában lévő felhasználók listázása
+// Aktuális szoba lekérdezése a session alapján
+router.get('/current', (req, res) => {
+    if (req.session.roomCode && (Date.now() - req.session.createdAt) < 7200000) { // 2 óra
+        return res.status(200).json({ roomCode: req.session.roomCode });
+    }
+    res.status(404).json({ error: 'Nincs aktív szoba.' });
+});
+
+
+// Szobában lévő felhasználók és létrehozó lekérdezése
 router.get('/:roomCode/users', async (req, res) => {
     const { roomCode } = req.params;
 
     try {
-        const [roomResult] = await db.execute('SELECT RoomID FROM Rooms WHERE RoomCode = ?', [roomCode]);
+        // Lekérdezzük a szoba ID-t és a létrehozó UserID-ját
+        const [roomResult] = await db.execute('SELECT RoomID, CreatedByUserID FROM Rooms WHERE RoomCode = ?', [roomCode]);
         if (roomResult.length === 0) {
             return res.status(404).json({ error: 'A megadott szobakód nem létezik!' });
         }
 
         const roomId = roomResult[0].RoomID;
+        const creatorId = roomResult[0].CreatedByUserID;
 
+        // Lekérdezzük a létrehozó nevét
+        const [creatorResult] = await db.execute('SELECT Username FROM Users WHERE UserID = ?', [creatorId]);
+        const creatorName = creatorResult.length > 0 ? creatorResult[0].Username : 'Ismeretlen felhasználó';
+
+        // Lekérdezzük a szobában lévő felhasználókat (kivéve a létrehozót, ha külön kell)
         const [users] = await db.execute(`
             SELECT u.Username 
             FROM RoomParticipants rp
@@ -64,15 +91,39 @@ router.get('/:roomCode/users', async (req, res) => {
             WHERE rp.RoomID = ?
         `, [roomId]);
 
-        if (users.length === 0) {
-            return res.status(200).json([{ Username: 'Egyedül vagy a szobában' }]);
-        }
-
-        res.status(200).json(users);
+        res.status(200).json({ users, creator: creatorName });
     } catch (error) {
         console.error('🔥 Hiba a szobában lévő felhasználók lekérdezésekor:', error.message);
         res.status(500).json({ error: 'Hiba történt a szoba felhasználóinak lekérdezésekor.', details: error.message });
     }
 });
+
+// Szobából való kilépés
+router.post('/leave', async (req, res) => {
+    const { userId, roomCode } = req.body;
+
+    if (!userId || !roomCode) {
+        return res.status(400).json({ error: 'Felhasználói azonosító és szobakód szükséges!' });
+    }
+
+    try {
+        // Lekérdezzük a szoba ID-ját
+        const [roomResult] = await db.execute('SELECT RoomID FROM Rooms WHERE RoomCode = ?', [roomCode]);
+        if (roomResult.length === 0) {
+            return res.status(404).json({ error: 'A megadott szobakód nem létezik!' });
+        }
+
+        const roomId = roomResult[0].RoomID;
+
+        // Töröljük a felhasználót a szobából
+        await db.execute('DELETE FROM RoomParticipants WHERE RoomID = ? AND UserID = ?', [roomId, userId]);
+
+        res.status(200).json({ message: 'Kilépés sikeres!' });
+    } catch (error) {
+        console.error('🔥 Hiba a szobából való kilépés során:', error.message);
+        res.status(500).json({ error: 'Hiba történt a szobából való kilépés során.', details: error.message });
+    }
+});
+
 
 module.exports = router;
