@@ -11,6 +11,7 @@ const profileRoutes = require('./routes/profile');
 const cookieParser = require("cookie-parser");
 const session = require('express-session');
 const authRoutes = require('./routes/auth');
+const adminRoutes = require('./routes/admin')
 SESSION_SECRET="125eef9d70e5e65deb3e877eca66f1d805463e8062390de14b33bdad0ba58b8a";
 
 const app = express();
@@ -83,7 +84,7 @@ app.use("/api/auth", authRoutes);
 app.use('/rooms', roomRoutes);
 app.use('/profile', profileRoutes);
 app.use('/programs', programRoutes);
-
+app.use("/api/admin", adminRoutes);
 
 
 // 🔹 3) Statikus fájlok (ha kell)

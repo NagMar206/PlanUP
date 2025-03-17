@@ -9,6 +9,13 @@ function LikedPrograms({ apiUrl, userId }) {
     const [error, setError] = useState("");
     const navigate = useNavigate();
 
+    // Magyar időtartam leképezés
+    const magyarIdotartam = {
+        half_day: "Fél napos",
+        whole_day: "Egész napos",
+        weekend: "Egész hétvégés",
+    };
+
     const validUserId = userId || 1; // Ha nincs userId, állítsuk be 1-re
 
     useEffect(() => {
@@ -58,12 +65,17 @@ function LikedPrograms({ apiUrl, userId }) {
                         <h3>{program.Name}</h3>
                         <p>{program.Description}</p>
                         <p>📍 Helyszín: {program.Location}</p>
-                        <p>⏳ Időtartam: {program.Duration}</p>
+                        <p>⏳ Időtartam: {magyarIdotartam[
+                                         program.Duration === 1 ? "half_day" :
+                                         program.Duration === 2 ? "whole_day" :
+                                         program.Duration === 3 ? "weekend" :
+                                         program.Duration
+                                        ] || "Ismeretlen időtartam"}</p>
                         <p>💰 Költség: {program.Cost === "paid" ? "Fizetős" : "Ingyenes"}</p>
                         <p>👍 Kedvelések száma: <strong>{program.LikesCount}</strong></p>
                         <a href={program.MoreInfoLink} target="" rel="">
-                    <button>További információk</button>
-                </a>
+                            <button>További információk</button>
+                        </a>
                     </div>
                 ))}
             </div>

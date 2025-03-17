@@ -14,7 +14,6 @@ CREATE TABLE Programs (
     ProgramID INT AUTO_INCREMENT PRIMARY KEY,
     Name VARCHAR(255) NOT NULL,
     Description TEXT,
-    Price DECIMAL(10,2) NOT NULL DEFAULT 0.00,
     Cost BOOLEAN NOT NULL DEFAULT FALSE, -- Fizetős szűrő (TRUE/FALSE)
     Duration TINYINT NOT NULL DEFAULT 1, -- Időtartam (1 = Fél nap, 2 = Egész nap, 3 = Hétvége)
     CreatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -84,7 +83,7 @@ VALUES ('testuser', 'hashedpassword', 'test@example.com');
 
  
 -- Insert sample data into Programs table
-INSERT INTO Programs (Name, Description, Price, Cost, Location, Image, MoreInfoLink) 
+INSERT INTO Programs (Name, Description, Duration, Cost, Location, Image, MoreInfoLink) 
 VALUES 
 ('Duna hajókirándulás', 'Városnéző hajóút Budapest látványosságai mentén.', 1, TRUE, 'Vigadó téri hajóállomás', 'duna-hajokirandulas.jpg', 'https://www.cruise-holidays.hu/hu/tipusok/dunai-hajoutak'),
 ('Hop-On Hop-Off buszos városnézés', 'Fedezd fel Budapest nevezetességeit kényelmes busszal.', 2, TRUE, 'Clark Ádám tér', 'hop-on-hop-off-buszos-varosnezes.jpg', 'https://www.bigbustours.com/hu/budapest/budapesti-buszos-varosnezesek'),
