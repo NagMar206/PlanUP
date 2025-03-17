@@ -85,16 +85,13 @@ function Rooms({ apiUrl, userId }) {
         }
         
         try {
-            console.log(`🔹 Kilépési kérelem: userId=${userId}, roomCode=${roomCode}`);
             const response = await axios.post(`${apiUrl}/rooms/leave`, { userId, roomCode }, { withCredentials: true });
-    
-            setSuccessMessage('Kiléptél a szobából.');
+            setSuccessMessage(response.data.message);
             setRoomUsers([]);
             setRoomCreator('');
             setRoomCode('');
             setIsInRoom(false);
             socket.emit('leaveRoom', roomCode);
-    
             setTimeout(() => setSuccessMessage(''), 3000);
         } catch (err) {
             console.error('❌ Hiba a kilépés során:', err.response?.data || err.message);
