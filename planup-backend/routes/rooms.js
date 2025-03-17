@@ -103,6 +103,7 @@ router.post('/leave', async (req, res) => {
     const { userId, roomCode } = req.body;
 
     if (!userId || !roomCode) {
+        console.error('⚠️ Hiányzó adat a kilépéshez:', req.body);
         return res.status(400).json({ error: 'Felhasználói azonosító és szobakód szükséges!' });
     }
 
@@ -115,8 +116,20 @@ router.post('/leave', async (req, res) => {
 
         const roomId = roomResult[0].RoomID;
 
+        // Ellenőrizzük, hogy a felhasználó valóban benne van-e a szobában
+        const [checkUser] = await db.execute('SELECT * FROM RoomParticipants WHERE RoomID = ? AND UserID = ?', [roomId, userId]);
+        if (checkUser.length === 0) {
+            return res.status(404).json({ error: 'A felhasználó nem volt a szobában, vagy már kilépett.' });
+        }
+
         // Töröljük a felhasználót a szobából
         await db.execute('DELETE FROM RoomParticipants WHERE RoomID = ? AND UserID = ?', [roomId, userId]);
+
+        console.log(`✅ Felhasználó (ID: ${userId}) sikeresen kilépett a szobából (Kód: ${roomCode})`);
+
+        // Session törlése, hogy az oldal újratöltése után ne léptessen vissza
+        req.session.roomCode = null;
+        req.session.userId = null;
 
         res.status(200).json({ message: 'Kilépés sikeres!' });
     } catch (error) {
@@ -124,6 +137,7 @@ router.post('/leave', async (req, res) => {
         res.status(500).json({ error: 'Hiba történt a szobából való kilépés során.', details: error.message });
     }
 });
+
 
 
 module.exports = router;

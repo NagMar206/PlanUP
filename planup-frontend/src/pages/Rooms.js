@@ -39,7 +39,16 @@ function Rooms({ apiUrl, userId }) {
             }
         };
         checkExistingRoom();
-    }, []);
+
+        // Automatikus frissítés 10 másodpercenként
+        const interval = setInterval(() => {
+            if (isInRoom && roomCode) {
+                fetchRoomUsers(roomCode);
+            }
+        }, 10000);
+
+        return () => clearInterval(interval);
+    }, [isInRoom, roomCode]);
 
     const createRoom = async () => {
         try {
@@ -70,19 +79,29 @@ function Rooms({ apiUrl, userId }) {
     };
 
     const leaveRoom = async () => {
+        if (!userId || !roomCode) {
+            setError('Hiányzó felhasználói azonosító vagy szobakód.');
+            return;
+        }
+        
         try {
-            await axios.post(`${apiUrl}/rooms/leave`, { userId, roomCode }, { withCredentials: true });
+            console.log(`🔹 Kilépési kérelem: userId=${userId}, roomCode=${roomCode}`);
+            const response = await axios.post(`${apiUrl}/rooms/leave`, { userId, roomCode }, { withCredentials: true });
+    
             setSuccessMessage('Kiléptél a szobából.');
             setRoomUsers([]);
             setRoomCreator('');
             setRoomCode('');
             setIsInRoom(false);
             socket.emit('leaveRoom', roomCode);
+    
             setTimeout(() => setSuccessMessage(''), 3000);
         } catch (err) {
+            console.error('❌ Hiba a kilépés során:', err.response?.data || err.message);
             setError('Nem sikerült kilépni a szobából.');
         }
     };
+    
 
     const fetchRoomUsers = async (roomCode) => {
         try {
