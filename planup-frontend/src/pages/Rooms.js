@@ -12,7 +12,7 @@ function Rooms({ apiUrl, userId }) {
     const [successMessage, setSuccessMessage] = useState('');
     const [isInRoom, setIsInRoom] = useState(false);
     const navigate = useNavigate();
-    const socket = io(apiUrl);
+    const socket = io(apiUrl, { withCredentials: true });
 
     useEffect(() => {
         socket.on('updateUsers', (updatedUsers) => {
@@ -28,10 +28,12 @@ function Rooms({ apiUrl, userId }) {
         const checkExistingRoom = async () => {
             try {
                 const response = await axios.get(`${apiUrl}/rooms/current`, { withCredentials: true });
-                setRoomCode(response.data.roomCode);
-                fetchRoomUsers(response.data.roomCode);
-                setIsInRoom(true);
-                socket.emit('joinRoom', response.data.roomCode);
+                if (response.data.roomCode) {
+                    setRoomCode(response.data.roomCode);
+                    fetchRoomUsers(response.data.roomCode);
+                    setIsInRoom(true);
+                    socket.emit('joinRoom', response.data.roomCode);
+                }
             } catch (err) {
                 console.log('Nincs aktív szoba.');
             }
@@ -41,7 +43,7 @@ function Rooms({ apiUrl, userId }) {
 
     const createRoom = async () => {
         try {
-            const response = await axios.post(`${apiUrl}/rooms`, { userId });
+            const response = await axios.post(`${apiUrl}/rooms`, { userId }, { withCredentials: true });
             setRoomCode(response.data.roomCode);
             setSuccessMessage(`Szoba létrehozva! Kód: ${response.data.roomCode}`);
             fetchRoomUsers(response.data.roomCode);
@@ -56,7 +58,7 @@ function Rooms({ apiUrl, userId }) {
     const joinRoom = async () => {
         if (!roomCode) return;
         try {
-            const response = await axios.post(`${apiUrl}/rooms/join`, { roomCode, userId });
+            const response = await axios.post(`${apiUrl}/rooms/join`, { roomCode, userId }, { withCredentials: true });
             setSuccessMessage(response.data.message);
             setIsInRoom(true);
             socket.emit('joinRoom', roomCode);
@@ -69,7 +71,7 @@ function Rooms({ apiUrl, userId }) {
 
     const leaveRoom = async () => {
         try {
-            await axios.post(`${apiUrl}/rooms/leave`, { userId, roomCode });
+            await axios.post(`${apiUrl}/rooms/leave`, { userId, roomCode }, { withCredentials: true });
             setSuccessMessage('Kiléptél a szobából.');
             setRoomUsers([]);
             setRoomCreator('');
@@ -84,7 +86,7 @@ function Rooms({ apiUrl, userId }) {
 
     const fetchRoomUsers = async (roomCode) => {
         try {
-            const response = await axios.get(`${apiUrl}/rooms/${roomCode}/users`);
+            const response = await axios.get(`${apiUrl}/rooms/${roomCode}/users`, { withCredentials: true });
             const uniqueUsers = Array.isArray(response.data.users) ? [...new Map(response.data.users.map(user => [user.UserID, user])).values()] : [];
             setRoomUsers(uniqueUsers);
             setRoomCreator(response.data.creator || 'Ismeretlen felhasználó');
