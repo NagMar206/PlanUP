@@ -11,6 +11,7 @@ import Navbar from './pages/Navbar';
 import LikedPrograms from './pages/LikedPrograms'; // Új oldal importálása
 import Footer from './pages/Footer';
 import LuckyWheel from './pages/LuckyWheel';
+import AdminPanel from './pages/AdminPanel';
 import axios from 'axios';
 
 
@@ -47,6 +48,7 @@ function App() {
         <Route path="/swipe" element={<ProgramSwipe apiUrl={apiUrl} userId={user} />} />
         <Route path="/liked-programs" element={<LikedPrograms apiUrl={apiUrl} userId={user} />} />
         <Route path="/lucky-wheel" element={<LuckyWheel apiUrl={apiUrl} userId={user} />} />
+        <Route path="/admin" element={<AdminPanel />} />
       </Routes>
       <Footer />
     </Router>

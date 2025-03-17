@@ -8,8 +8,6 @@ function ProgramSwipe({ apiUrl, userId }) {
   const [program, setProgram] = useState(null);
   const [error, setError] = useState("");
   const [filters, setFilters] = useState({ duration: "", cost: "" });
-  const [likedPrograms, setLikedPrograms] = useState(new Set());
-  const [dislikedPrograms, setDislikedPrograms] = useState(new Set());
   const [processedPrograms, setProcessedPrograms] = useState(new Set()); // Lájk dislike közös lista
   const [filterActive, setFilterActive] = useState(false);
   const navigate = useNavigate(); // Navigáció kezelése
@@ -56,11 +54,11 @@ function ProgramSwipe({ apiUrl, userId }) {
       }
   
       fetchedProgram.Cost = fetchedProgram.Cost ? "paid" : "free";
-      fetchedProgram.Duration =
-        fetchedProgram.Duration === 1 ? "half_day" :
-        fetchedProgram.Duration === 2 ? "whole_day" :
-        fetchedProgram.Duration === 3 ? "weekend" : fetchedProgram.Duration;
-  
+      fetchedProgram.Duration = 
+    fetchedProgram.Duration === 1 ? "half_day" :
+    fetchedProgram.Duration === 2 ? "whole_day" :
+    fetchedProgram.Duration === 3 ? "weekend" : fetchedProgram.Duration;
+
       setProgram(fetchedProgram);
   
       console.log("🎯 Megjelenített program:", fetchedProgram.Name, `(ID: ${fetchedProgram.ProgramID})`);

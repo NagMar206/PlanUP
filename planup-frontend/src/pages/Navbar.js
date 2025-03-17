@@ -42,10 +42,11 @@ function Navbar({ user }) {
             </li>
             {/* Állapotjelző ikont használjuk a "Profil" gomb helyett */}
             <li className="status-icon">
-              <Link to="/profile">
-                <img src={user ? loginImage : logoutImage} alt="Profil" />
-              </Link>
+            <Link to={user ? "/profile" : "/login"}>
+            <img src={user ? loginImage : logoutImage} alt="Profil" />
+            </Link>
             </li>
+
           </>
         )}
       </ul>
