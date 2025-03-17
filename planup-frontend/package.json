@@ -10,6 +10,7 @@
     "react-icons": "^5.5.0",
     "react-router-dom": "^7.0.2",
     "react-spring": "^9.7.4",
+    "socket.io-client": "^4.8.1",
     "tachyons": "^4.12.0",
     "uuid": "^11.1.0"
   },
