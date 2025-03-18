@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
-import { FaUser, FaEdit, FaLock, FaSignOutAlt, FaSpinner } from "react-icons/fa";
+import { FaUser, FaEdit, FaLock, FaSignOutAlt, FaSpinner, FaShieldAlt } from "react-icons/fa";
 import "../Style/Profile.css";
 
 function Profile({ user, setUser }) {
@@ -11,6 +11,7 @@ function Profile({ user, setUser }) {
   const [newPassword, setNewPassword] = useState("");
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(true);
+  const [isAdmin, setIsAdmin] = useState(false);
   const navigate = useNavigate();
   const [showModal, setShowModal] = useState(false);
 
@@ -22,6 +23,7 @@ function Profile({ user, setUser }) {
       .get(`http://localhost:3001/profile/${user}`, { withCredentials: true })
       .then((response) => {
         setUsername(response.data.username);
+        setIsAdmin(response.data.isAdmin || false); // Feltételezve, hogy a szerver visszaadja az admin státuszt
         setLoading(false);
       })
       .catch((error) => {
@@ -93,6 +95,9 @@ function Profile({ user, setUser }) {
     }
   };
   
+  const navigateToAdmin = () => {
+    navigate("/admin");
+  };
 
   return (
     <div className="profile-container">
@@ -116,6 +121,11 @@ function Profile({ user, setUser }) {
           </div>
           <div className="profile-actions">
             <button className="logout-btn" onClick={handleLogout}><FaSignOutAlt /> Kijelentkezés</button>
+            {isAdmin && (
+              <button className="admin-btn" onClick={navigateToAdmin}>
+                <FaShieldAlt /> Admin felület
+              </button>
+            )}
           </div>
         </>
       ) : (
