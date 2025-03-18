@@ -139,54 +139,79 @@ router.post('/leave', async (req, res) => {
     }
 });
 
-// Frissíti egy felhasználó "készen állok" státuszát
-router.post('/ready', (req, res) => {
-    const { roomId, userId, isReady } = req.body;
+// Frissíti egy felhasználó "készen állok" státuszát és értesíti a többi klienst
+router.post('/rooms/ready', async (req, res) => {
+    const { roomCode, userId, isReady } = req.body;
 
-    const updateQuery = `
-        UPDATE RoomParticipants 
-        SET isReady = ? 
-        WHERE RoomID = ? AND UserID = ?`;
-    
-    db.query(updateQuery, [isReady, roomId, userId], (err) => {
-        if (err) {
-            return res.status(500).json({ message: "Hiba történt", error: err });
+    if (!roomCode || !userId) {
+        console.error("❌ Hiányzó adatok:", { roomCode, userId });
+        return res.status(400).json({ message: "Hiányzó adatok: roomCode vagy userId" });
+    }
+
+    try {
+        console.log("🔍 Szoba keresése:", roomCode);
+        const [roomResults] = await db.query(
+            `SELECT RoomID FROM Rooms WHERE RoomCode = ?`,
+            [roomCode]
+        );
+
+        if (roomResults.length === 0) {
+            console.error("❌ Szoba nem található:", roomCode);
+            return res.status(404).json({ message: "Szoba nem található" });
         }
 
-        // Ellenőrizzük, hogy mindenki készen áll-e
-        const checkQuery = `
-            SELECT COUNT(*) AS notReady 
-            FROM RoomParticipants 
-            WHERE RoomID = ? AND isReady = FALSE`;
+        const roomId = roomResults[0].RoomID;
+        console.log("✅ Szoba megtalálva! RoomID:", roomId);
 
-        db.query(checkQuery, [roomId], (err, results) => {
-            if (err) {
-                return res.status(500).json({ message: "Hiba történt", error: err });
-            }
+        console.log("🟢 Készenléti állapot frissítése:", { userId, isReady });
+        await db.query(
+            `UPDATE RoomParticipants SET isReady = ? WHERE RoomID = ? AND UserID = ?`,
+            [isReady, roomId, userId]
+        );
 
-            const allReady = results[0].notReady === 0;
-            res.json({ success: true, allReady });
-        });
-    });
+        console.log("🔄 Ellenőrzés: mindenki készen áll-e...");
+        const [readyResults] = await db.query(
+            `SELECT COUNT(*) AS notReady FROM RoomParticipants WHERE RoomID = ? AND isReady = FALSE`,
+            [roomId]
+        );
+
+        const allReady = readyResults[0].notReady === 0;
+        console.log("✅ Készenléti állapot frissítve:", { allReady });
+
+        req.app.get('io').to(roomCode).emit('updateReadyStatus', allReady);
+        res.json({ success: true, allReady });
+
+    } catch (error) {
+        console.error("❌ Hiba történt a készenléti állapot frissítésekor:", error);
+        res.status(500).json({ message: "Belső szerverhiba", error: error.message });
+    }
 });
 
+
 // Lekéri egy szoba állapotát
-router.get('/:roomId/status', (req, res) => {
-    const { roomId } = req.params;
+router.get('/:roomCode/readyStatus', async (req, res) => {
+    const { roomCode } = req.params;
 
-    const checkQuery = `
-        SELECT COUNT(*) AS notReady 
-        FROM RoomParticipants 
-        WHERE RoomID = ? AND isReady = FALSE`;
-
-    db.query(checkQuery, [roomId], (err, results) => {
-        if (err) {
-            return res.status(500).json({ message: "Hiba történt", error: err });
-        }
+    try {
+        const [results] = await db.query(`
+            SELECT COUNT(*) AS notReady 
+            FROM RoomParticipants 
+            WHERE RoomID = (SELECT RoomID FROM Rooms WHERE RoomCode = ?) 
+            AND isReady = FALSE`, 
+            [roomCode]
+        );
 
         const allReady = results[0].notReady === 0;
         res.json({ allReady });
-    });
+    } catch (error) {
+        res.status(500).json({ message: "Hiba történt", error });
+    }
+});
+
+//meg fogom ölni magam
+// ✅ EZ KELL HOGY BENNE LEGYEN!
+router.post('/ready', async (req, res) => {
+    res.json({ message: "✅ A /rooms/ready végpont működik!" });
 });
 
 module.exports = router;

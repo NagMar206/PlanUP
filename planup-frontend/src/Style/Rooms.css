@@ -189,3 +189,30 @@
     background-color: #6d28d9;
 }
 
+.ready-button {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 5px;
+  font-size: 14px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background 0.3s, transform 0.2s;
+  width: auto; /* Nem teljes szélességű */
+  min-width: 120px; /* Legalább 120px széles */
+}
+
+.ready-button.ready {
+  background-color: #28a745; /* Zöld */
+  color: white;
+}
+
+.ready-button.not-ready {
+  background-color: #dc3545; /* Piros */
+  color: white;
+}
+
+.ready-button:hover {
+  opacity: 0.85;
+  transform: scale(1.05);
+}
+

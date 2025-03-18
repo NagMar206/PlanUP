@@ -17,10 +17,10 @@ SESSION_SECRET="125eef9d70e5e65deb3e877eca66f1d805463e8062390de14b33bdad0ba58b8a
 const app = express();
 const server = http.createServer(app);
 const io = socketIo(server, {
-  cors: {
-      origin: "http://localhost:3000",
-      credentials: true,
-  }
+    cors: {
+        origin: "http://localhost:3000",
+        credentials: true,
+    }
 });
 
 // 🔹 1) MINDIG ELŐSZÖR a middleware-ek:
@@ -36,7 +36,11 @@ const corsOptions = {
     methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
     allowedHeaders: "Content-Type,Authorization"
 };
-app.use(cors(corsOptions));
+app.use(cors({
+  origin: 'http://localhost:3000',
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE']
+}));
 
 // Ha van más “header override”, mint pl. Access-Control-Allow, azt is tedd ide
 app.use((req, res, next) => {
@@ -471,6 +475,11 @@ io.on('connection', (socket) => {
   });
 });
 
+
+
+
 server.listen(3001, () => {
   console.log('✅ Szerver fut a 3001-es porton');
 });
+
+module.exports = { app, io };
