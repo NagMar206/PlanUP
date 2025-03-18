@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { io } from 'socket.io-client';
@@ -12,17 +12,28 @@ function Rooms({ apiUrl, userId }) {
     const [successMessage, setSuccessMessage] = useState('');
     const [isInRoom, setIsInRoom] = useState(false);
     const navigate = useNavigate();
-    const socket = io(apiUrl, { withCredentials: true });
+    const socketRef = useRef();
 
     useEffect(() => {
-        socket.on('updateUsers', (updatedUsers) => {
+        socketRef.current = io(apiUrl, { withCredentials: true });
+
+        socketRef.current.on('connect', () => {
+            console.log('✅ Sikeres Socket.io kapcsolat');
+        });
+
+        socketRef.current.on('updateUsers', (updatedUsers) => {
             if (Array.isArray(updatedUsers)) {
                 setRoomUsers(updatedUsers);
             } else {
                 setRoomUsers([]);
             }
         });
-    }, [socket]);
+
+        return () => {
+            socketRef.current.disconnect();
+            console.log('🚪 Socket.io kapcsolat lezárva.');
+        };
+    }, [apiUrl]);
 
     useEffect(() => {
         const checkExistingRoom = async () => {
@@ -32,23 +43,14 @@ function Rooms({ apiUrl, userId }) {
                     setRoomCode(response.data.roomCode);
                     fetchRoomUsers(response.data.roomCode);
                     setIsInRoom(true);
-                    socket.emit('joinRoom', response.data.roomCode);
+                    socketRef.current.emit('joinRoom', response.data.roomCode);
                 }
             } catch (err) {
                 console.log('Nincs aktív szoba.');
             }
         };
         checkExistingRoom();
-
-        // Automatikus frissítés 10 másodpercenként
-        const interval = setInterval(() => {
-            if (isInRoom && roomCode) {
-                fetchRoomUsers(roomCode);
-            }
-        }, 10000);
-
-        return () => clearInterval(interval);
-    }, [isInRoom, roomCode]);
+    }, [apiUrl]);
 
     const createRoom = async () => {
         try {
@@ -57,7 +59,7 @@ function Rooms({ apiUrl, userId }) {
             setSuccessMessage(`Szoba létrehozva! Kód: ${response.data.roomCode}`);
             fetchRoomUsers(response.data.roomCode);
             setIsInRoom(true);
-            socket.emit('joinRoom', response.data.roomCode);
+            socketRef.current.emit('joinRoom', response.data.roomCode);
             setTimeout(() => setSuccessMessage(''), 5000);
         } catch (err) {
             setError('Nem sikerült létrehozni a szobát.');
@@ -70,7 +72,7 @@ function Rooms({ apiUrl, userId }) {
             const response = await axios.post(`${apiUrl}/rooms/join`, { roomCode, userId }, { withCredentials: true });
             setSuccessMessage(response.data.message);
             setIsInRoom(true);
-            socket.emit('joinRoom', roomCode);
+            socketRef.current.emit('joinRoom', roomCode);
             fetchRoomUsers(roomCode);
             setTimeout(() => setSuccessMessage(''), 3000);
         } catch (err) {
@@ -79,26 +81,19 @@ function Rooms({ apiUrl, userId }) {
     };
 
     const leaveRoom = async () => {
-        if (!userId || !roomCode) {
-            setError('Hiányzó felhasználói azonosító vagy szobakód.');
-            return;
-        }
-        
         try {
-            const response = await axios.post(`${apiUrl}/rooms/leave`, { userId, roomCode }, { withCredentials: true });
-            setSuccessMessage(response.data.message);
+            await axios.post(`${apiUrl}/rooms/leave`, { userId, roomCode }, { withCredentials: true });
+            setSuccessMessage('Kiléptél a szobából.');
             setRoomUsers([]);
             setRoomCreator('');
             setRoomCode('');
             setIsInRoom(false);
-            socket.emit('leaveRoom', roomCode);
+            socketRef.current.emit('leaveRoom', roomCode);
             setTimeout(() => setSuccessMessage(''), 3000);
         } catch (err) {
-            console.error('❌ Hiba a kilépés során:', err.response?.data || err.message);
             setError('Nem sikerült kilépni a szobából.');
         }
     };
-    
 
     const fetchRoomUsers = async (roomCode) => {
         try {
@@ -106,7 +101,7 @@ function Rooms({ apiUrl, userId }) {
             const uniqueUsers = Array.isArray(response.data.users) ? [...new Map(response.data.users.map(user => [user.UserID, user])).values()] : [];
             setRoomUsers(uniqueUsers);
             setRoomCreator(response.data.creator || 'Ismeretlen felhasználó');
-            socket.emit('refreshUsers', roomCode);
+            socketRef.current.emit('refreshUsers', roomCode);
         } catch (err) {
             console.error('Nem sikerült lekérni a szobában lévő felhasználókat:', err.message);
         }
@@ -133,10 +128,11 @@ function Rooms({ apiUrl, userId }) {
                     <h3>Szobában lévő felhasználók:</h3>
                     <p className="room-code-display">Szobakód: {roomCode}</p>
                     <p><strong>Szoba létrehozója:</strong> {roomCreator || 'Ismeretlen felhasználó'}</p>
+                    <button className="refresh-button" onClick={() => fetchRoomUsers(roomCode)}>🔄 Lista frissítése</button>
                     <ul>
-                        {roomUsers.length > 0 ? roomUsers.map(user => (
-                            <li key={user.UserID}>{user.Username}</li>
-                        )) : <li>Nincs jelenleg másik felhasználó a szobában.</li>}
+                        {roomUsers.length > 0 ? roomUsers.map((user, index) => (
+                            <li key={user.UserID || index}>{user.Username}</li>
+                        )) : <li key="no-users">Nincs jelenleg másik felhasználó a szobában.</li>}
                     </ul>
                     <button onClick={() => navigate('/programswipe')} className="program-button">Válogass a programok közül</button>
                     <button onClick={leaveRoom} className="leave-room-button">Kilépés a szobából</button>
