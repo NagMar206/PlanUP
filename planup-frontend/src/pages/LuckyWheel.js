@@ -8,6 +8,11 @@ function LuckyWheel({ apiUrl, userId }) {
   const [winner, setWinner] = useState(null);
   const [spinning, setSpinning] = useState(false);
   const [prizeIndex, setPrizeIndex] = useState(null);
+  const [showText, setShowText] = useState(false);
+  const [hasSpun, setHasSpun] = useState(false);
+
+  // Define colors for the wheel segments
+  const backgroundColors = ["#FF5733", "#33FF57", "#3357FF", "#FF33A1", "#33FFF5", "#F5FF33"];
 
   useEffect(() => {
     if (!apiUrl || typeof apiUrl !== "string") {
@@ -37,23 +42,25 @@ function LuckyWheel({ apiUrl, userId }) {
   }, [apiUrl, userId]);
 
   const handleSpin = () => {
-    if (programs.length === 0 || spinning) return;
+    if (programs.length === 0 || spinning || hasSpun) return;
 
     const randomIndex = Math.floor(Math.random() * programs.length);
     setPrizeIndex(randomIndex);
     setWinner(null);
     setSpinning(true);
+    setShowText(false);
 
     console.log(`🎰 Pörgetés... A nyertes indexe: ${randomIndex}`);
 
     setTimeout(() => {
       setWinner(programs[randomIndex].option);
-    }, 3000); // Nyertes kiírás késleltetése
+    }, 3000); // Show winner after spin
 
     setTimeout(() => {
       setSpinning(false);
+      setHasSpun(true); // Disable further spins after the first spin
       console.log(`🎉 Pörgetés vége! Nyertes: ${programs[randomIndex].option}`);
-    }, 3500); // Pörgetés befejezése
+    }, 3500);
   };
 
   return (
@@ -62,14 +69,20 @@ function LuckyWheel({ apiUrl, userId }) {
       {programs.length > 0 ? (
         <>
           {winner && <p className="winner-text">🎉 A nyertes program: {winner}!</p>}
-          <Wheel 
-            mustStartSpinning={spinning} 
-            prizeNumber={prizeIndex ?? 0}
-            data={programs} 
-            onStopSpinning={() => setSpinning(false)}
-          />
-          <button className="spin-button" onClick={handleSpin} disabled={spinning}>
-            {spinning ? "Pörgetés..." : "Pörgesd meg!"}
+          <div className="wheel-overlay-container">
+            <Wheel 
+              mustStartSpinning={spinning} 
+              prizeNumber={prizeIndex ?? 0}
+              data={programs.map(program => ({ option: showText ? program.option : "" }))}
+              backgroundColors={backgroundColors}
+              onStopSpinning={() => {
+                setSpinning(false); // Ensure spinning stops
+              }}
+            />
+            <div className="wheel-overlay"></div>
+          </div>
+          <button className="spin-button" onClick={handleSpin} disabled={spinning || hasSpun}>
+            {spinning ? "Pörgetés..." : hasSpun ? "Már pörgettél!" : "Pörgesd meg!"}
           </button>
         </>
       ) : (
