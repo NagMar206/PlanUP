@@ -122,9 +122,18 @@ function Rooms({ apiUrl, userId }) {
                 isReady: newReadyState 
             }, { withCredentials: true });
     
-            if (!response.data || typeof response.data.allReady === "undefined") {
+            console.log("📢 API válasz:", response.data); // 🔹 LOGOLJUK A VÁLASZT
+    
+            if (!response.data || response.data.success !== true) {
                 throw new Error("Érvénytelen válasz az API-tól");
             }
+    
+            setAllReady(response.data.allReady); // 🔹 ÁLLÍTSA BE AZ ÁLLAPOTOT
+    
+            // 🔹 GYŐZŐDJ MEG RÓLA, HOGY A KOMPONENS FRISSÜL
+            setTimeout(() => {
+                console.log("✅ Frissített állapot:", response.data.allReady);
+            }, 500);
     
             socketRef.current.emit('updateReady', roomCode);
             console.log("✅ ReadyState sikeresen frissítve:", response.data);
@@ -133,7 +142,7 @@ function Rooms({ apiUrl, userId }) {
             console.error('❌ Nem sikerült frissíteni a készenléti állapotot:', err.message);
         }
     };
-
+    
     const checkReadyStatus = async (roomCode) => {
         try {
             const response = await axios.get(`${apiUrl}/rooms/${roomCode}/readyStatus`, { withCredentials: true });
@@ -176,7 +185,11 @@ function Rooms({ apiUrl, userId }) {
                     >
                         {isReady ? "✔ Készen állok" : "✖ Nem állok készen"}
                     </button>
-                    <button onClick={() => navigate('/programswipe')} disabled={!allReady} className="program-button">
+                    <button 
+                        onClick={() => navigate('/programswipe')} 
+                        disabled={!allReady} 
+                        className={`program-button ${allReady ? 'active' : 'disabled'}`} // 🔹 Osztály hozzáadása a CSS-hez
+                    >
                         Válogass a programok közül
                     </button>
                     <button onClick={leaveRoom} className="leave-room-button">Kilépés a szobából</button>
