@@ -115,7 +115,7 @@ const AdminPanel = () => {
           <input type="text" value={newProgram.location} onChange={(e) => setNewProgram({ ...newProgram, location: e.target.value })} />
         </label><br />
 
-        <label>Kép feltöltése:
+        <label>Kép feltöltése 500x500:
           <input type="file" onChange={handleImageChange} />
           {newProgram.image && (
             <div style={{ marginTop: "10px" }}>
