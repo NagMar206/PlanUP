@@ -144,41 +144,38 @@ router.post('/rooms/ready', async (req, res) => {
     const { roomCode, userId, isReady } = req.body;
 
     if (!roomCode || !userId) {
-        console.error("❌ Hiányzó adatok:", { roomCode, userId });
-        return res.status(400).json({ message: "Hiányzó adatok: roomCode vagy userId" });
+        return res.status(400).json({ success: false, message: "Hiányzó adatok: roomCode vagy userId" });
     }
 
     try {
-        console.log("🔍 Szoba keresése:", roomCode);
         const [roomResults] = await db.query(
             `SELECT RoomID FROM Rooms WHERE RoomCode = ?`,
             [roomCode]
         );
 
         if (roomResults.length === 0) {
-            console.error("❌ Szoba nem található:", roomCode);
             return res.status(404).json({ message: "Szoba nem található" });
         }
 
         const roomId = roomResults[0].RoomID;
-        console.log("✅ Szoba megtalálva! RoomID:", roomId);
 
-        console.log("🟢 Készenléti állapot frissítése:", { userId, isReady });
+        // ✅ Felhasználó készenléti állapotának frissítése
         await db.query(
             `UPDATE RoomParticipants SET isReady = ? WHERE RoomID = ? AND UserID = ?`,
             [isReady, roomId, userId]
         );
 
-        console.log("🔄 Ellenőrzés: mindenki készen áll-e...");
+        // ✅ Ellenőrzés, hogy mindenki készen áll-e
         const [readyResults] = await db.query(
             `SELECT COUNT(*) AS notReady FROM RoomParticipants WHERE RoomID = ? AND isReady = FALSE`,
             [roomId]
         );
 
         const allReady = readyResults[0].notReady === 0;
-        console.log("✅ Készenléti állapot frissítve:", { allReady });
 
+        // 🔥 Küldjünk frissítést a szobában lévő minden felhasználónak
         req.app.get('io').to(roomCode).emit('updateReadyStatus', allReady);
+
         res.json({ success: true, allReady });
 
     } catch (error) {
