@@ -165,6 +165,7 @@ function ProgramSwipe({ apiUrl, userId }) {
           <img src={`http://localhost:3001/images/${program.Image}`} alt={program.Name} className="program-image" />
           <h2>{program.Name}</h2>
           <p>{program.Description}</p>
+          <p>🌍 Város: {program.CityName}</p>
           <p>📍 Helyszín: {program.Location}</p>
           <p>⏳ Időtartam: {magyarIdotartam[program.Duration] || "Ismeretlen időtartam"}</p>
           <p>💰 Költség: {magyarKoltseg[program.Cost] || "Ismeretlen"}</p>

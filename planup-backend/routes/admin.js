@@ -61,7 +61,7 @@ router.post('/add-program', async (req, res) => {
 // Városok lekérése route
 router.get('/cities', async (req, res) => {
   try {
-    const [cities] = await db.execute('SELECT Name FROM City ORDER BY Name ASC');
+    const [cities] = await req.db.execute('SELECT Name FROM City ORDER BY Name ASC');
     res.json(cities.map(city => city.Name));
   } catch (error) {
     console.error('Hiba történt a városok lekérésekor:', error);

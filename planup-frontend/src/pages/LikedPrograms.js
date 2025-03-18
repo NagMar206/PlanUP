@@ -20,7 +20,7 @@ function LikedPrograms({ apiUrl, userId }) {
 
     useEffect(() => {
         console.log(`🟢 Aktív userID a frontendben: ${validUserId}`);
-
+        
         const fetchLikedPrograms = async () => {
             try {
                 const response = await axios.get(`${apiUrl}/programs/liked`, {
@@ -64,7 +64,9 @@ function LikedPrograms({ apiUrl, userId }) {
                         <img src={`http://localhost:3001/images/${program.Image}`} alt={program.Name} className="program-image" />
                         <h3>{program.Name}</h3>
                         <p>{program.Description}</p>
+                        <p>🌍 Város: {program.CityName}</p>
                         <p>📍 Helyszín: {program.Location}</p>
+
                         <p>⏳ Időtartam: {magyarIdotartam[
                                          program.Duration === 1 ? "half_day" :
                                          program.Duration === 2 ? "whole_day" :
