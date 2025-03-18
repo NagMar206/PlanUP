@@ -4,52 +4,60 @@ const router = express.Router();
 const db = require('../config/dbConfig');
 const app = express();
 
-// Middleware az admin jogosultság ellenőrzésére
-const verifyAdmin = async (req, res, next) => {
-  if (!req.user?.userId) {
-      return res.status(401).json({ error: "Nincs jogosultság! (UserID hiányzik)" });
+router.get('/users', async (req, res) => {
+  try {
+    const [users] = await db.execute('SELECT * FROM Users');
+    res.json(users);
+  } catch (error) {
+    console.error('Hiba a felhasználók lekérésekor:', error);
+    res.status(500).json({ error: 'Hiba történt a felhasználók lekérésekor.' });
   }
-
-  if (!req.user.isAdmin) {
-      return res.status(403).json({ error: "Hozzáférés megtagadva! Nem vagy admin." });
-  }
-
-  next();
-};
-
-// Csak adminok férhetnek hozzá
-router.get('/users', verifyAdmin, async (req, res) => {
-try {
-  const [users] = await db.execute('SELECT * FROM Users');
-  res.json(users);
-} catch (error) {
-  console.error('❌ Hiba a felhasználók lekérésekor:', error);
-  res.status(500).json({ error: 'Szerverhiba történt a felhasználók lekérésekor.' });
-}
 });
 
-// Admin jogosultsággal program hozzáadása
-router.post('/add-program', verifyAdmin, async (req, res) => {
-const { name, description, duration, cost, location, image, moreInfoLink, city } = req.body;
-
-try {
-  const [cityResult] = await db.execute('SELECT CityID FROM City WHERE Name = ?', [city]);
-  if (cityResult.length === 0) {
-    return res.status(400).json({ error: 'Nincs ilyen város.' });
+router.post('/add-user', async (req, res) => {
+  const { name, email } = req.body;
+  try {
+    const [result] = await db.execute('INSERT INTO Users (Name, Email) VALUES (?, ?)', [name, email]);
+    res.json({ message: 'Felhasználó sikeresen hozzáadva.', userId: result.insertId });
+  } catch (error) {
+    console.error('Hiba történt a felhasználó hozzáadásakor:', error);
+    res.status(500).json({ error: 'Hiba történt a felhasználó hozzáadásakor.' });
   }
-
-  await db.execute(
-    'INSERT INTO Programs (Name, Description, Duration, Cost, Location, Image, MoreInfoLink, CityID) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
-    [name, description, duration, cost ? true : false, location, image, moreInfoLink, cityResult[0].CityID]
-  );
-
-  res.json({ message: '✅ Program sikeresen hozzáadva!' });
-} catch (error) {
-  console.error('❌ Hiba történt:', error);
-  res.status(500).json({ error: 'Szerverhiba történt a program hozzáadásakor.' });
-}
 });
 
+router.delete('/delete-user/:id', async (req, res) => {
+  const id = req.params.id;
+  try {
+    await db.execute('DELETE FROM Users WHERE id = ?', [id]);
+    res.json({ message: 'Felhasználó sikeresen törölve.' });
+  } catch (error) {
+    console.error('Hiba történt a felhasználó törlésekor:', error);
+    res.status(500).json({ error: 'Hiba történt a felhasználó törlésekor.' });
+  }
+});
+
+
+router.post('/add-program', async (req, res) => {
+  const { name, description, duration, cost, location, image, moreInfoLink, city } = req.body;
+
+  try {
+      const [cityResult] = await req.db.execute('SELECT CityID FROM City WHERE Name = ?', [city]);
+      if (cityResult.length === 0) {
+          return res.status(400).json({ error: 'Nincs ilyen város.' });
+      }
+      const cityID = cityResult[0].CityID;
+
+      await req.db.execute(
+          'INSERT INTO Programs (Name, Description, Duration, Cost, Location, Image, MoreInfoLink, CityID) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+          [name, description, duration, cost ? true : false, location, image, moreInfoLink, cityID]
+      );
+
+      res.json({ message: 'Program sikeresen hozzáadva!' });
+  } catch (error) {
+      console.error('Hiba történt:', error);
+      res.status(500).json({ error: 'Hiba történt a program hozzáadásakor.' });
+  }
+});
 // Városok lekérése route
 router.get('/cities', async (req, res) => {
   try {
