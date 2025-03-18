@@ -25,6 +25,9 @@ const io = socketIo(server, {
     }
 });
 
+// 🔥 Ezzel a sorral elérhetővé tesszük a `req.app.get('io')` hívást!
+app.set('io', io);
+
 // 🔹 1) MINDIG ELŐSZÖR a middleware-ek:
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));

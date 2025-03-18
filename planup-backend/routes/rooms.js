@@ -203,8 +203,14 @@ router.post('/rooms/ready', async (req, res) => {
         const allReady = readyResults[0].notReady === 0;
 
         // 🔥 Küldjünk frissítést a szobában lévő minden felhasználónak
-        req.app.get('io').to(roomCode).emit('updateReadyStatus', allReady);
+        const io = req.app.get('io');
 
+        if (!io) {
+            console.error("❌ [HIBA] A WebSocket kapcsolat nem lett beállítva az alkalmazásban!");
+            return res.status(500).json({ success: false, message: "WebSocket kapcsolat nem elérhető" });
+        }
+        
+        io.to(roomCode).emit('updateReadyStatus', allReady);
         res.json({ success: true, allReady });
 
     } catch (error) {
@@ -273,8 +279,14 @@ router.post('/ready', async (req, res) => {
         console.log(`🔄 [DEBUG] Mindenki készen áll? ${allReady}`);
 
         // Küldjünk frissítést a frontendnek WebSocket-en
-        req.app.get('io').to(roomCode).emit('updateReadyStatus', allReady);
+        const io = req.app.get('io');
 
+        if (!io) {
+            console.error("❌ [HIBA] A WebSocket kapcsolat nem lett beállítva az alkalmazásban!");
+            return res.status(500).json({ success: false, message: "WebSocket kapcsolat nem elérhető" });
+        }
+        
+        io.to(roomCode).emit('updateReadyStatus', allReady);
         return res.json({ success: true, allReady });
 
     } catch (error) {
