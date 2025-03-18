@@ -11,16 +11,24 @@ CREATE TABLE Users (
 -- Programs table: stores program details
 drop table if exists Programs;
 CREATE TABLE Programs (
-    ProgramID INT AUTO_INCREMENT PRIMARY KEY,
-    Name VARCHAR(255) NOT NULL,
-    Description TEXT,
-    Cost BOOLEAN NOT NULL DEFAULT FALSE, -- Fizetős szűrő (TRUE/FALSE)
-    Duration TINYINT NOT NULL DEFAULT 1, -- Időtartam (1 = Fél nap, 2 = Egész nap, 3 = Hétvége)
-    CreatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    Location VARCHAR(50) NOT NULL,
-    Image VARCHAR(50) NOT NULL,
-    MoreInfoLink VARCHAR(255) -- Új oszlop a "további információk" linkjének tárolására
+  ProgramID INT AUTO_INCREMENT PRIMARY KEY,
+  Name VARCHAR(255) NOT NULL,
+  Description TEXT,
+  Cost BOOLEAN NOT NULL DEFAULT FALSE,
+  Duration VARCHAR(50) NOT NULL,
+  CreatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  Location VARCHAR(50) NOT NULL,
+  Image VARCHAR(50) NOT NULL,
+  MoreInfoLink VARCHAR(255),
+  CityID INT NOT NULL,
+  FOREIGN KEY (CityID) REFERENCES City(CityID)
 );
+
+CREATE TABLE City (
+  CityID INT AUTO_INCREMENT PRIMARY KEY,
+  Name VARCHAR(255) NOT NULL
+);
+
 
 -- UserPreferences table: stores user preferences for filtering programs
 drop table if exists UserPreferences;
