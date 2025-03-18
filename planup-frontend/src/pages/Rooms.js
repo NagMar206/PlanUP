@@ -24,11 +24,7 @@ function Rooms({ apiUrl, userId }) {
         });
 
         socketRef.current.on('updateUsers', (updatedUsers) => {
-            if (Array.isArray(updatedUsers)) {
-                setRoomUsers(updatedUsers);
-            } else {
-                setRoomUsers([]);
-            }
+            setRoomUsers(Array.isArray(updatedUsers) ? updatedUsers : []);
         });
 
         socketRef.current.on('updateReadyStatus', (status) => {
@@ -118,13 +114,23 @@ function Rooms({ apiUrl, userId }) {
     const toggleReadyStatus = async () => {
         const newReadyState = !isReady;
         setIsReady(newReadyState);
-
+    
         try {
-            await axios.post(`${apiUrl}/rooms/ready`, { roomCode, userId, isReady: newReadyState }, { withCredentials: true });
-            checkReadyStatus(roomCode);
+            const response = await axios.post(`${apiUrl}/rooms/ready`, {
+                roomCode, 
+                userId, 
+                isReady: newReadyState 
+            }, { withCredentials: true });
+    
+            if (!response.data || typeof response.data.allReady === "undefined") {
+                throw new Error("Érvénytelen válasz az API-tól");
+            }
+    
             socketRef.current.emit('updateReady', roomCode);
+            console.log("✅ ReadyState sikeresen frissítve:", response.data);
+    
         } catch (err) {
-            console.error('Nem sikerült frissíteni a készenléti állapotot.');
+            console.error('❌ Nem sikerült frissíteni a készenléti állapotot:', err.message);
         }
     };
 
@@ -164,7 +170,10 @@ function Rooms({ apiUrl, userId }) {
                             <li key={user.UserID || index}>{user.Username}</li>
                         )) : <li key="no-users">Nincs jelenleg másik felhasználó a szobában.</li>}
                     </ul>
-                    <button onClick={toggleReadyStatus} className={`ready-button ${isReady ? 'ready' : 'not-ready'}`}>
+                    <button 
+                        onClick={toggleReadyStatus} 
+                        className={`ready-button ${isReady ? 'ready' : 'not-ready'}`}
+                    >
                         {isReady ? "✔ Készen állok" : "✖ Nem állok készen"}
                     </button>
                     <button onClick={() => navigate('/programswipe')} disabled={!allReady} className="program-button">
