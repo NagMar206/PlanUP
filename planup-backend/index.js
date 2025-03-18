@@ -12,15 +12,17 @@ const cookieParser = require("cookie-parser");
 const session = require('express-session');
 const authRoutes = require('./routes/auth');
 const adminRoutes = require('./routes/admin')
+const multer = require('multer');
+const path = require('path');
 SESSION_SECRET="125eef9d70e5e65deb3e877eca66f1d805463e8062390de14b33bdad0ba58b8a";
 
 const app = express();
 const server = http.createServer(app);
 const io = socketIo(server, {
-  cors: {
-      origin: "http://localhost:3000",
-      credentials: true,
-  }
+    cors: {
+        origin: "http://localhost:3000",
+        credentials: true,
+    }
 });
 
 // 🔹 1) MINDIG ELŐSZÖR a middleware-ek:
@@ -36,7 +38,11 @@ const corsOptions = {
     methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
     allowedHeaders: "Content-Type,Authorization"
 };
-app.use(cors(corsOptions));
+app.use(cors({
+  origin: 'http://localhost:3000',
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE']
+}));
 
 // Ha van más “header override”, mint pl. Access-Control-Allow, azt is tedd ide
 app.use((req, res, next) => {
@@ -61,6 +67,31 @@ app.use(session({
   }
 }));
 
+// Statikus fájlok kiszolgálása (képek elérhetősége)
+app.use('/images', express.static(path.join(__dirname, 'public/images')));
+
+// Multer konfiguráció (képfeltöltés)
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, './public/images'); // ide menti a képeket
+  },
+  filename: function (req, file, cb) {
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+    cb(null, uniqueSuffix + path.extname(file.originalname)); // egyedi fájlnév
+  }
+});
+const upload = multer({ storage: storage });
+
+// Képfeltöltés route
+app.post('/api/upload', upload.single('image'), (req, res) => {
+  if (!req.file) {
+    return res.status(400).json({ error: 'Nincs feltöltött kép!' });
+  }
+  res.status(200).json({
+    message: 'Kép sikeresen feltöltve!',
+    filePath: `/images/${req.file.filename}` // ezt kapja vissza a frontend
+  });
+});
 
 // 🔹 2) Ezután jöjjenek a ROUTE-ok
 // Adatbázis kapcsolat betöltése minden kéréshez
@@ -471,6 +502,11 @@ io.on('connection', (socket) => {
   });
 });
 
+
+
+
 server.listen(3001, () => {
   console.log('✅ Szerver fut a 3001-es porton');
 });
+
+module.exports = { app, io };
