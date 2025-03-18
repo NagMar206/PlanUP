@@ -19,25 +19,26 @@ function Rooms({ apiUrl, userId }) {
 
     useEffect(() => {
         socketRef.current = io(apiUrl, { withCredentials: true });
-
+    
         socketRef.current.on('connect', () => {
             console.log('✅ Sikeres Socket.io kapcsolat');
         });
-
+    
         socketRef.current.on('updateUsers', (updatedUsers) => {
             setRoomUsers(Array.isArray(updatedUsers) ? updatedUsers : []);
         });
-
+    
         socketRef.current.on('updateReadyStatus', (status) => {
             setAllReady(status);
+            console.log('🔄 Mindenki készen áll:', status);
         });
-
+    
         return () => {
             socketRef.current.disconnect();
             console.log('🚪 Socket.io kapcsolat lezárva.');
         };
     }, [apiUrl]);
-
+    
     useEffect(() => {
         const checkExistingRoom = async () => {
             try {
@@ -115,28 +116,28 @@ function Rooms({ apiUrl, userId }) {
     const toggleReadyStatus = async () => {
         const newReadyState = !isReady;
         setIsReady(newReadyState);
-
+    
         try {
             const response = await axios.post(`${apiUrl}/rooms/ready`, {
                 roomCode, 
                 userId, 
                 isReady: newReadyState 
             }, { withCredentials: true });
-
+    
             console.log("📢 API válasz:", response.data);
-
+    
             if (!response.data || response.data.success !== true) {
                 throw new Error("Érvénytelen válasz az API-tól");
             }
-
+    
+            // 🔥 Az allReady státuszt frissítjük
             setAllReady(response.data.allReady);
-            socketRef.current.emit('updateReady', roomCode);
-            console.log("✅ ReadyState sikeresen frissítve:", response.data);
-
+            
         } catch (err) {
             console.error('❌ Nem sikerült frissíteni a készenléti állapotot:', err.message);
         }
     };
+    
     
     const checkReadyStatus = async (roomCode) => {
         try {
