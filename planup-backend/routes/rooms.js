@@ -14,7 +14,15 @@ router.post('/', async (req, res) => {
     
     try {
         const roomCode = uuidv4().substring(0, 8).toUpperCase();
+        // Szoba létrehozása
         await db.execute('INSERT INTO Rooms (RoomCode, CreatedByUserID) VALUES (?, ?)', [roomCode, userId]);
+        // 🔥 A létrehozót azonnal hozzáadjuk a résztvevők közé!
+        const [roomData] = await db.query('SELECT RoomID FROM Rooms WHERE RoomCode = ?', [roomCode]);
+        const roomId = roomData[0].RoomID;
+
+        await db.execute('INSERT INTO RoomParticipants (RoomID, UserID, isReady) VALUES (?, ?, FALSE)', [roomId, userId]);
+
+        console.log(`✅ [DEBUG] A szoba létrehozója (UserID: ${userId}) hozzá lett adva a szobába!`);
         req.session.roomCode = roomCode;
         req.session.userId = userId;
         req.session.createdAt = Date.now();
@@ -139,54 +147,6 @@ router.post('/leave', async (req, res) => {
     }
 });
 
-// Frissíti egy felhasználó "készen állok" státuszát és értesíti a többi klienst
-router.post('/rooms/ready', async (req, res) => {
-    const { roomCode, userId, isReady } = req.body;
-
-    if (!roomCode || !userId) {
-        console.error("❌ Hiányzó adatok:", { roomCode, userId });
-        return res.status(400).json({ message: "Hiányzó adatok: roomCode vagy userId" });
-    }
-
-    try {
-        console.log("🔍 Szoba keresése:", roomCode);
-        const [roomResults] = await db.query(
-            `SELECT RoomID FROM Rooms WHERE RoomCode = ?`,
-            [roomCode]
-        );
-
-        if (roomResults.length === 0) {
-            console.error("❌ Szoba nem található:", roomCode);
-            return res.status(404).json({ message: "Szoba nem található" });
-        }
-
-        const roomId = roomResults[0].RoomID;
-        console.log("✅ Szoba megtalálva! RoomID:", roomId);
-
-        console.log("🟢 Készenléti állapot frissítése:", { userId, isReady });
-        await db.query(
-            `UPDATE RoomParticipants SET isReady = ? WHERE RoomID = ? AND UserID = ?`,
-            [isReady, roomId, userId]
-        );
-
-        console.log("🔄 Ellenőrzés: mindenki készen áll-e...");
-        const [readyResults] = await db.query(
-            `SELECT COUNT(*) AS notReady FROM RoomParticipants WHERE RoomID = ? AND isReady = FALSE`,
-            [roomId]
-        );
-
-        const allReady = readyResults[0].notReady === 0;
-        console.log("✅ Készenléti állapot frissítve:", { allReady });
-
-        req.app.get('io').to(roomCode).emit('updateReadyStatus', allReady);
-        res.json({ success: true, allReady });
-
-    } catch (error) {
-        console.error("❌ Hiba történt a készenléti állapot frissítésekor:", error);
-        res.status(500).json({ message: "Belső szerverhiba", error: error.message });
-    }
-});
-
 
 // Lekéri egy szoba állapotát
 router.get('/:roomCode/readyStatus', async (req, res) => {
@@ -208,47 +168,132 @@ router.get('/:roomCode/readyStatus', async (req, res) => {
     }
 });
 
-//meg fogom ölni magam
-router.post('/ready', async (req, res) => {
+// Frissíti egy felhasználó "készen állok" státuszát és értesíti a többi klienst
+router.post('/rooms/ready', async (req, res) => {
     const { roomCode, userId, isReady } = req.body;
-  
+
     if (!roomCode || !userId) {
         return res.status(400).json({ success: false, message: "Hiányzó adatok: roomCode vagy userId" });
     }
-  
+
     try {
         const [roomResults] = await db.query(
             `SELECT RoomID FROM Rooms WHERE RoomCode = ?`,
             [roomCode]
         );
-  
+
         if (roomResults.length === 0) {
             return res.status(404).json({ message: "Szoba nem található" });
         }
-  
+
         const roomId = roomResults[0].RoomID;
-  
-        // ✅ Javított változat:
+
+        // ✅ Felhasználó készenléti állapotának frissítése
         await db.query(
             `UPDATE RoomParticipants SET isReady = ? WHERE RoomID = ? AND UserID = ?`,
-            [isReady, roomResults[0].RoomID, userId] // helyesen hivatkozva
+            [isReady, roomId, userId]
         );
-  
+
+        // ✅ Ellenőrzés, hogy mindenki készen áll-e
         const [readyResults] = await db.query(
             `SELECT COUNT(*) AS notReady FROM RoomParticipants WHERE RoomID = ? AND isReady = FALSE`,
-            [roomResults[0].RoomID]
+            [roomId]
         );
-  
+
         const allReady = readyResults[0].notReady === 0;
-  
-        // Socket.IO frissítés elküldése minden kliensnek
+
+        // 🔥 Küldjünk frissítést a szobában lévő minden felhasználónak
+        const io = req.app.get('io');
+
+        if (!io) {
+            console.error("❌ [HIBA] A WebSocket kapcsolat nem lett beállítva az alkalmazásban!");
+            return res.status(500).json({ success: false, message: "WebSocket kapcsolat nem elérhető" });
+        }
+        
         io.to(roomCode).emit('updateReadyStatus', allReady);
-  
         res.json({ success: true, allReady });
+
     } catch (error) {
-        res.status(500).json({ success: false, message: "Belső szerverhiba", error: error.message });
+        console.error("❌ Hiba történt a készenléti állapot frissítésekor:", error);
+        res.status(500).json({ message: "Belső szerverhiba", error: error.message });
     }
-  });
-  
+});
+
+
+//meg fogom ölni magam
+router.post('/ready', async (req, res) => {
+    const { roomCode, userId, isReady } = req.body;
+
+    console.log("🔍 [DEBUG] Érkezett kérés a /ready végpontra", req.body);
+
+    if (!roomCode || !userId) {
+        console.error("❌ [HIBA] Hiányzó adatok: roomCode vagy userId", req.body);
+        return res.status(400).json({ success: false, message: "Hiányzó adatok: roomCode vagy userId" });
+    }
+
+    try {
+        console.log(`📌 [DEBUG] Készenléti állapot frissítése: roomCode=${roomCode}, userId=${userId}, isReady=${isReady}`);
+
+        // Szoba keresése
+        const [roomResults] = await db.query(
+            `SELECT RoomID FROM Rooms WHERE RoomCode = ?`,
+            [roomCode]
+        );
+
+        if (roomResults.length === 0) {
+            console.error("❌ [HIBA] Szoba nem található!", roomCode);
+            return res.status(404).json({ success: false, message: "Szoba nem található" });
+        }
+
+        const roomId = roomResults[0].RoomID;
+        console.log(`✅ [DEBUG] Szoba ID megtalálva: ${roomId}`);
+
+        // Felhasználó keresése a szobában
+        const [userCheck] = await db.query(
+            `SELECT * FROM RoomParticipants WHERE RoomID = ? AND UserID = ?`,
+            [roomId, userId]
+        );
+
+        if (userCheck.length === 0) {
+            console.error("❌ [HIBA] A felhasználó nincs a szobában!", userId);
+            return res.status(404).json({ success: false, message: "A felhasználó nem található ebben a szobában." });
+        }
+
+        console.log(`✅ [DEBUG] Felhasználó megtalálva a szobában: ${userId}`);
+
+        // Készenléti állapot frissítése az adatbázisban
+        const [updateResult] = await db.query(
+            `UPDATE RoomParticipants SET isReady = ? WHERE RoomID = ? AND UserID = ?`,
+            [isReady, roomId, userId]
+        );
+
+        console.log(`🔄 [DEBUG] DB Update Result:`, updateResult);
+
+        // Ellenőrizzük, hogy mindenki készen áll-e
+        const [readyResults] = await db.query(
+            `SELECT COUNT(*) AS notReady FROM RoomParticipants WHERE RoomID = ? AND isReady = FALSE`,
+            [roomId]
+        );
+
+        const allReady = readyResults[0].notReady === 0;
+        console.log(`🔄 [DEBUG] Mindenki készen áll? ${allReady}`);
+
+        // Küldjünk frissítést a frontendnek WebSocket-en
+        const io = req.app.get('io');
+
+        if (!io) {
+            console.error("❌ [HIBA] A WebSocket kapcsolat nem lett beállítva az alkalmazásban!");
+            return res.status(500).json({ success: false, message: "WebSocket kapcsolat nem elérhető" });
+        }
+        
+        io.to(roomCode).emit('updateReadyStatus', allReady);
+        return res.json({ success: true, allReady });
+
+    } catch (error) {
+        console.error("🔥 [ERROR] Belső szerverhiba a készenléti állapot frissítésekor:", error);
+        return res.status(500).json({ success: false, message: "Belső szerverhiba", error: error.message });
+    }
+});
+
 
 module.exports = router;

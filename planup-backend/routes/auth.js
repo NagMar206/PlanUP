@@ -24,6 +24,43 @@ const authenticateToken = (req, res, next) => {
         next();
     });
 };
+router.post("/login", async (req, res) => {
+    const { email, password } = req.body;
+
+    try {
+        const [rows] = await db.execute("SELECT UserID, PasswordHash, IsAdmin FROM Users WHERE Email = ?", [email]);
+
+        if (rows.length === 0) {
+            return res.status(404).json({ error: "A felhasználó nem található." });
+        }
+
+        const user = rows[0];
+        const isPasswordValid = await bcrypt.compare(password, user.PasswordHash);
+
+        if (!isPasswordValid) {
+            return res.status(401).json({ error: "Hibás jelszó!" });
+        }
+
+        // 🔹 JWT generálás admin státusszal
+        const token = jwt.sign(
+            { userId: user.UserID, isAdmin: user.IsAdmin }, 
+            "jwt_secret_key",
+            { expiresIn: "1h" }
+        );
+
+        res.cookie("token", token, {
+            httpOnly: true,
+            secure: false,
+            maxAge: 3600000,
+            sameSite: "Lax"
+        });
+
+        res.json({ message: "✅ Sikeres bejelentkezés!", userId: user.UserID, isAdmin: user.IsAdmin });
+    } catch (error) {
+        console.error("❌ Hiba a bejelentkezés során:", error);
+        res.status(500).json({ error: "Szerverhiba történt." });
+    }
+});
 
 
 

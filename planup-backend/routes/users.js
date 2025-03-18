@@ -10,7 +10,7 @@ router.post('/login', async (req, res) => {
     const { email, password } = req.body;
 
     try {
-        const [rows] = await db.query('SELECT UserID, Email, PasswordHash FROM Users WHERE Email = ?', [email]);
+        const [rows] = await db.query('SELECT UserID, Email, PasswordHash, IsAdmin FROM Users WHERE Email = ?', [email]);
 
         if (rows.length === 0) {
             return res.status(404).json({ error: 'A felhasználó nem található.' });
@@ -25,26 +25,26 @@ router.post('/login', async (req, res) => {
 
         // JWT token generálás
         const token = jwt.sign(
-            { userId: user.UserID },
+            { userId: user.UserID, isAdmin: user.IsAdmin }, // Admin státusz is szerepel a tokenben!
             "jwt_secret_key",
-            { expiresIn: "1h" } // Token 1 órán át érvényes
+            { expiresIn: "1h" }
         );
-        // 🔹 Token beállítása HttpOnly sütiben
+
+        // Token beállítása HttpOnly sütiben
         res.cookie("token", token, {
-            httpOnly: true,   // Nem elérhető JavaScript-ből
-            secure: false,    // Ha HTTPS lenne, akkor true
+            httpOnly: true,
+            secure: false,
             maxAge: 3600000,  // 1 óra (miliszekundumban)
             sameSite: "Lax"
         });
-        console.log("Generated Token:", token);
 
-
-        res.json({ message: 'Sikeres bejelentkezés!', userId: user.UserID });
+        res.json({ message: '✅ Sikeres bejelentkezés!', userId: user.UserID, isAdmin: user.IsAdmin });
     } catch (error) {
         console.error('Hiba a bejelentkezés során:', error);
         res.status(500).json({ error: 'Hiba történt a bejelentkezés során.' });
     }
 });
+
 
 router.post('/register', async (req, res) => {
     const { username, email, password } = req.body;

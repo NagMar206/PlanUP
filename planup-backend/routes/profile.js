@@ -12,13 +12,13 @@ router.get("/:userId", async (req, res) => {
   }
 
   try {
-    const [rows] = await db.execute("SELECT Username FROM Users WHERE UserID = ?", [userId]);
+    const [rows] = await db.execute("SELECT Username, IsAdmin FROM Users WHERE UserID = ?", [userId]);
 
     if (rows.length === 0) {
       return res.status(404).json({ error: "Felhasználó nem található!" });
     }
 
-    res.json({ username: rows[0].Username });
+    res.json({ username: rows[0].Username, isAdmin: rows[0].IsAdmin });
   } catch (error) {
     console.error("❌ Hiba a profil lekérésekor:", error);
     res.status(500).json({ error: "Szerverhiba történt." });

@@ -19,25 +19,27 @@ function Rooms({ apiUrl, userId }) {
 
     useEffect(() => {
         socketRef.current = io(apiUrl, { withCredentials: true });
-
+    
         socketRef.current.on('connect', () => {
             console.log('✅ Sikeres Socket.io kapcsolat');
         });
-
-        socketRef.current.on('updateUsers', (updatedUsers) => {
-            setRoomUsers(Array.isArray(updatedUsers) ? updatedUsers : []);
-        });
-
+    
         socketRef.current.on('updateReadyStatus', (status) => {
             setAllReady(status);
         });
-
+    
+        socketRef.current.on('updateReadyStatus', (status) => {
+            setAllReady(status);
+            console.log('🔄 Mindenki készen áll:', status);
+        });
+    
         return () => {
+            socketRef.current.off('updateReadyStatus');
             socketRef.current.disconnect();
             console.log('🚪 Socket.io kapcsolat lezárva.');
         };
     }, [apiUrl]);
-
+    
     useEffect(() => {
         const checkExistingRoom = async () => {
             try {
@@ -115,26 +117,28 @@ function Rooms({ apiUrl, userId }) {
     const toggleReadyStatus = async () => {
         const newReadyState = !isReady;
         setIsReady(newReadyState);
-
+    
         try {
             const response = await axios.post(`${apiUrl}/rooms/ready`, {
                 roomCode, 
                 userId, 
                 isReady: newReadyState 
             }, { withCredentials: true });
-
+    
             console.log("📢 API válasz:", response.data);
-
+    
             if (!response.data || response.data.success !== true) {
-                throw new Error("Érvénytelen válasz az API-tól");
+                console.error("⚠️ API hiba: Érvénytelen válasz");
+                setIsReady(!newReadyState); // Ha hiba van, állítsuk vissza
+                return;
             }
-
+    
             setAllReady(response.data.allReady);
-            socketRef.current.emit('updateReady', roomCode);
-            console.log("✅ ReadyState sikeresen frissítve:", response.data);
-
+            socketRef.current.emit('checkAllReady', roomCode);
+    
         } catch (err) {
             console.error('❌ Nem sikerült frissíteni a készenléti állapotot:', err.message);
+            setIsReady(!newReadyState); // Ha hiba van, állítsuk vissza
         }
     };
     
@@ -178,12 +182,12 @@ function Rooms({ apiUrl, userId }) {
                         {isReady ? <FaCheckCircle className="ready-icon ready" style={{ fontSize: '3rem' }} /> : <FaTimesCircle className="ready-icon not-ready" style={{ fontSize: '3rem' }} />}
                     </div>
                     <button 
-                        onClick={() => navigate('/programswipe')} 
-                        disabled={!allReady} 
-                        className={`program-button ${allReady ? 'active' : 'disabled'}`} 
-                    >
-                        Válogass a programok közül
-                    </button>
+                            onClick={() => navigate('/programswipe')} 
+                            disabled={!allReady} 
+                            className={`program-button ${allReady ? 'active' : 'disabled'}`}
+                        >
+                            Válogass a programok közül
+                        </button>
                     <button onClick={leaveRoom} className="leave-room-button">Kilépés a szobából</button>
                 </div>
             )}
