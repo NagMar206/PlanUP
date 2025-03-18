@@ -480,7 +480,7 @@ io.on('connection', (socket) => {
 
   socket.on('joinRoom', (roomCode) => {
       socket.join(roomCode);
-      console.log(`👥 Felhasználó csatlakozott a szobához: ${roomCode}`);
+      //console.log(`👥 Felhasználó csatlakozott a szobához: ${roomCode}`);
 
       // Frissítjük a szobában lévő felhasználók listáját mindenki számára
       io.to(roomCode).emit('updateUsers', `Frissített lista a ${roomCode} szobában`);
@@ -488,13 +488,13 @@ io.on('connection', (socket) => {
 
   socket.on('leaveRoom', (roomCode) => {
       socket.leave(roomCode);
-      console.log(`🚪 Felhasználó kilépett a szobából: ${roomCode}`);
+      //console.log(`🚪 Felhasználó kilépett a szobából: ${roomCode}`);
 
       io.to(roomCode).emit('updateUsers', `Felhasználó kilépett a ${roomCode} szobából`);
   });
 
   socket.on('disconnect', () => {
-      console.log('❌ Felhasználó lecsatlakozott:', socket.id);
+      //console.log('❌ Felhasználó lecsatlakozott:', socket.id);
   });
 });
 
