@@ -18,12 +18,11 @@ function Profile({ user, setUser }) {
 
   useEffect(() => {
     if (!user) return;
-
-    axios
-      .get(`http://localhost:3001/profile/${user}`, { withCredentials: true })
+  
+    axios.get(`http://localhost:3001/profile/${user}`, { withCredentials: true })
       .then((response) => {
         setUsername(response.data.username);
-        setIsAdmin(response.data.isAdmin || false); // Feltételezve, hogy a szerver visszaadja az admin státuszt
+        setIsAdmin(response.data.isAdmin || false); // Ellenőrizzük, hogy admin-e
         setLoading(false);
       })
       .catch((error) => {
@@ -31,6 +30,15 @@ function Profile({ user, setUser }) {
         setLoading(false);
       });
   }, [user]);
+  
+  // Ha a felhasználó admin, jelenjen meg az Admin felület gomb
+  {isAdmin && (
+    <button className="admin-btn" onClick={() => navigate("/admin")}>
+      <FaShieldAlt /> Admin felület
+    </button>
+  )}
+  
+  
 
   // Define handleUpdateName
   const handleUpdateName = async () => {
