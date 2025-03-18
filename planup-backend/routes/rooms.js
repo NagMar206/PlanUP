@@ -211,43 +211,44 @@ router.get('/:roomCode/readyStatus', async (req, res) => {
 //meg fogom ölni magam
 router.post('/ready', async (req, res) => {
     const { roomCode, userId, isReady } = req.body;
-
+  
     if (!roomCode || !userId) {
         return res.status(400).json({ success: false, message: "Hiányzó adatok: roomCode vagy userId" });
     }
-
+  
     try {
         const [roomResults] = await db.query(
             `SELECT RoomID FROM Rooms WHERE RoomCode = ?`,
             [roomCode]
         );
-
+  
         if (roomResults.length === 0) {
-            return res.status(404).json({ success: false, message: "Szoba nem található" });
+            return res.status(404).json({ message: "Szoba nem található" });
         }
-
+  
         const roomId = roomResults[0].RoomID;
-
+  
+        // ✅ Javított változat:
         await db.query(
             `UPDATE RoomParticipants SET isReady = ? WHERE RoomID = ? AND UserID = ?`,
-            [isReady, roomId, userId]
+            [isReady, roomResults[0].RoomID, userId] // helyesen hivatkozva
         );
-
+  
         const [readyResults] = await db.query(
             `SELECT COUNT(*) AS notReady FROM RoomParticipants WHERE RoomID = ? AND isReady = FALSE`,
-            [roomId]
+            [roomResults[0].RoomID]
         );
-
+  
         const allReady = readyResults[0].notReady === 0;
-
-        console.log("✅ API válasz:", { success: true, allReady });
-
-        return res.json({ success: true, allReady });
-
+  
+        // Socket.IO frissítés elküldése minden kliensnek
+        io.to(roomCode).emit('updateReadyStatus', allReady);
+  
+        res.json({ success: true, allReady });
     } catch (error) {
-        return res.status(500).json({ success: false, message: "Belső szerverhiba", error: error.message });
+        res.status(500).json({ success: false, message: "Belső szerverhiba", error: error.message });
     }
-});
-
+  });
+  
 
 module.exports = router;

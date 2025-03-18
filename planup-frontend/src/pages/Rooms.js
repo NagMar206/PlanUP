@@ -3,6 +3,7 @@ import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { io } from 'socket.io-client';
 import '../Style/Rooms.css';
+import { FaCheckCircle, FaTimesCircle } from 'react-icons/fa';
 
 function Rooms({ apiUrl, userId }) {
     const [roomCode, setRoomCode] = useState('');
@@ -114,30 +115,24 @@ function Rooms({ apiUrl, userId }) {
     const toggleReadyStatus = async () => {
         const newReadyState = !isReady;
         setIsReady(newReadyState);
-    
+
         try {
             const response = await axios.post(`${apiUrl}/rooms/ready`, {
                 roomCode, 
                 userId, 
                 isReady: newReadyState 
             }, { withCredentials: true });
-    
-            console.log("📢 API válasz:", response.data); // 🔹 LOGOLJUK A VÁLASZT
-    
+
+            console.log("📢 API válasz:", response.data);
+
             if (!response.data || response.data.success !== true) {
                 throw new Error("Érvénytelen válasz az API-tól");
             }
-    
-            setAllReady(response.data.allReady); // 🔹 ÁLLÍTSA BE AZ ÁLLAPOTOT
-    
-            // 🔹 GYŐZŐDJ MEG RÓLA, HOGY A KOMPONENS FRISSÜL
-            setTimeout(() => {
-                console.log("✅ Frissített állapot:", response.data.allReady);
-            }, 500);
-    
+
+            setAllReady(response.data.allReady);
             socketRef.current.emit('updateReady', roomCode);
             console.log("✅ ReadyState sikeresen frissítve:", response.data);
-    
+
         } catch (err) {
             console.error('❌ Nem sikerült frissíteni a készenléti állapotot:', err.message);
         }
@@ -179,16 +174,13 @@ function Rooms({ apiUrl, userId }) {
                             <li key={user.UserID || index}>{user.Username}</li>
                         )) : <li key="no-users">Nincs jelenleg másik felhasználó a szobában.</li>}
                     </ul>
-                    <button 
-                        onClick={toggleReadyStatus} 
-                        className={`ready-button ${isReady ? 'ready' : 'not-ready'}`}
-                    >
-                        {isReady ? "✔ Készen állok" : "✖ Nem állok készen"}
-                    </button>
+                    <div className="ready-toggle" onClick={toggleReadyStatus} style={{ fontSize: '2rem', cursor: 'pointer' }}>
+                        {isReady ? <FaCheckCircle className="ready-icon ready" style={{ fontSize: '3rem' }} /> : <FaTimesCircle className="ready-icon not-ready" style={{ fontSize: '3rem' }} />}
+                    </div>
                     <button 
                         onClick={() => navigate('/programswipe')} 
                         disabled={!allReady} 
-                        className={`program-button ${allReady ? 'active' : 'disabled'}`} // 🔹 Osztály hozzáadása a CSS-hez
+                        className={`program-button ${allReady ? 'active' : 'disabled'}`} 
                     >
                         Válogass a programok közül
                     </button>
@@ -198,5 +190,6 @@ function Rooms({ apiUrl, userId }) {
         </div>
     );
 }
+
 
 export default Rooms;
