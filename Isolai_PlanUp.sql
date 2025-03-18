@@ -56,11 +56,12 @@ CREATE TABLE Rooms (
 );
 
 -- RoomParticipants table: links users to rooms
-drop table if exists RoomParticipants;
+DROP TABLE IF EXISTS RoomParticipants;
 CREATE TABLE RoomParticipants (
     ParticipantID INT AUTO_INCREMENT PRIMARY KEY,
     RoomID INT NOT NULL,
     UserID INT NOT NULL,
+    isReady BOOLEAN DEFAULT FALSE,
     FOREIGN KEY (RoomID) REFERENCES Rooms(RoomID) ON DELETE CASCADE,
     FOREIGN KEY (UserID) REFERENCES Users(UserID)
 );

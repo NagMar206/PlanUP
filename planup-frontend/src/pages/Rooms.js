@@ -11,6 +11,8 @@ function Rooms({ apiUrl, userId }) {
     const [error, setError] = useState('');
     const [successMessage, setSuccessMessage] = useState('');
     const [isInRoom, setIsInRoom] = useState(false);
+    const [isReady, setIsReady] = useState(false);
+    const [allReady, setAllReady] = useState(false);
     const navigate = useNavigate();
     const socketRef = useRef();
 
@@ -29,6 +31,10 @@ function Rooms({ apiUrl, userId }) {
             }
         });
 
+        socketRef.current.on('updateReadyStatus', (status) => {
+            setAllReady(status);
+        });
+
         return () => {
             socketRef.current.disconnect();
             console.log('🚪 Socket.io kapcsolat lezárva.');
@@ -42,6 +48,7 @@ function Rooms({ apiUrl, userId }) {
                 if (response.data.roomCode) {
                     setRoomCode(response.data.roomCode);
                     fetchRoomUsers(response.data.roomCode);
+                    checkReadyStatus(response.data.roomCode);
                     setIsInRoom(true);
                     socketRef.current.emit('joinRoom', response.data.roomCode);
                 }
@@ -74,6 +81,7 @@ function Rooms({ apiUrl, userId }) {
             setIsInRoom(true);
             socketRef.current.emit('joinRoom', roomCode);
             fetchRoomUsers(roomCode);
+            checkReadyStatus(roomCode);
             setTimeout(() => setSuccessMessage(''), 3000);
         } catch (err) {
             setError('Nem sikerült csatlakozni a szobához.');
@@ -107,6 +115,28 @@ function Rooms({ apiUrl, userId }) {
         }
     };
 
+    const toggleReadyStatus = async () => {
+        const newReadyState = !isReady;
+        setIsReady(newReadyState);
+
+        try {
+            await axios.post(`${apiUrl}/rooms/ready`, { roomCode, userId, isReady: newReadyState }, { withCredentials: true });
+            checkReadyStatus(roomCode);
+            socketRef.current.emit('updateReady', roomCode);
+        } catch (err) {
+            console.error('Nem sikerült frissíteni a készenléti állapotot.');
+        }
+    };
+
+    const checkReadyStatus = async (roomCode) => {
+        try {
+            const response = await axios.get(`${apiUrl}/rooms/${roomCode}/readyStatus`, { withCredentials: true });
+            setAllReady(response.data.allReady);
+        } catch (err) {
+            console.error('Nem sikerült ellenőrizni a készenléti állapotot.');
+        }
+    };
+
     return (
         <div className="rooms-container">
             <h2 className="title">Szobák</h2>
@@ -134,7 +164,12 @@ function Rooms({ apiUrl, userId }) {
                             <li key={user.UserID || index}>{user.Username}</li>
                         )) : <li key="no-users">Nincs jelenleg másik felhasználó a szobában.</li>}
                     </ul>
-                    <button onClick={() => navigate('/programswipe')} className="program-button">Válogass a programok közül</button>
+                    <button onClick={toggleReadyStatus} className={`ready-button ${isReady ? 'ready' : 'not-ready'}`}>
+                        {isReady ? "✔ Készen állok" : "✖ Nem állok készen"}
+                    </button>
+                    <button onClick={() => navigate('/programswipe')} disabled={!allReady} className="program-button">
+                        Válogass a programok közül
+                    </button>
                     <button onClick={leaveRoom} className="leave-room-button">Kilépés a szobából</button>
                 </div>
             )}

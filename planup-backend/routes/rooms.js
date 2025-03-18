@@ -139,6 +139,54 @@ router.post('/leave', async (req, res) => {
     }
 });
 
+// Frissíti egy felhasználó "készen állok" státuszát
+router.post('/ready', (req, res) => {
+    const { roomId, userId, isReady } = req.body;
 
+    const updateQuery = `
+        UPDATE RoomParticipants 
+        SET isReady = ? 
+        WHERE RoomID = ? AND UserID = ?`;
+    
+    db.query(updateQuery, [isReady, roomId, userId], (err) => {
+        if (err) {
+            return res.status(500).json({ message: "Hiba történt", error: err });
+        }
+
+        // Ellenőrizzük, hogy mindenki készen áll-e
+        const checkQuery = `
+            SELECT COUNT(*) AS notReady 
+            FROM RoomParticipants 
+            WHERE RoomID = ? AND isReady = FALSE`;
+
+        db.query(checkQuery, [roomId], (err, results) => {
+            if (err) {
+                return res.status(500).json({ message: "Hiba történt", error: err });
+            }
+
+            const allReady = results[0].notReady === 0;
+            res.json({ success: true, allReady });
+        });
+    });
+});
+
+// Lekéri egy szoba állapotát
+router.get('/:roomId/status', (req, res) => {
+    const { roomId } = req.params;
+
+    const checkQuery = `
+        SELECT COUNT(*) AS notReady 
+        FROM RoomParticipants 
+        WHERE RoomID = ? AND isReady = FALSE`;
+
+    db.query(checkQuery, [roomId], (err, results) => {
+        if (err) {
+            return res.status(500).json({ message: "Hiba történt", error: err });
+        }
+
+        const allReady = results[0].notReady === 0;
+        res.json({ allReady });
+    });
+});
 
 module.exports = router;
