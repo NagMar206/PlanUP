@@ -235,7 +235,11 @@ app.get("/programs/random", async (req, res) => {
       sqlQuery = `SELECT * FROM Programs WHERE ProgramID NOT IN (?) ORDER BY RAND() LIMIT 1`;
       queryParams = [likedPrograms];
     } else {
-      sqlQuery = `SELECT * FROM Programs ORDER BY RAND() LIMIT 1`;
+      sqlQuery = `SELECT p.*, c.Name AS CityName
+      FROM Programs p
+      JOIN City c ON p.CityID = c.CityID
+      ORDER BY RAND() 
+      LIMIT 1`;
       queryParams = [];
     }
 
