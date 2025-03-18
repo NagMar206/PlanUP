@@ -24,8 +24,8 @@ function Rooms({ apiUrl, userId }) {
             console.log('✅ Sikeres Socket.io kapcsolat');
         });
     
-        socketRef.current.on('updateUsers', (updatedUsers) => {
-            setRoomUsers(Array.isArray(updatedUsers) ? updatedUsers : []);
+        socketRef.current.on('updateReadyStatus', (status) => {
+            setAllReady(status);
         });
     
         socketRef.current.on('updateReadyStatus', (status) => {
@@ -34,6 +34,7 @@ function Rooms({ apiUrl, userId }) {
         });
     
         return () => {
+            socketRef.current.off('updateReadyStatus');
             socketRef.current.disconnect();
             console.log('🚪 Socket.io kapcsolat lezárva.');
         };
@@ -127,17 +128,19 @@ function Rooms({ apiUrl, userId }) {
             console.log("📢 API válasz:", response.data);
     
             if (!response.data || response.data.success !== true) {
-                throw new Error("Érvénytelen válasz az API-tól");
+                console.error("⚠️ API hiba: Érvénytelen válasz");
+                setIsReady(!newReadyState); // Ha hiba van, állítsuk vissza
+                return;
             }
     
-            // 🔥 Az allReady státuszt frissítjük
             setAllReady(response.data.allReady);
-            
+            socketRef.current.emit('checkAllReady', roomCode);
+    
         } catch (err) {
             console.error('❌ Nem sikerült frissíteni a készenléti állapotot:', err.message);
+            setIsReady(!newReadyState); // Ha hiba van, állítsuk vissza
         }
     };
-    
     
     const checkReadyStatus = async (roomCode) => {
         try {
@@ -179,12 +182,12 @@ function Rooms({ apiUrl, userId }) {
                         {isReady ? <FaCheckCircle className="ready-icon ready" style={{ fontSize: '3rem' }} /> : <FaTimesCircle className="ready-icon not-ready" style={{ fontSize: '3rem' }} />}
                     </div>
                     <button 
-                        onClick={() => navigate('/programswipe')} 
-                        disabled={!allReady} 
-                        className={`program-button ${allReady ? 'active' : 'disabled'}`} 
-                    >
-                        Válogass a programok közül
-                    </button>
+                            onClick={() => navigate('/programswipe')} 
+                            disabled={!allReady} 
+                            className={`program-button ${allReady ? 'active' : 'disabled'}`}
+                        >
+                            Válogass a programok közül
+                        </button>
                     <button onClick={leaveRoom} className="leave-room-button">Kilépés a szobából</button>
                 </div>
             )}
