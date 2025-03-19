@@ -201,12 +201,13 @@ function Rooms({ apiUrl, userId }) {
                         {isReady ? <FaCheckCircle className="ready-icon ready" style={{ fontSize: '3rem' }} /> : <FaTimesCircle className="ready-icon not-ready" style={{ fontSize: '3rem' }} />}
                     </div>
                     <button 
-                            onClick={() => navigate('/programswipe')} 
-                            disabled={!allReady} 
-                            className={`program-button ${allReady ? 'active' : 'disabled'}`}
-                        >
-                            Válogass a programok közül
-                        </button>
+                        onClick={() => navigate(`/swipe?room=${roomCode}`)} // ✅ Helyes URL generálás
+                        disabled={!allReady} 
+                        className={`program-button ${allReady ? 'active' : 'disabled'}`}
+                    >
+                        Válogass a programok közül
+                    </button>
+
                     <button onClick={leaveRoom} className="leave-room-button">Kilépés a szobából</button>
                 </div>
             )}

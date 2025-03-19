@@ -13,10 +13,8 @@ import Footer from './pages/Footer';
 import LuckyWheel from './pages/LuckyWheel';
 import AdminPanel from './Admin/AdminPanel';
 import axios from 'axios';
-
-
-
-
+import { RoomProvider } from "./context/RoomContext";
+import Summary from "./pages/Summary";
 
 const apiUrl = "http://localhost:3001"; 
 
@@ -37,23 +35,26 @@ function App() {
   }, []);
 
   return (
-    <Router>
-      <Navbar user={user} />
-      <Routes>
-        <Route path="/" element={<HomePage />} />
-        <Route path="/login" element={<Login setUser={setUser} />} />
-        <Route path="/register" element={<Registration />} />
-        <Route path="/programs" element={<Programs />} />
-        <Route path="/rooms" element={<Rooms apiUrl={apiUrl} userId={user} />} />
-        <Route path="/profile" element={<Profile user={user} setUser={setUser} />} />
-        <Route path="/swipe" element={<ProgramSwipe apiUrl={apiUrl} userId={user} />} />
-        <Route path="/liked-programs" element={<LikedPrograms apiUrl={apiUrl} userId={user} />} />
-        <Route path="/lucky-wheel" element={<LuckyWheel apiUrl={apiUrl} userId={user} />} />
-        <Route path="/admin" element={<AdminPanel />} />
-      </Routes>
-      <Footer />
-    </Router>
-  );
+    <RoomProvider> {/* 📌 Itt csomagoljuk be a RoomProvider-t */}
+        <Router>
+            <Navbar user={user} />
+            <Routes>
+                <Route path="/" element={<HomePage />} />
+                <Route path="/login" element={<Login setUser={setUser} />} />
+                <Route path="/register" element={<Registration />} />
+                <Route path="/programs" element={<Programs />} />
+                <Route path="/rooms" element={<Rooms apiUrl={apiUrl} userId={user} />} />
+                <Route path="/profile" element={<Profile user={user} setUser={setUser} />} />
+                <Route path="/swipe" element={<ProgramSwipe apiUrl={apiUrl} userId={user} />} />
+                <Route path="/liked-programs" element={<LikedPrograms apiUrl={apiUrl} userId={user} />} />
+                <Route path="/summary" element={<Summary apiUrl={apiUrl} />} />
+                <Route path="/lucky-wheel" element={<LuckyWheel apiUrl={apiUrl} userId={user} />} />
+                <Route path="/admin" element={<AdminPanel />} />
+            </Routes>
+            <Footer />
+        </Router>
+    </RoomProvider>
+);
 }
 
 export default App;

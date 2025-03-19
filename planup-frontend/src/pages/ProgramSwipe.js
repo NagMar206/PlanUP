@@ -1,17 +1,19 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import axios from "axios";
-import { useNavigate } from "react-router-dom"; // Navigáció importálása
+import { useNavigate } from "react-router-dom";
 import "../Style/ProgramSwipe.css";
-import { useRef } from "react"; //useffect fetch hogy ne 2x hivja meg
+import { useRoom } from "../context/RoomContext"; // Szoba kontextus importálása
 
 function ProgramSwipe({ apiUrl, userId }) {
+  const { roomId } = useRoom(); // Szoba azonosító lekérése
   const [program, setProgram] = useState(null);
   const [error, setError] = useState("");
-  const [filters, setFilters] = useState({ duration: "", cost: "", city: "" }); // Város hozzáadva
-  const [processedPrograms, setProcessedPrograms] = useState(new Set()); // Lájk dislike közös lista
+  const [filters, setFilters] = useState({ duration: "", cost: "", city: "" });
+  const [processedPrograms, setProcessedPrograms] = useState(new Set());
   const [filterActive, setFilterActive] = useState(false);
-  const [cities, setCities] = useState([]); // Városok tárolása
-  const navigate = useNavigate(); // Navigáció kezelése
+  const [cities, setCities] = useState([]);
+  const navigate = useNavigate();
+  const didFetch = useRef(false);
 
   const magyarIdotartam = {
     half_day: "Fél napos",
@@ -24,151 +26,122 @@ function ProgramSwipe({ apiUrl, userId }) {
     paid: "Fizetős",
   };
 
-  // Városok lekérése az adatbázisból
   useEffect(() => {
     const fetchCities = async () => {
       try {
         const response = await axios.get(`${apiUrl}/programs/cities`);
         setCities(response.data);
-        console.log("🏙️ Városok betöltve:", response.data.length);
       } catch (err) {
-        console.error("❌ Hiba a városok betöltésekor:", err);
+        console.error("Hiba a városok betöltésekor:", err);
       }
     };
-    
+
     fetchCities();
   }, [apiUrl]);
 
   const fetchFilteredProgram = async () => {
-    console.log("🟢 fetchFilteredProgram() meghívva...");
-  
     try {
-      // Szűrési paraméterek hozzáadása a kéréshez
       const params = {};
       if (filterActive) {
         if (filters.duration) params.duration = filters.duration;
         if (filters.cost) params.cost = filters.cost;
-        if (filters.city) params.city = filters.city; // Város paraméter hozzáadása
+        if (filters.city) params.city = filters.city;
       }
-      
-      console.log("🔍 Szűrési paraméterek:", params);
-      
+
       const response = await axios.get(`${apiUrl}/programs/random`, { params });
       let fetchedProgram = response.data;
-  
+
       if (!fetchedProgram) {
-        console.log("⚠️ Nincs több elérhető program.");
         setProgram(null);
         return;
       }
-  
+
       let attempts = 0;
-      const maxAttempts = 10; // Maximum próbálkozások száma
-  
-      // ✅ Ha a program már lájkolt vagy dislike-olt, újrapróbálkozunk
+      const maxAttempts = 10;
+
       while (processedPrograms.has(fetchedProgram.ProgramID) && attempts < maxAttempts) {
-        console.warn(`⚠️ A backend egy már feldolgozott programot adott vissza (ID: ${fetchedProgram.ProgramID}), újrapróbálkozás...`);
         const retryResponse = await axios.get(`${apiUrl}/programs/random`, { params });
         fetchedProgram = retryResponse.data;
         attempts++;
       }
-  
+
       if (!fetchedProgram || processedPrograms.has(fetchedProgram.ProgramID)) {
-        console.log("❌ Sikertelen próbálkozások, nincs új program.");
         setProgram(null);
         return;
       }
-  
+
       fetchedProgram.Cost = fetchedProgram.Cost ? "paid" : "free";
-      fetchedProgram.Duration = 
+      fetchedProgram.Duration =
         fetchedProgram.Duration === 1 ? "half_day" :
         fetchedProgram.Duration === 2 ? "whole_day" :
         fetchedProgram.Duration === 3 ? "weekend" : fetchedProgram.Duration;
 
       setProgram(fetchedProgram);
-  
-      console.log("🎯 Megjelenített program:", fetchedProgram.Name, `(ID: ${fetchedProgram.ProgramID})`);
-  
     } catch (err) {
-      console.error("❌ Hiba a program betöltésekor:", err);
+      console.error("Hiba a program betöltésekor:", err);
       setError("Nem sikerült betölteni a programot.");
     }
   };
-  
-  const didFetch = useRef(false);
-  
-  // ✅ Frissített useEffect, hogy a szűrők változásakor újra lekérje az adatokat
+
   useEffect(() => {
-    console.log("🔄 useEffect futás - filterActive vagy filters változott");
-    didFetch.current = false; // Reset the fetch flag when filters change
     fetchFilteredProgram();
-  }, [filterActive, filters.duration, filters.cost, filters.city]); // Város hozzáadva
-  
+  }, [filterActive, filters.duration, filters.cost, filters.city]);
+
   const handleSwipe = async (action) => {
     if (!program) return;
-  
+
     try {
-      console.log(`🔼 Like/dislike küldése: UserID = ${userId}, ProgramID = ${program.ProgramID}, Action = ${action}`);
-  
-      const response = await axios.post(`${apiUrl}/programs/${program.ProgramID}/${action}`, { userId });
-  
+      console.log(`🔼 Like/dislike küldése: UserID = ${userId}, ProgramID = ${program.ProgramID}, Action = ${action}, RoomID = ${roomId || "Nincs"}`);
+
+      const endpoint = roomId
+        ? `${apiUrl}/api/room/${roomId}/like`  // Szoba esetén más endpoint
+        : `${apiUrl}/programs/${program.ProgramID}/${action}`;  // Egyéni esetben normál
+
+      const response = await axios.post(endpoint, { 
+        userId, 
+        programId: program.ProgramID 
+      });
+
       console.log("✅ Like/dislike művelet válasza:", response.data);
-  
-      // ✅ Egyben kezeljük a like és dislike-olt programokat
+
       setProcessedPrograms((prev) => new Set([...prev, program.ProgramID]));
-  
-      fetchFilteredProgram(); // Automatikusan új program betöltése
-  
+      fetchFilteredProgram();
     } catch (err) {
       console.error("❌ Nem sikerült végrehajtani a műveletet:", err);
-  
-      // ⚠️ Ha a hiba oka az, hogy már like-oltuk, azonnal ugorjunk tovább
+
       if (err.response && err.response.status === 400) {
-        console.warn(`⚠️ A programot már like-olták (ID: ${program.ProgramID}), új program betöltése...`);
         fetchFilteredProgram();
       } else {
         setError("Nem sikerült végrehajtani a műveletet.");
       }
     }
   };
-  
+
   return (
     <div className="program-swipe-container">
       <div className="filters">
-        <select
-          value={filters.duration}
-          onChange={(e) => setFilters({ ...filters, duration: e.target.value })}
-        >
+        <select value={filters.duration} onChange={(e) => setFilters({ ...filters, duration: e.target.value })}>
           <option value="">Összes időtartam</option>
           {Object.entries(magyarIdotartam).map(([key, value]) => (
             <option key={key} value={key}>{value}</option>
           ))}
         </select>
 
-        <select
-          value={filters.cost}
-          onChange={(e) => setFilters({ ...filters, cost: e.target.value })}
-        >
+        <select value={filters.cost} onChange={(e) => setFilters({ ...filters, cost: e.target.value })}>
           <option value="">Összes költség</option>
           {Object.entries(magyarKoltseg).map(([key, value]) => (
             <option key={key} value={key}>{value}</option>
           ))}
         </select>
 
-        {/* Város szűrő hozzáadása */}
-        <select
-          value={filters.city}
-          onChange={(e) => setFilters({ ...filters, city: e.target.value })}
-        >
+        <select value={filters.city} onChange={(e) => setFilters({ ...filters, city: e.target.value })}>
           <option value="">Összes város</option>
           {cities.map((city) => (
             <option key={city.CityID} value={city.CityID}>{city.Name}</option>
           ))}
         </select>
 
-        <button onClick={() => {
-          setFilterActive(!filterActive);
-        }}>
+        <button onClick={() => setFilterActive(!filterActive)}>
           {filterActive ? "Szűrő kikapcsolása" : "Szűrő alkalmazása"}
         </button>
       </div>
@@ -198,12 +171,8 @@ function ProgramSwipe({ apiUrl, userId }) {
       )}
 
       <div className="swipe-buttons">
-        <button className="dislike-button" onClick={() => handleSwipe("dislike")}>
-          Nem tetszik
-        </button>
-        <button className="like-button" onClick={() => handleSwipe("like")}>
-          Tetszik
-        </button>
+        <button className="dislike-button" onClick={() => handleSwipe("dislike")}>Nem tetszik</button>
+        <button className="like-button" onClick={() => handleSwipe("like")}>Tetszik</button>
       </div>
     </div>
   );

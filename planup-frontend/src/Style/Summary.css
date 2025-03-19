@@ -1,0 +1,66 @@
+/* 🔹 Összegzés oldal fő konténere */
+.summary-container {
+    max-width: 900px;
+    margin: 40px auto;
+    padding: 20px;
+    background: #f8f9fa;
+    border-radius: 10px;
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+    text-align: center;
+}
+
+/* 🔹 Cím */
+.summary-container h2 {
+    font-size: 24px;
+    color: #333;
+    margin-bottom: 20px;
+}
+
+/* 🔹 Lista az összegzéshez */
+.summary-list {
+    list-style: none;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 20px;
+}
+
+/* 🔹 Egyes programok stílusa */
+.summary-item {
+    background: #fff;
+    border-radius: 10px;
+    padding: 15px;
+    box-shadow: 0px 2px 8px rgba(0, 0, 0, 0.1);
+    transition: transform 0.2s ease-in-out;
+}
+
+.summary-item:hover {
+    transform: scale(1.05);
+}
+
+/* 🔹 Program cím */
+.summary-item h3 {
+    font-size: 20px;
+    margin-bottom: 10px;
+    color: #007bff;
+}
+
+/* 🔹 Kedvelések száma */
+.summary-item p {
+    font-size: 16px;
+    color: #555;
+}
+
+/* 🔹 Üzenet, ha nincs adat */
+.summary-container p {
+    font-size: 18px;
+    color: #888;
+    margin-top: 20px;
+}
+
+/* 🔹 Hibaüzenet */
+.error-message {
+    color: red;
+    font-weight: bold;
+    margin-top: 10px;
+}

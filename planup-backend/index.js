@@ -511,6 +511,38 @@ io.on('connection', (socket) => {
   });
 });
 
+//RoomsID_Summary
+app.get("/api/room/:roomId/summary", async (req, res) => {
+  const { roomId } = req.params;
+
+  try {
+      const likedPrograms = await db.collection("roomLikes")
+          .aggregate([
+              { $match: { roomId } }, // Csak az adott szobára szűrünk
+              { $group: { _id: "$programId", count: { $sum: 1 } } }, // Programok összesítése
+              { $lookup: { 
+                  from: "programs", // Programok táblája
+                  localField: "_id",
+                  foreignField: "ProgramID",
+                  as: "programDetails"
+              }},
+              { $unwind: "$programDetails" }, // Kibontjuk a részleteket
+              { $sort: { count: -1 } } // Legnépszerűbb előre
+          ])
+          .toArray();
+
+      const formattedResults = likedPrograms.map(p => ({
+          _id: p._id,
+          name: p.programDetails.Name, // Program neve
+          count: p.count // Kedvelések száma
+      }));
+
+      res.json(formattedResults);
+  } catch (error) {
+      console.error("❌ Hiba az összegzés lekérésekor:", error);
+      res.status(500).json({ error: "Nem sikerült lekérni az összegzést." });
+  }
+});
 
 
 
