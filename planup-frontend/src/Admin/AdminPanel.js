@@ -50,26 +50,49 @@ const AdminPanel = () => {
   const handleImageChange = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
-
-    const formData = new FormData();
-    formData.append('image', file);
-
-    try {
-      const response = await axios.post('http://localhost:3001/api/upload', formData, {
-        headers: { 'Content-Type': 'multipart/form-data' },
-      });
-
-      setNewProgram(prevState => ({
-        ...prevState,
-        image: response.data.filePath
-      }));
-
-      alert('✅ Kép sikeresen feltöltve!');
-    } catch (error) {
-      console.error('Hiba történt:', error);
-      alert('❌ Hiba történt a képfeltöltés során.');
+    
+    // Kép formátum ellenőrzése
+    const validFormats = ['image/jpeg', 'image/jpg'];
+    if (!validFormats.includes(file.type)) {
+      alert('❌ Nem megfelelő formátum! Csak JPG/JPEG képeket tölthetsz fel.');
+      return;
     }
+    
+    // Kép méret ellenőrzése
+    const img = new Image();
+    img.src = URL.createObjectURL(file);
+    img.onload = async () => {
+      if (img.width !== 1024 || img.height !== 1024) {
+        alert('❌ Nem megfelelő képméret! A kép méretének 1024x1024 pixelnek kell lennie.');
+        URL.revokeObjectURL(img.src);
+        return;
+      }
+      
+      // Ha minden ellenőrzés sikeres, folytatjuk a feltöltést
+      URL.revokeObjectURL(img.src);
+      const formData = new FormData();
+      formData.append('image', file);
+      
+      try {
+        const response = await axios.post('http://localhost:3001/api/upload', formData, {
+          headers: {
+            'Content-Type': 'multipart/form-data'
+          },
+        });
+        
+        setNewProgram(prevState => ({
+          ...prevState,
+          image: response.data.filePath
+        }));
+        
+        alert('✅ Kép sikeresen feltöltve!');
+      } catch (error) {
+        console.error('Hiba történt:', error);
+        alert('❌ Hiba történt a képfeltöltés során.');
+      }
+    };
   };
+  
 
   return (
     <div>
