@@ -7,9 +7,10 @@ import { useRef } from "react"; //useffect fetch hogy ne 2x hivja meg
 function ProgramSwipe({ apiUrl, userId }) {
   const [program, setProgram] = useState(null);
   const [error, setError] = useState("");
-  const [filters, setFilters] = useState({ duration: "", cost: "" });
+  const [filters, setFilters] = useState({ duration: "", cost: "", city: "" }); // Város hozzáadva
   const [processedPrograms, setProcessedPrograms] = useState(new Set()); // Lájk dislike közös lista
   const [filterActive, setFilterActive] = useState(false);
+  const [cities, setCities] = useState([]); // Városok tárolása
   const navigate = useNavigate(); // Navigáció kezelése
 
   const magyarIdotartam = {
@@ -23,11 +24,36 @@ function ProgramSwipe({ apiUrl, userId }) {
     paid: "Fizetős",
   };
 
+  // Városok lekérése az adatbázisból
+  useEffect(() => {
+    const fetchCities = async () => {
+      try {
+        const response = await axios.get(`${apiUrl}/programs/cities`);
+        setCities(response.data);
+        console.log("🏙️ Városok betöltve:", response.data.length);
+      } catch (err) {
+        console.error("❌ Hiba a városok betöltésekor:", err);
+      }
+    };
+    
+    fetchCities();
+  }, [apiUrl]);
+
   const fetchFilteredProgram = async () => {
     console.log("🟢 fetchFilteredProgram() meghívva...");
   
     try {
-      const response = await axios.get(`${apiUrl}/programs/random`);
+      // Szűrési paraméterek hozzáadása a kéréshez
+      const params = {};
+      if (filterActive) {
+        if (filters.duration) params.duration = filters.duration;
+        if (filters.cost) params.cost = filters.cost;
+        if (filters.city) params.city = filters.city; // Város paraméter hozzáadása
+      }
+      
+      console.log("🔍 Szűrési paraméterek:", params);
+      
+      const response = await axios.get(`${apiUrl}/programs/random`, { params });
       let fetchedProgram = response.data;
   
       if (!fetchedProgram) {
@@ -42,7 +68,7 @@ function ProgramSwipe({ apiUrl, userId }) {
       // ✅ Ha a program már lájkolt vagy dislike-olt, újrapróbálkozunk
       while (processedPrograms.has(fetchedProgram.ProgramID) && attempts < maxAttempts) {
         console.warn(`⚠️ A backend egy már feldolgozott programot adott vissza (ID: ${fetchedProgram.ProgramID}), újrapróbálkozás...`);
-        const retryResponse = await axios.get(`${apiUrl}/programs/random`);
+        const retryResponse = await axios.get(`${apiUrl}/programs/random`, { params });
         fetchedProgram = retryResponse.data;
         attempts++;
       }
@@ -55,34 +81,28 @@ function ProgramSwipe({ apiUrl, userId }) {
   
       fetchedProgram.Cost = fetchedProgram.Cost ? "paid" : "free";
       fetchedProgram.Duration = 
-    fetchedProgram.Duration === 1 ? "half_day" :
-    fetchedProgram.Duration === 2 ? "whole_day" :
-    fetchedProgram.Duration === 3 ? "weekend" : fetchedProgram.Duration;
+        fetchedProgram.Duration === 1 ? "half_day" :
+        fetchedProgram.Duration === 2 ? "whole_day" :
+        fetchedProgram.Duration === 3 ? "weekend" : fetchedProgram.Duration;
 
       setProgram(fetchedProgram);
   
       console.log("🎯 Megjelenített program:", fetchedProgram.Name, `(ID: ${fetchedProgram.ProgramID})`);
   
     } catch (err) {
+      console.error("❌ Hiba a program betöltésekor:", err);
       setError("Nem sikerült betölteni a programot.");
     }
   };
   
-
-  // ✅ Frissített useEffect, hogy ne fusson le kétszer
-
   const didFetch = useRef(false);
   
+  // ✅ Frissített useEffect, hogy a szűrők változásakor újra lekérje az adatokat
   useEffect(() => {
-    if (!didFetch.current) {
-      console.log("✅ fetchFilteredProgram() lefut egyszer");
-      fetchFilteredProgram();
-      didFetch.current = true;
-    } else {
-      console.log("⚠️ fetchFilteredProgram() kihagyva (már lefutott)");
-    }
-  }, [filterActive, filters]);
-  
+    console.log("🔄 useEffect futás - filterActive vagy filters változott");
+    didFetch.current = false; // Reset the fetch flag when filters change
+    fetchFilteredProgram();
+  }, [filterActive, filters.duration, filters.cost, filters.city]); // Város hozzáadva
   
   const handleSwipe = async (action) => {
     if (!program) return;
@@ -112,11 +132,6 @@ function ProgramSwipe({ apiUrl, userId }) {
     }
   };
   
- 
-  
-  //most már jobban működik a random, de néha még előfordul hogy 2x megjelenik ugyanaz, de továbblépésnél megfelel
-  //dislike-olt programok kezelése (talán megoldja az ismétlődést is!!!)
-  
   return (
     <div className="program-swipe-container">
       <div className="filters">
@@ -140,9 +155,19 @@ function ProgramSwipe({ apiUrl, userId }) {
           ))}
         </select>
 
+        {/* Város szűrő hozzáadása */}
+        <select
+          value={filters.city}
+          onChange={(e) => setFilters({ ...filters, city: e.target.value })}
+        >
+          <option value="">Összes város</option>
+          {cities.map((city) => (
+            <option key={city.CityID} value={city.CityID}>{city.Name}</option>
+          ))}
+        </select>
+
         <button onClick={() => {
           setFilterActive(!filterActive);
-          fetchFilteredProgram(); 
         }}>
           {filterActive ? "Szűrő kikapcsolása" : "Szűrő alkalmazása"}
         </button>
