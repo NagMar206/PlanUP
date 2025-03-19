@@ -11,7 +11,7 @@ import Navbar from './pages/Navbar';
 import LikedPrograms from './pages/LikedPrograms'; // Új oldal importálása
 import Footer from './pages/Footer';
 import LuckyWheel from './pages/LuckyWheel';
-import AdminPanel from './pages/AdminPanel';
+import AdminPanel from './Admin/AdminPanel';
 import axios from 'axios';
 
 
