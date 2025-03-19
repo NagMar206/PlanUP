@@ -97,6 +97,7 @@ app.post('/api/upload', upload.single('image'), (req, res) => {
 });
 
 
+
 // 🔹 2) Ezután jöjjenek a ROUTE-ok
 // Adatbázis kapcsolat betöltése minden kéréshez
 app.use(async (req, res, next) => {
