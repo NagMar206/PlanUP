@@ -14,6 +14,7 @@ function Rooms({ apiUrl, userId }) {
     const [isInRoom, setIsInRoom] = useState(false);
     const [isReady, setIsReady] = useState(false);
     const [allReady, setAllReady] = useState(false);
+    const [isCopied, setIsCopied] = useState(false);
     const navigate = useNavigate();
     const socketRef = useRef();
 
@@ -151,9 +152,19 @@ function Rooms({ apiUrl, userId }) {
         }
     };
 
+    const copyToClipboard = async (text) => {
+        try {
+            await navigator.clipboard.writeText(text);
+            setIsCopied(true);
+            setTimeout(() => setIsCopied(false), 2000);
+        } catch (err) {
+            console.error('Másolási hiba:', err);
+        }
+    };
+
     return (
         <div className="rooms-container">
-            <h2 className="title">Szobák</h2>
+            <h2 className="title">SZOBÁK</h2>
             {error && <div className="error-message">{error}</div>}
             {successMessage && <div className="success-message">{successMessage}</div>}
             {!isInRoom && (
@@ -170,7 +181,15 @@ function Rooms({ apiUrl, userId }) {
             {isInRoom && (
                 <div className="room-users">
                     <h3>Szobában lévő felhasználók:</h3>
-                    <p className="room-code-display">Szobakód: {roomCode}</p>
+                    <div className="room-info">
+                        <button 
+                            className="room-code-button" 
+                            onClick={() => copyToClipboard(roomCode)}
+                        >
+                            Szobakód: {roomCode}
+                        </button>
+                        {isCopied && <span className="copied-message">Másolva!</span>}
+                    </div>
                     <p><strong>Szoba létrehozója:</strong> {roomCreator || 'Ismeretlen felhasználó'}</p>
                     <button className="refresh-button" onClick={() => fetchRoomUsers(roomCode)}>🔄 Lista frissítése</button>
                     <ul>
@@ -194,6 +213,5 @@ function Rooms({ apiUrl, userId }) {
         </div>
     );
 }
-
 
 export default Rooms;
