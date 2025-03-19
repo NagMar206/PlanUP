@@ -92,7 +92,7 @@ app.post('/api/upload', upload.single('image'), (req, res) => {
   }
   res.status(200).json({
     message: 'Kép sikeresen feltöltve!',
-    filePath: `/images/${req.file.filename}` // ezt kapja vissza a frontend
+    filePath: `${req.file.filename}` // ezt kapja vissza a frontend
   });
 });
 
