@@ -11,7 +11,8 @@ CREATE TABLE Users (
     Username VARCHAR(50) NOT NULL,
     PasswordHash VARCHAR(255) NOT NULL,
     Email VARCHAR(100) UNIQUE NOT NULL,
-    CreatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    CreatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    IsAdmin tinyint(1) DEFAULT '0'
 );
 
 -- Programs table: stores program details
@@ -77,11 +78,7 @@ CREATE TABLE UserLikes (
     FOREIGN KEY (ProgramID) REFERENCES Programs(ProgramID)
 );
 
-
-INSERT INTO Users (Username, PasswordHash, Email)
-VALUES ('testuser', 'hashedpassword', 'test@example.com');
- 
-
+INSERT INTO `Users` VALUES (1,'testuser','hashedpassword','test@example.com','2025-03-14 09:06:13',0),(2,'Dr. CigĂĄny','$2b$10$Vf2gEiixhaoh1/6IbUQa3OqT8F3b.jWpBD2AoaTvEUSX0cgClGARy','doktorcigany@gmail.com','2025-03-14 09:10:21',0),(3,'marszi','$2b$10$2SuGHw1by2fQe.lagdUNgOKcnIx27CaNlRIQLHZVeHNK1qrnLWlGq','kovmar138@hengersor.hu','2025-03-14 10:06:10',1),(4,'Levi','$2b$10$G4O9tO9J61PEEtGF8SMqU.KhZlZ3Kk1iYauYAacuBbOFZBhGe6UnK','mollev545@hengersor.hu','2025-03-14 10:27:56',1),(5,'Levi','$2b$10$.g.VAlceHtlWdqqOCKFkDecJwpxzeczSY6O.Rd/VOs2KTXqiOhHCO','test@test.com','2025-03-17 08:55:08',0),(6,'Nagy Martin','$2b$10$yUUvO1OHj.Di7CikjgIIrOh7fvK5vpYX7Ers/1hLswQrx6imsB0ae','nagmar206@hengersor.hu','2025-03-17 08:59:24',1);
  
 -- Insert sample data into Programs table
 INSERT INTO Programs (Name, Description, Price, Cost, Location, Image, MoreInfoLink) 

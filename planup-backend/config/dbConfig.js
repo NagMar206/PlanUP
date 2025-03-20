@@ -1,7 +1,7 @@
 const mysql = require('mysql2/promise');
 
 //PlanUP Adatbázis
-/* const db = mysql.createPool({
+ const db = mysql.createPool({
     host: 'localhost', // XAMPP esetén ez maradjon "localhost"
     user: 'root', // XAMPP alapértelmezett felhasználó
     password: '', // XAMPP esetén nincs jelszó, hagyd üresen
@@ -10,8 +10,8 @@ const mysql = require('mysql2/promise');
     waitForConnections: true,
     connectionLimit: 10,
     queueLimit: 0
-}); */
-
+}); 
+/*
 //Iskolai szerver
 const db = mysql.createPool({
     host: '10.3.1.65', // XAMPP esetén ez maradjon "localhost"
@@ -23,5 +23,5 @@ const db = mysql.createPool({
     connectionLimit: 10,
     queueLimit: 0
 });
-
+*/
 module.exports = db;
