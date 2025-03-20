@@ -9,11 +9,26 @@
     color: #e0e0e0;
   }
   
-  .homepage h1 {
-    font-size: 3rem;
-    color: #ff79c6;
-    margin-bottom: 20px;
+ /* Homepage H1 */
+.homepage h1 {
+  font-size: 3rem;
+  color: #ff79c6; /* Alap szín */
+  margin-bottom: 20px;
+  animation: fade-in-scale 3s ease-in-out infinite; /* Laza animáció */
+}
+
+/* Animáció kulcsframe-ek */
+@keyframes fade-in-scale {
+  0%, 100% {
+      opacity: 0.8; /* Enyhén halvány */
+      transform: scale(1); /* Eredeti méret */
   }
+  50% {
+      opacity: 1; /* Teljesen látható */
+      transform: scale(1.05); /* Kicsit nagyobb méret */
+  }
+}
+
   
   .homepage p {
     font-size: 1.5rem;

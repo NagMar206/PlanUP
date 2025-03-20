@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import "../Style/Admin.css"
 
 const durations = [
   { label: 'Egész hétvégés', value: 3 },

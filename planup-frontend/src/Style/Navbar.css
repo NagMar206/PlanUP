@@ -13,6 +13,7 @@
 .navbar-title {
   font-size: 1.8rem;
   color: #ff79c6;
+  
 }
 .navbar-links li:last-child {
   border-bottom: none; /* Az utolsó elemnél nincs vonal */

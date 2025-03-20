@@ -41,12 +41,27 @@
     100% { opacity: 0; }
 }
 
-  .title {
-    text-align: center;
-    color: #a78bfa;
-    font-size: 2rem;
-    margin-bottom: 25px;
+/* Title */
+.title {
+  text-align: center;
+  color: #a78bfa; /* Alap szín */
+  font-size: 2rem;
+  margin-bottom: 25px;
+  animation: fade-in-color 3s infinite ease-in-out; /* Laza animáció */
+}
+
+/* Animáció kulcsframe-ek */
+@keyframes fade-in-color {
+  0%, 100% {
+      color: #a78bfa; /* Alap lila szín */
+      opacity: 0.8; /* Enyhén halvány */
   }
+  50% {
+      color: #c3b5fc; /* Világosabb árnyalat */
+      opacity: 1; /* Teljesen látható */
+  }
+}
+
   
   .create-room {
     display: flex;
