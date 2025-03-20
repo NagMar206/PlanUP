@@ -11,8 +11,7 @@ function LuckyWheel({ apiUrl, userId }) {
   const [showText, setShowText] = useState(false);
   const [hasSpun, setHasSpun] = useState(false);
 
-  // Define colors for the wheel segments
-  const backgroundColors = [    
+  const backgroundColors = [
     // Piros árnyalatok
     "#FF0000", "#FF3333", "#FF6666", "#FF9999", "#FFCCCC", "#990000", "#CC0000", "#800000", "#8B0000", "#A52A2A", "#B22222", "#DC143C",
     
@@ -48,8 +47,15 @@ function LuckyWheel({ apiUrl, userId }) {
     
     // Egyéb különleges színek
     "#2F4F4F", "#556B2F", "#BDB76B", "#191970", "#708090", "#778899", "#BC8F8F", "#F0E68C", "#E0FFFF", "#FAEBD7", "#FAF0E6", "#FDF5E6",
-    "#FFDEAD", "#F5DEB3", "#FFE4C4", "#FFDEAD", "#F0FFF0", "#FFFAF0", "#F5FFFA", "#708090", "#CD5C5C", "#4B0082", "#FFFACD", "#FFF8DC"
+    "#FFDEAD", "#F5DEB3", "#FFE4C4", "#FFDEAD", "#F0FFF0", "#FFFAF0", "#F5FFFA", "#708090", "#CD5C5C", "#4B0082", "#FFFACD", "#FFF8DC",
+    
+    // Új színek hozzáadása
+    "#964B00", "#FFC080", "#FF99CC", "#66CCCC", "#33CCFF", "#66FFCC", "#CCFF99", "#FF66CC", "#CC99FF", "#99CCFF", "#FFCC66", "#CCCC99",
+    "#66FF99", "#99FF66", "#CCFF66", "#FF99FF", "#66CCFF", "#FF66FF", "#CC66FF", "#99FFCC", "#66CCCC", "#CCCC66", "#FFCCCC",
+    "#FF9966", "#CC9966", "#66CC66", "#99CC66", "#CCCC00", "#66CCCC", "#CC99CC", "#99CCCC", "#CCCC99", "#66CC99", "#CC66CC", "#99CC99",
+    "#FF6699", "#CC6699", "#66CC99", "#99CC99", "#CCCC99", "#66CCCC", "#CC99CC", "#99CCCC", "#CCCC99", "#66CC99", "#CC66CC", "#99CC99"
   ];
+  
   
   
   useEffect(() => {
@@ -81,25 +87,23 @@ function LuckyWheel({ apiUrl, userId }) {
 
   const handleSpin = () => {
     if (programs.length === 0 || spinning) return;
-
+  
     const randomIndex = Math.floor(Math.random() * programs.length);
     setPrizeIndex(randomIndex);
     setWinner(null);
     setSpinning(true);
     setShowText(false);
-
+  
     console.log(`🎰 Pörgetés... A nyertes indexe: ${randomIndex}`);
-
+  
     setTimeout(() => {
       setWinner(programs[randomIndex].option);
-    }, 3500); // Show winner after spin
-
-    setTimeout(() => {
       setSpinning(false);
       setHasSpun(true); // Disable further spins after the first spin
       console.log(`🎉 Pörgetés vége! Nyertes: ${programs[randomIndex].option}`);
-    }, 3500);
+    }, 3500); // A pörgetési időt növeltük, hogy a kerék lassabban álljon meg
   };
+  
 
   return (
     <div className="lucky-wheel-container">

@@ -1,3 +1,4 @@
+/* Lucky Wheel Container */
 .lucky-wheel-container {
   display: flex;
   flex-direction: column;
@@ -5,78 +6,79 @@
   justify-content: flex-start;
   height: auto;
   text-align: center;
-  background: linear-gradient(135deg, #1e3c72, #2a5298);
   color: #ffffff;
   font-family: 'Poppins', sans-serif;
   padding: 20px;
   position: relative;
   top: 0;
-  min-height: 100vh;
+  min-height: 100vh; /* Teljes képernyő magasság */
   overflow: hidden;
 }
 
+/* Lucky Wheel Header */
 .lucky-wheel-header {
-  font-size: 40px;
+  font-size: 40px; /* Nagyobb szövegméret */
   font-weight: bold;
-  margin-bottom: 10px;
+  margin-bottom: 20px; /* Térköz az alján */
   color: #ffffff;
-  padding: 15px;
-  border-radius: 10px;
-  background: linear-gradient(90deg, #ff5733, #ffcc00);
-  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.5);
-  text-transform: uppercase;
+  padding: 15px 25px; /* Térközök a szöveg körül */
+  border-radius: 12px; /* Lekerekített sarkok */
+  background-color: #ff5733; /* Narancssárga háttér */
+  box-shadow: 0px 6px 12px rgba(0, 0, 0, 0.5); /* Árnyék hozzáadása */
+  text-transform: uppercase; /* Nagybetűs szöveg */
+  
+  /* Animáció hozzáadása */
+  animation: glow-animation 2s infinite alternate ease-in-out;
 }
 
+/* Szöveg animáció */
+@keyframes glow-animation {
+  from {
+    background-color: #ff5733; /* Narancssárga */
+    box-shadow: 0px 6px 12px rgba(255,87,51,0.5); /* Árnyék narancssárga tónusban */
+    transform: scale(1);
+    color: #ffffff; /* Fehér szöveg */
+  }
+  to {
+    background-color: #ffcc00; /* Sárga háttér */
+    box-shadow: 0px 6px 12px rgba(255,204,0,0.5); /* Árnyék sárga tónusban */
+    transform: scale(1.05); /* Enyhén nagyítja a szöveget */
+    color: #000000; /* Fekete szöveg */
+  }
+}
+
+/* Winner Text (Nyertes szöveg) */
 .winner-text {
   font-size: 24px;
   font-weight: bold;
   margin-bottom: 15px;
-  color: #00ff88;
+  color: #00ff88; /* Zöld szöveg */
 }
 
+/* Spin Button (Pörgetés gomb) */
 .spin-button {
   padding: 14px 28px;
   font-size: 18px;
   font-weight: bold;
   color: #ffffff;
-  background: linear-gradient(90deg, #ff5733, #ffcc00);
+  background-color: #ff5733; /* Narancssárga gomb alapállapotban */
   border: none;
-  border-radius: 10px;
+  border-radius: 12px; /* Lekerekített gomb */
   cursor: pointer;
-  margin-top: 10px;
-  transition: transform 0.3s, background 0.3s;
-  width: 80%;
-  max-width: 300px;
+  margin-top: 20px; /* Térköz a tetején */
+  
 }
 
 .spin-button:hover {
-  background: linear-gradient(90deg, #ffcc00, #ff5733);
-  transform: scale(1.1);
+   background-color: #ffcc00; /* Sárga szín hover állapotban */
+   transform: scale(1.1);
 }
 
 .spin-button:disabled {
-  background: #aaa;
+  background-color: #aaa; /* Szürke szín tiltott állapotban */
   cursor: not-allowed;
-  transform: none; /* Remove hover effect */
+  transform: none; /* Hover-effektus kikapcsolása */
 }
 
-.lucky-wheel-container canvas {
-  width: 100%;
-  max-width: 350px;
-  height: auto;
-}
-
-.wheel-overlay-container {
-  position: relative;
-}
-
-.wheel-overlay {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0, 0, 0, 0.8);
-  z-index: 2;
-}
+/* Lucky Wheel Canvas (Szerencsekerék) */
 
