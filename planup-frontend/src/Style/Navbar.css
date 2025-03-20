@@ -14,7 +14,9 @@
   font-size: 1.8rem;
   color: #ff79c6;
 }
-
+.navbar-links li:last-child {
+  border-bottom: none; /* Az utolsó elemnél nincs vonal */
+}
 /* Navbar Links */
 .navbar-links {
   list-style: none;
@@ -32,13 +34,13 @@
   align-items: center; /* Gombokat középre rendezi */
 }
 
-
 .navbar-links a {
-  text-decoration: none;
-  color: #e0e0e0;
-  transition: color 0.3s;
-}
+  color: #e0e0e0; /* Szöveg színe */
+  font-size: 1.2rem; /* Szövegméret növelése */
+  font-weight: bold; /* Félkövér szöveg */
+  transition: color 0.3s ease-in-out;
 
+}
 .navbar-links a:hover {
   color: #50fa7b;
 }
@@ -55,6 +57,12 @@
 @media (max-width: 768px) {
   .hamburger {
     display: block;
+    flex-direction: column;
+    background-color: #2d3b50; /* Háttérszín */
+    text-align: center;
+    z-index: 1000; /* Előtérbe helyezés */
+    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1); /* Árnyék hozzáadása */
+
   }
 
   .navbar-links {
@@ -69,8 +77,13 @@
     padding: 15px 0;
   }
 
+  /* A menü megnyitott állapotának módosítása */
   .navbar-links.open {
     display: flex;
+    flex-direction: column; /* Ez biztosítja, hogy a menüelemek oszlopban jelenjenek meg */
+    z-index: 1000; /* Ez biztosítja, hogy a menü felül legyen */
+    animation: slideDown 0.3s ease-in-out; /* Lenyíló animáció */
+
   }
 
   .navbar-links li {
@@ -91,5 +104,14 @@
 .status-icon img:hover {
   transform: scale(1.1);
 }
-
-
+/* Lenyíló animáció */
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-20px); /* Fentről indul */
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0); /* Alaphelyzetben áll meg */
+  }
+}

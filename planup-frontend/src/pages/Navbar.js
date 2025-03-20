@@ -1,9 +1,8 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import "../Style/Navbar.css";
-import loginImage from "../images/login.jpg"
-import logoutImage from "../images/logout.jpg"
-
+import loginImage from "../images/login.jpg";
+import logoutImage from "../images/logout.jpg";
 
 function Navbar({ user }) {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -12,10 +11,12 @@ function Navbar({ user }) {
     <nav className="navbar">
       <Link className="navbar-title" to="/">PlanUp</Link>
 
+      {/* Hamburger ikon */}
       <div className="hamburger" onClick={() => setMenuOpen(!menuOpen)}>
         ☰
       </div>
 
+      {/* Menü tartalom */}
       <ul className={`navbar-links ${menuOpen ? "open" : ""}`}>
         {!user ? (
           <>
@@ -25,10 +26,10 @@ function Navbar({ user }) {
             <li>
               <Link to="/login">Bejelentkezés</Link>
             </li>
-             {/* Állapotjelző ikont használjuk a "Profil" gomb helyett */}
-             <li className="status-icon">
+            {/* Profil ikon */}
+            <li className="status-icon">
               <Link to="/profile">
-                <img src={user ? loginImage : logoutImage} alt="Profil" />
+                <img src={logoutImage} alt="Profil" />
               </Link>
             </li>
           </>
@@ -40,21 +41,17 @@ function Navbar({ user }) {
             <li>
               <Link to="/liked-programs">Kedvelt Programok</Link>
             </li>
-            {/* Állapotjelző ikont használjuk a "Profil" gomb helyett */}
+            {/* Profil ikon */}
             <li className="status-icon">
-            <Link to={user ? "/profile" : "/login"}>
-            <img src={user ? loginImage : logoutImage} alt="Profil" />
-            </Link>
+              <Link to="/profile">
+                <img src={loginImage} alt="Profil" />
+              </Link>
             </li>
-
           </>
         )}
       </ul>
     </nav>
-);
-
-
-
+  );
 }
 
 export default Navbar;
