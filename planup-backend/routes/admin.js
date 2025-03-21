@@ -27,14 +27,15 @@ router.post('/add-user', async (req, res) => {
 });
 
 // 📌 Felhasználó törlése
-router.delete('/delete-user/:id', async (req, res) => {
-  const id = req.params.id;
+router.delete('/programs/:id', async (req, res) => {
+  const { id } = req.params;
+
   try {
-    await db.execute('DELETE FROM Users WHERE id = ?', [id]);
-    res.json({ message: 'Felhasználó sikeresen törölve.' });
+    await db.execute('DELETE FROM Programs WHERE ProgramID = ?', [id]);
+    res.json({ message: 'Program sikeresen törölve!' });
   } catch (error) {
-    console.error('Hiba történt a felhasználó törlésekor:', error);
-    res.status(500).json({ error: 'Hiba történt a felhasználó törlésekor.' });
+    console.error('Hiba történt a program törlésekor:', error);
+    res.status(500).json({ error: 'Hiba történt a program törlésekor.' });
   }
 });
 
@@ -63,10 +64,9 @@ router.post('/add-program', async (req, res) => {
 router.get('/programs', async (req, res) => {
   try {
     const [programs] = await db.execute(`
-      SELECT Programs.*, City.Name AS CityName 
+      SELECT ProgramID, Name, Description 
       FROM Programs 
-      JOIN City ON Programs.CityID = City.CityID
-      ORDER BY Programs.Name ASC
+      ORDER BY Name ASC
     `);
     res.json(programs);
   } catch (error) {
