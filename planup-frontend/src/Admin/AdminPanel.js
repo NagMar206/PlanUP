@@ -1,22 +1,29 @@
 import React from 'react';
-import { BrowserRouter, Route, Routes } from 'react-router-dom';
-import ProgramList from './ProgramList';
-import ProgramCreate from './ProgramCreate';
-import ProgramEdit from './ProgramEdit';
-import ProgramDelete from './ProgramDelete';
-import ProgramShow from './ProgramShow';
+import { Link } from 'react-router-dom';
 
 const AdminPanel = () => {
   return (
-    <BrowserRouter>
-      <Routes>
-        <Route path="/programs" element={<ProgramList />} />
-        <Route path="/programs/create" element={<ProgramCreate />} />
-        <Route path="/programs/:id/edit" element={<ProgramEdit />} />
-        <Route path="/programs/:id/delete" element={<ProgramDelete />} />
-        <Route path="/programs/:id/show" element={<ProgramShow />} />
-      </Routes>
-    </BrowserRouter>
+    <div style={{ padding: '20px' }}>
+      <h1>Admin Panel</h1>
+      <p>Válassz az alábbi adminisztrációs lehetőségek közül:</p>
+      <ul style={{ listStyleType: 'none', padding: 0 }}>
+        <li>
+          <Link to="/admin/create">Program létrehozása</Link>
+        </li>
+        <li>
+          <Link to="/admin/list">Programok listázása</Link>
+        </li>
+        <li>
+          <Link to="/admin/edit/:id">Program szerkesztése</Link> {/* Példa: ID-t dinamikusan kell megadni */}
+        </li>
+        <li>
+          <Link to="/admin/delete/:id">Program törlése</Link> {/* Példa: ID-t dinamikusan kell megadni */}
+        </li>
+        <li>
+          <Link to="/admin/show/:id">Program részletei</Link> {/* Példa: ID-t dinamikusan kell megadni */}
+        </li>
+      </ul>
+    </div>
   );
 };
 
