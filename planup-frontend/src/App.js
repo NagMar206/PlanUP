@@ -19,10 +19,6 @@ import Summary from "./pages/Summary";
 
 // 📌 Admin oldalak importálása
 import AdminPanel from './Admin/AdminPanel'; // Admin főoldal
-import ProgramCreate from './Admin/ProgramCreate'; // Program létrehozás
-import ProgramEdit from './Admin/ProgramEdit'; // Program szerkesztés
-import ProgramDelete from './Admin/ProgramDelete'; // Program törlés
-import ProgramList from './Admin/ProgramList'; // Program lista megtekintése
 
 // 📌 Context importálása
 import { RoomProvider } from "./context/RoomContext";
@@ -71,10 +67,7 @@ function App() {
 
            {/* Admin oldalak */}
   <Route path="/admin" element={<AdminPanel />} /> {/* Admin főoldal */}
-  <Route path="/admin/create" element={<ProgramCreate apiUrl={apiUrl} />} /> {/* Program létrehozás */}
-  <Route path="/admin/edit/:id" element={<ProgramEdit apiUrl={apiUrl} />} /> {/* Program szerkesztés */}
-  <Route path="/admin/delete/:id" element={<ProgramDelete apiUrl={apiUrl} />} /> {/* Program törlés */}
-  <Route path="/admin/list" element={<ProgramList apiUrl={apiUrl} />} /> {/* Program lista */}
+
 </Routes>
 
         {/* 📌 Lábjegyzet */}

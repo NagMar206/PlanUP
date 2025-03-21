@@ -1,37 +1,61 @@
 /* Általános stílusok */
-.admin-container {
-    padding: 20px;
-  }
-  
-  .admin-title {
-    font-size: 2rem;
-  }
-  
-  /* Program kártyák */
-  .program-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  }
-  
-  .program-card {
-    background-color: #222;
-  }
-  
-  .program-image {
-    width: 100%;
-  }
-  
-  /* Gombok */
-  .button-group {
-    margin-top: 10px;
-  }
-  
-  .delete-button {
-    background-color: red;
-    color: white;
-  }
-  
-  .edit-button {
-    background-color: yellow;
-  }
-  
+body {
+  font-family: Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+  background-color: #f0f0f0;
+}
+
+/* Fejléc stílusa */
+.header {
+  background-color: #333;
+  color: #fff;
+  padding: 1em;
+  text-align: center;
+}
+
+/* Oldalsáv stílusa */
+.sidebar {
+  background-color: #444;
+  color: #fff;
+  padding: 1em;
+  width: 200px;
+  float: left;
+  height: 100vh;
+}
+
+/* Tartalom stílusa */
+.content {
+  margin-left: 200px;
+  padding: 1em;
+}
+
+/* Gombok stílusa */
+.button {
+  background-color: #4CAF50;
+  color: #fff;
+  padding: 0.5em 1em;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.button:hover {
+  background-color: #3e8e41;
+}
+
+/* Táblázat stílusa */
+table {
+  border-collapse: collapse;
+  width: 100%;
+}
+
+th, td {
+  border: 1px solid #ddd;
+  padding: 0.5em;
+  text-align: left;
+}
+
+th {
+  background-color: #f0f0f0;
+}
