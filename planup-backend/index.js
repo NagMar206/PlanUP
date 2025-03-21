@@ -15,15 +15,22 @@ const adminRoutes = require('./routes/admin')
 const multer = require('multer');
 const path = require('path');
 SESSION_SECRET="125eef9d70e5e65deb3e877eca66f1d805463e8062390de14b33bdad0ba58b8a";
+const { Server } = require("socket.io");
 
 const app = express();
-const server = http.createServer(app);
-const io = socketIo(server, {
-    cors: {
-        origin: "http://localhost:3000",
-        credentials: true,
-    }
+const server = http.createServer(app);  // 🛠️ KELL egy HTTP szerver is!
+
+const io = new Server(server, {
+  cors: {
+      origin: "http://localhost:3000",
+      methods: ["GET", "POST"]
+  }
 });
+
+server.listen(3001, () => {
+  console.log('✅ Szerver fut a 3001-es porton');
+});
+
 
 // 🔥 Ezzel a sorral elérhetővé tesszük a `req.app.get('io')` hívást!
 app.set('io', io);
@@ -32,6 +39,11 @@ app.set('io', io);
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
+app.use((req, res, next) => {
+  req.io = io;
+  next();
+});
+
 
 // CORS beállítás
 const cors = require("cors");
@@ -515,28 +527,32 @@ app.get('/api/auth/status', (req, res) => {
   });
 });
 
-io.on('connection', (socket) => {
-  console.log('🔌 Felhasználó csatlakozott:', socket.id);
 
-  socket.on('joinRoom', (roomCode) => {
+io.on("connection", (socket) => {
+  console.log("🟢 Egy felhasználó csatlakozott: " + socket.id);
+
+  // ✅ Szoba csatlakozás
+  socket.on("joinRoom", (roomCode) => {
       socket.join(roomCode);
-      //console.log(`👥 Felhasználó csatlakozott a szobához: ${roomCode}`);
-
-      // Frissítjük a szobában lévő felhasználók listáját mindenki számára
-      io.to(roomCode).emit('updateUsers', `Frissített lista a ${roomCode} szobában`);
+      console.log(`👥 Felhasználó csatlakozott a szobához: ${roomCode}`);
   });
 
-  socket.on('leaveRoom', (roomCode) => {
+  // ✅ Szoba elhagyás
+  socket.on("leaveRoom", (roomCode) => {
       socket.leave(roomCode);
-      //console.log(`🚪 Felhasználó kilépett a szobából: ${roomCode}`);
-
-      io.to(roomCode).emit('updateUsers', `Felhasználó kilépett a ${roomCode} szobából`);
+      console.log(`🚪 Felhasználó elhagyta a szobát: ${roomCode}`);
   });
 
-  socket.on('disconnect', () => {
-      //console.log('❌ Felhasználó lecsatlakozott:', socket.id);
+  // ✅ Készenlét állapot frissítése
+  socket.on("updateReadyStatus", (status) => {
+      io.emit("updateReadyStatus", status);
+  });
+
+  socket.on("disconnect", () => {
+      console.log("🔴 Felhasználó lecsatlakozott: " + socket.id);
   });
 });
+
 
 //RoomsID_Summary
 app.get("/api/room/:roomId/summary", async (req, res) => {
@@ -569,13 +585,6 @@ app.get("/api/room/:roomId/summary", async (req, res) => {
       console.error("❌ Hiba az összegzés lekérésekor:", error);
       res.status(500).json({ error: "Nem sikerült lekérni az összegzést." });
   }
-});
-
-
-
-
-server.listen(3001, () => {
-  console.log('✅ Szerver fut a 3001-es porton');
 });
 
 module.exports = { app, io };
