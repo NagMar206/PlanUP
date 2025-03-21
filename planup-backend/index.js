@@ -340,7 +340,7 @@ app.post('/programs/:id/dislike', async (req, res) => {
 
 // 🔹 Összegzés
 app.get("/programs/liked", async (req, res) => {
-  const { userId, roomId } = req.query;
+  let { userId, roomId } = req.query;
 
   if (!userId && !roomId) {
       return res.status(400).json({ error: "Hiányzó userId vagy roomId paraméter." });
@@ -350,7 +350,18 @@ app.get("/programs/liked", async (req, res) => {
       let query, params;
 
       if (roomId) {
-          // 🔥 Szobás kedvelt programok lekérése
+          // 🔁 Lekérdezzük a RoomID-t a RoomCode alapján
+          const [roomResult] = await req.db.execute(
+              "SELECT RoomID FROM Rooms WHERE RoomCode = ?",
+              [roomId]
+          );
+
+          if (roomResult.length === 0) {
+              return res.status(404).json({ error: "A szoba nem található." });
+          }
+
+          const realRoomId = roomResult[0].RoomID;
+
           query = `
               SELECT p.*, COUNT(ul.UserID) AS likeCount 
               FROM Programs p
@@ -358,9 +369,8 @@ app.get("/programs/liked", async (req, res) => {
               WHERE ul.RoomID = ?
               GROUP BY p.ProgramID
           `;
-          params = [roomId];
+          params = [realRoomId];
       } else {
-          // 🔥 Egyéni felhasználó like-jai
           query = `
               SELECT p.* FROM Programs p
               JOIN UserLikes ul ON p.ProgramID = ul.ProgramID
@@ -370,17 +380,13 @@ app.get("/programs/liked", async (req, res) => {
       }
 
       const [likedPrograms] = await req.db.execute(query, params);
-
-      if (likedPrograms.length === 0) {
-          return res.status(200).json([]); // 🔥 Üres tömb visszaadása 404 helyett
-      }
-
-      res.json(likedPrograms);
+      return res.json(likedPrograms);
   } catch (error) {
       console.error("🔥 Hiba a kedvelt programok lekérésekor:", error);
       res.status(500).json({ error: "Szerverhiba a kedvelt programok betöltésekor." });
   }
 });
+
 
 
 
@@ -564,6 +570,7 @@ app.get("/api/room/:roomId/summary", async (req, res) => {
       res.status(500).json({ error: "Nem sikerült lekérni az összegzést." });
   }
 });
+
 
 
 
