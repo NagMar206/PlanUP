@@ -23,7 +23,6 @@ import ProgramCreate from './Admin/ProgramCreate'; // Program létrehozás
 import ProgramEdit from './Admin/ProgramEdit'; // Program szerkesztés
 import ProgramDelete from './Admin/ProgramDelete'; // Program törlés
 import ProgramList from './Admin/ProgramList'; // Program lista megtekintése
-import ProgramShow from './Admin/ProgramShow'; // Egyedi program részletei
 
 // 📌 Context importálása
 import { RoomProvider } from "./context/RoomContext";
@@ -74,7 +73,6 @@ function App() {
   <Route path="/admin/edit/:id" element={<ProgramEdit apiUrl={apiUrl} />} /> {/* Program szerkesztés */}
   <Route path="/admin/delete/:id" element={<ProgramDelete apiUrl={apiUrl} />} /> {/* Program törlés */}
   <Route path="/admin/list" element={<ProgramList apiUrl={apiUrl} />} /> {/* Program lista */}
-  <Route path="/admin/show/:id" element={<ProgramShow apiUrl={apiUrl} />} /> {/* Egyedi program megtekintése */}
 </Routes>
 
         {/* 📌 Lábjegyzet */}

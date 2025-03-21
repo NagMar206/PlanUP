@@ -1,0 +1,37 @@
+/* Általános stílusok */
+.admin-container {
+    padding: 20px;
+  }
+  
+  .admin-title {
+    font-size: 2rem;
+  }
+  
+  /* Program kártyák */
+  .program-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  }
+  
+  .program-card {
+    background-color: #222;
+  }
+  
+  .program-image {
+    width: 100%;
+  }
+  
+  /* Gombok */
+  .button-group {
+    margin-top: 10px;
+  }
+  
+  .delete-button {
+    background-color: red;
+    color: white;
+  }
+  
+  .edit-button {
+    background-color: yellow;
+  }
+  

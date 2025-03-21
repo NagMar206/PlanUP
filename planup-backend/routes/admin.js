@@ -64,7 +64,7 @@ router.post('/add-program', async (req, res) => {
 router.get('/programs', async (req, res) => {
   try {
     const [programs] = await db.execute(`
-      SELECT ProgramID, Name, Description 
+      SELECT ProgramID, Name, Description, Duration, Cost, Location, Image, MoreInfoLink 
       FROM Programs 
       ORDER BY Name ASC
     `);
@@ -78,24 +78,25 @@ router.get('/programs', async (req, res) => {
 // 📌 Program részleteinek lekérése
 router.get('/programs/:id', async (req, res) => {
   const { id } = req.params;
+
   try {
     const [program] = await db.execute(`
-      SELECT Programs.*, City.Name AS CityName 
+      SELECT ProgramID, Name, Description, Duration, Cost, Location, Image, MoreInfoLink 
       FROM Programs 
-      JOIN City ON Programs.CityID = City.CityID
-      WHERE Programs.ProgramID = ?
+      WHERE ProgramID = ?
     `, [id]);
-    
+
     if (program.length === 0) {
       return res.status(404).json({ error: 'A program nem található.' });
     }
 
     res.json(program[0]);
   } catch (error) {
-    console.error('Hiba történt a program részleteinek lekérésekor:', error);
-    res.status(500).json({ error: 'Hiba történt a program részleteinek lekérésekor.' });
+    console.error('Hiba történt:', error);
+    res.status(500).json({ error: 'Hiba történt.' });
   }
 });
+
 
 // 📌 Program szerkesztése
 router.put('/programs/:id', async (req, res) => {
@@ -121,6 +122,13 @@ router.delete('/programs/:id', async (req, res) => {
   const { id } = req.params;
 
   try {
+    // Ellenőrizzük, hogy létezik-e a program
+    const [program] = await db.execute('SELECT * FROM Programs WHERE ProgramID = ?', [id]);
+    if (program.length === 0) {
+      return res.status(404).json({ error: 'A program nem található.' });
+    }
+
+    // Töröljük a programot
     await db.execute('DELETE FROM Programs WHERE ProgramID = ?', [id]);
     res.json({ message: 'Program sikeresen törölve!' });
   } catch (error) {
@@ -128,6 +136,7 @@ router.delete('/programs/:id', async (req, res) => {
     res.status(500).json({ error: 'Hiba történt a program törlésekor.' });
   }
 });
+
 
 // 📌 Városok lekérése
 router.get('/cities', async (req, res) => {

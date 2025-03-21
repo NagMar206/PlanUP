@@ -19,9 +19,6 @@ const AdminPanel = () => {
         <li>
           <Link to="/admin/delete/:id">Program törlése</Link> {/* Példa: ID-t dinamikusan kell megadni */}
         </li>
-        <li>
-          <Link to="/admin/show/:id">Program részletei</Link> {/* Példa: ID-t dinamikusan kell megadni */}
-        </li>
       </ul>
     </div>
   );

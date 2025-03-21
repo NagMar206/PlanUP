@@ -1,17 +1,18 @@
 import React, { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom'; // useParams importálása
+import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 
 const ProgramEdit = () => {
-  const { id } = useParams(); // Az útvonalból származó paraméterek elérése
+  const { id } = useParams();
+  const navigate = useNavigate();
   const [program, setProgram] = useState({
-    name: '',
-    description: '',
-    duration: '',
-    cost: false,
-    location: '',
-    image: '',
-    moreInfoLink: '',
+    Name: '',
+    Description: '',
+    Duration: '',
+    Cost: '',
+    Location: '',
+    Image: '',
+    MoreInfoLink: '',
   });
 
   // Program adatok lekérése az API-ból
@@ -19,7 +20,9 @@ const ProgramEdit = () => {
     axios
       .get(`http://localhost:3001/api/admin/programs/${id}`)
       .then((response) => setProgram(response.data))
-      .catch((error) => console.error('Hiba történt a program adatainak lekérésekor:', error));
+      .catch((error) =>
+        console.error('Hiba történt a program adatainak lekérésekor:', error)
+      );
   }, [id]);
 
   // Program frissítése az API-ban
@@ -27,6 +30,7 @@ const ProgramEdit = () => {
     try {
       await axios.put(`http://localhost:3001/api/admin/programs/${id}`, program);
       alert('✅ Program sikeresen frissítve!');
+      navigate('/admin/list');
     } catch (error) {
       console.error('Hiba történt a program frissítésekor:', error);
       alert('❌ Hiba történt a program frissítésekor.');
@@ -44,75 +48,13 @@ const ProgramEdit = () => {
 
   return (
     <div style={{ padding: '20px' }}>
-      <h1>Program szerkesztése</h1>
+      <h1>Program módosítása</h1>
       <form>
-        <div>
-          <label>Név:</label>
-          <input
-            type="text"
-            name="name"
-            value={program.name}
-            onChange={handleChange}
-          />
-        </div>
-        <div>
-          <label>Leírás:</label>
-          <textarea
-            name="description"
-            value={program.description}
-            onChange={handleChange}
-          />
-        </div>
-        <div>
-          <label>Időtartam:</label>
-          <input
-            type="text"
-            name="duration"
-            value={program.duration}
-            onChange={handleChange}
-          />
-        </div>
-        <div>
-          <label>Költség:</label>
-          <input
-            type="checkbox"
-            name="cost"
-            checked={program.cost}
-            onChange={(e) =>
-              setProgram((prevProgram) => ({
-                ...prevProgram,
-                cost: e.target.checked,
-              }))
-            }
-          />
-        </div>
-        <div>
-          <label>Helyszín:</label>
-          <input
-            type="text"
-            name="location"
-            value={program.location}
-            onChange={handleChange}
-          />
-        </div>
-        <div>
-          <label>Kép URL:</label>
-          <input
-            type="text"
-            name="image"
-            value={program.image}
-            onChange={handleChange}
-          />
-        </div>
-        <div>
-          <label>További információ link:</label>
-          <input
-            type="text"
-            name="moreInfoLink"
-            value={program.moreInfoLink}
-            onChange={handleChange}
-          />
-        </div>
+        <label>Név:</label>
+        <input type="text" name="Name" value={program.Name} onChange={handleChange} />
+        <label>Leírás:</label>
+        <textarea name="Description" value={program.Description} onChange={handleChange} />
+        {/* További mezők */}
         <button type="button" onClick={handleUpdate}>
           Mentés
         </button>
