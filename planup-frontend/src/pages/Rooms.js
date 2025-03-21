@@ -5,6 +5,8 @@ import { io } from 'socket.io-client';
 import '../Style/Rooms.css';
 import { FaCheckCircle, FaTimesCircle } from 'react-icons/fa';
 import { useRoom } from "../context/RoomContext"; // 🔹 RoomID tárolása Contextben
+import { useSocket } from "../context/SocketContext"; // ✅ HOZZÁADÁS
+
 
 function Rooms({ apiUrl, userId }) {
     const [roomCode, setRoomCode] = useState('');
@@ -20,6 +22,7 @@ function Rooms({ apiUrl, userId }) {
     const socketRef = useRef(null);
     const { setRoomId } = useRoom(); // 🔹 RoomID tárolása Contextben
     const socket = useSocket(); // Ez a helyes
+    
 
     useEffect(() => {
         if (!socket) return;
