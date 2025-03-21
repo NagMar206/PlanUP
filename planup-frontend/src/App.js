@@ -49,7 +49,7 @@ function App() {
   }, []);
 
   return (
-    <SocketProvider> {/* 🔥 SocketProvider beépítése */}
+    <SocketProvider apiUrl="http://localhost:3001"> {/* 🔥 SocketProvider beépítése */}
     <RoomProvider> {/* 📌 RoomProvider csomagolás */}
       <Router>
         {/* 📌 Navigációs sáv */}
