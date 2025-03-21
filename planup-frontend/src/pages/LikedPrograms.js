@@ -19,24 +19,20 @@ function LikedPrograms({ apiUrl, userId }) {
 
   const validUserId = userId || 1; // Ha nincs userId, állítsuk be 1-re
 
+  
   useEffect(() => {
-    console.log(`🟢 Aktív userID a frontendben: ${validUserId}, RoomID: ${roomId || "Nincs"}`);
-
     const fetchLikedPrograms = async () => {
-      try {
-        const endpoint = roomId
-          ? `${apiUrl}/api/room/${roomId}/liked-programs` // Szobás API hívás
-          : `${apiUrl}/programs/liked`; // Egyéni API hívás
+        try {
+            const endpoint = roomId
+                ? `${apiUrl}/programs/liked?roomId=${roomId}` // 🔥 Szobához kötött like-ok lekérése
+                : `${apiUrl}/programs/liked?userId=${userId}`; // Egyéni like-ok lekérése
 
-        const params = roomId ? {} : { userId: validUserId }; // Egyéni esetben felhasználó azonosító kell
-
-        const response = await axios.get(endpoint, { params });
-        console.log("API válasza:", response.data);
-        setLikedPrograms(response.data);
-      } catch (err) {
-        console.error("❌ Hiba történt a kedvelt programok lekérésekor:", err);
-        setError("Nem sikerült betölteni a kedvelt programokat.");
-      }
+            const response = await axios.get(endpoint, { withCredentials: true });
+            setLikedPrograms(response.data);
+        } catch (err) {
+            console.error("❌ Hiba a kedvelt programok lekérésekor:", err);
+            setError("Nem sikerült betölteni a kedvelt programokat.");
+        }
     };
 
     fetchLikedPrograms();

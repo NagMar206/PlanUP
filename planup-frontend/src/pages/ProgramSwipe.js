@@ -3,6 +3,9 @@ import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import "../Style/ProgramSwipe.css";
 import { useRoom } from "../context/RoomContext"; // Szoba kontextus importálása
+import { useSocket } from "../context/SocketContext";
+
+
 
 function ProgramSwipe({ apiUrl, userId }) {
   const { roomId } = useRoom(); // Szoba azonosító lekérése
@@ -13,7 +16,8 @@ function ProgramSwipe({ apiUrl, userId }) {
   const [filterActive, setFilterActive] = useState(false);
   const [cities, setCities] = useState([]);
   const navigate = useNavigate();
-  const didFetch = useRef(false);
+  //const didFetch = useRef(false);
+  const socket = useSocket();
 
   const magyarIdotartam = {
     half_day: "Fél napos",
@@ -91,31 +95,39 @@ function ProgramSwipe({ apiUrl, userId }) {
     if (!program) return;
 
     try {
-      console.log(`🔼 Like/dislike küldése: UserID = ${userId}, ProgramID = ${program.ProgramID}, Action = ${action}, RoomID = ${roomId || "Nincs"}`);
+        console.log(`🔼 Like/dislike küldése: UserID = ${userId}, ProgramID = ${program.ProgramID}, RoomID = ${roomId || "Nincs"}`);
 
-      const endpoint = roomId
-        ? `${apiUrl}/api/room/${roomId}/like`  // Szoba esetén más endpoint
-        : `${apiUrl}/programs/${program.ProgramID}/${action}`;  // Egyéni esetben normál
+        const response = await axios.post(`${apiUrl}/programs/${program.ProgramID}/like`, { 
+            userId, 
+            programId: program.ProgramID,
+            roomId: roomId || null // ✅ Ha van szobakód, akkor elküldi, ha nincs, akkor null
+        });
 
-      const response = await axios.post(endpoint, { 
-        userId, 
-        programId: program.ProgramID 
-      });
+        console.log("✅ Like/dislike művelet válasza:", response.data);
 
-      console.log("✅ Like/dislike művelet válasza:", response.data);
-
-      setProcessedPrograms((prev) => new Set([...prev, program.ProgramID]));
-      fetchFilteredProgram();
-    } catch (err) {
-      console.error("❌ Nem sikerült végrehajtani a műveletet:", err);
-
-      if (err.response && err.response.status === 400) {
+        setProcessedPrograms((prev) => new Set([...prev, program.ProgramID]));
         fetchFilteredProgram();
-      } else {
-        setError("Nem sikerült végrehajtani a műveletet.");
-      }
+    } catch (err) {
+        console.error("❌ Nem sikerült végrehajtani a műveletet:", err);
+
+        if (err.response && err.response.status === 400) {
+            fetchFilteredProgram();
+        } else {
+            setError("Nem sikerült végrehajtani a műveletet.");
+        }
     }
-  };
+};
+
+      const handleEndSwipe = () => {
+        if (roomId) {
+            console.log(`🔄 Szobás válogatás vége, átirányítás a Summary oldalra. RoomID: ${roomId}`);
+            navigate(`/summary?room=${roomId}`); // 🔥 Szobás pörgetés után a Summary oldalra megy
+        } else {
+            console.log("🔄 Egyéni válogatás vége, átirányítás a LikedPrograms oldalra.");
+            navigate(`/liked-programs`); // 🔥 Egyéni válogatás végén a LikedPrograms oldalra megy
+        }
+      };
+
 
   return (
     <div className="program-swipe-container">
@@ -154,7 +166,7 @@ function ProgramSwipe({ apiUrl, userId }) {
             <p>Minden elérhető programot végignéztél.</p>
             <p>🔄 Próbálj új keresést, vagy nézz vissza később új lehetőségekért!</p>
             <button className="reload-button" onClick={fetchFilteredProgram}>🔄 Újrapróbálkozás</button>
-            <button className="summary-button" onClick={() => navigate("/liked-programs")}>📋 Összegzés megtekintése</button>
+            <button onClick={handleEndSwipe} className="finish-button">🎯 Összegzés</button>
           </div>
         </div>
       )}
