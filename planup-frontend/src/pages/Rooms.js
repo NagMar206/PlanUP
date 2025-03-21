@@ -19,29 +19,23 @@ function Rooms({ apiUrl, userId }) {
     const navigate = useNavigate();
     const socketRef = useRef(null);
     const { setRoomId } = useRoom(); // 🔹 RoomID tárolása Contextben
-
+    const socket = useSocket(); // Ez a helyes
 
     useEffect(() => {
-        // ✅ Csak akkor hozunk létre kapcsolatot, ha még nincs
-        if (!socketRef.current) {
-            socketRef.current = io(apiUrl, { withCredentials: true });
-
-            socketRef.current.on('connect', () => {
-                console.log('✅ Sikeres Socket.io kapcsolat');
-            });
-
-            socketRef.current.on('updateReadyStatus', (status) => {
-                setAllReady(status);
-            });
-
-            return () => {
-                socketRef.current.off('updateReadyStatus');
-                socketRef.current.disconnect();
-                console.log('🚪 Socket.io kapcsolat lezárva.');
-            };
-        }
-    }, [apiUrl]);
+        if (!socket) return;
     
+        console.log("✅ Socket.io kapcsolat aktív Rooms.js-ben");
+    
+        socket.on("updateReadyStatus", (status) => {
+            setAllReady(status);
+        });
+    
+        return () => {
+            socket.off("updateReadyStatus"); // Leállítjuk az eseményfigyelést
+        };
+    }, [socket]);
+    
+
     useEffect(() => {
         const checkExistingRoom = async () => {
             try {
