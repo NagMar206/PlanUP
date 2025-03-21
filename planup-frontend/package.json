@@ -2,6 +2,7 @@
   "name": "planup",
   "version": "1.0.0",
   "private": true,
+  "proxy": "http://localhost:3001",
   "dependencies": {
     "axios": "^1.7.9",
     "formik": "^2.4.6",
