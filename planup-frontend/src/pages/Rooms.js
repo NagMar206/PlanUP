@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { io } from 'socket.io-client';
 import '../Style/Rooms.css';
 import { FaCheckCircle, FaTimesCircle } from 'react-icons/fa';
+import { useRoom } from "../context/RoomContext"; // 🔹 RoomID tárolása Contextben
 
 function Rooms({ apiUrl, userId }) {
     const [roomCode, setRoomCode] = useState('');
@@ -16,29 +17,29 @@ function Rooms({ apiUrl, userId }) {
     const [allReady, setAllReady] = useState(false);
     const [isCopied, setIsCopied] = useState(false);
     const navigate = useNavigate();
-    const socketRef = useRef();
+    const socketRef = useRef(null);
+    const { setRoomId } = useRoom(); // 🔹 RoomID tárolása Contextben
+
 
     useEffect(() => {
-        socketRef.current = io(apiUrl, { withCredentials: true });
-    
-        socketRef.current.on('connect', () => {
-            console.log('✅ Sikeres Socket.io kapcsolat');
-        });
-    
-        socketRef.current.on('updateReadyStatus', (status) => {
-            setAllReady(status);
-        });
-    
-        socketRef.current.on('updateReadyStatus', (status) => {
-            setAllReady(status);
-            console.log('🔄 Mindenki készen áll:', status);
-        });
-    
-        return () => {
-            socketRef.current.off('updateReadyStatus');
-            socketRef.current.disconnect();
-            console.log('🚪 Socket.io kapcsolat lezárva.');
-        };
+        // ✅ Csak akkor hozunk létre kapcsolatot, ha még nincs
+        if (!socketRef.current) {
+            socketRef.current = io(apiUrl, { withCredentials: true });
+
+            socketRef.current.on('connect', () => {
+                console.log('✅ Sikeres Socket.io kapcsolat');
+            });
+
+            socketRef.current.on('updateReadyStatus', (status) => {
+                setAllReady(status);
+            });
+
+            return () => {
+                socketRef.current.off('updateReadyStatus');
+                socketRef.current.disconnect();
+                console.log('🚪 Socket.io kapcsolat lezárva.');
+            };
+        }
     }, [apiUrl]);
     
     useEffect(() => {
@@ -162,6 +163,11 @@ function Rooms({ apiUrl, userId }) {
         }
     };
 
+    const startSwipe = () => {
+        setRoomId(roomCode); // 🔹 RoomID mentése a Contextben
+        navigate(`/swipe?room=${roomCode}`);
+    };
+
     return (
         <div className="rooms-container">
             <h2 className="title">SZOBÁK</h2>
@@ -201,7 +207,7 @@ function Rooms({ apiUrl, userId }) {
                         {isReady ? <FaCheckCircle className="ready-icon ready" style={{ fontSize: '3rem' }} /> : <FaTimesCircle className="ready-icon not-ready" style={{ fontSize: '3rem' }} />}
                     </div>
                     <button 
-                        onClick={() => navigate(`/swipe?room=${roomCode}`)} // ✅ Helyes URL generálás
+                        onClick={startSwipe} // 🔹 RoomID mentés és navigálás
                         disabled={!allReady} 
                         className={`program-button ${allReady ? 'active' : 'disabled'}`}
                     >
