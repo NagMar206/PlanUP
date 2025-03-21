@@ -19,7 +19,6 @@ function Rooms({ apiUrl, userId }) {
     const [allReady, setAllReady] = useState(false);
     const [isCopied, setIsCopied] = useState(false);
     const navigate = useNavigate();
-    const socketRef = useRef(null);
     const { setRoomId } = useRoom(); // 🔹 RoomID tárolása Contextben
     const socket = useSocket(); // Ez a helyes
     
@@ -48,7 +47,7 @@ function Rooms({ apiUrl, userId }) {
                     fetchRoomUsers(response.data.roomCode);
                     checkReadyStatus(response.data.roomCode);
                     setIsInRoom(true);
-                    socketRef.current.emit('joinRoom', response.data.roomCode);
+                    socket.emit('joinRoom', response.data.roomCode);
                 }
             } catch (err) {
                 console.log('Nincs aktív szoba.');
@@ -64,7 +63,7 @@ function Rooms({ apiUrl, userId }) {
             setSuccessMessage(`Szoba létrehozva! Kód: ${response.data.roomCode}`);
             fetchRoomUsers(response.data.roomCode);
             setIsInRoom(true);
-            socketRef.current.emit('joinRoom', response.data.roomCode);
+            socket.current.emit('joinRoom', response.data.roomCode);
             setTimeout(() => setSuccessMessage(''), 5000);
         } catch (err) {
             setError('Nem sikerült létrehozni a szobát.');
@@ -77,7 +76,7 @@ function Rooms({ apiUrl, userId }) {
             const response = await axios.post(`${apiUrl}/rooms/join`, { roomCode, userId }, { withCredentials: true });
             setSuccessMessage(response.data.message);
             setIsInRoom(true);
-            socketRef.current.emit('joinRoom', roomCode);
+            socket.emit('joinRoom', response.data.roomCode);
             fetchRoomUsers(roomCode);
             checkReadyStatus(roomCode);
             setTimeout(() => setSuccessMessage(''), 3000);
@@ -94,7 +93,7 @@ function Rooms({ apiUrl, userId }) {
             setRoomCreator('');
             setRoomCode('');
             setIsInRoom(false);
-            socketRef.current.emit('leaveRoom', roomCode);
+            socket.current.emit('leaveRoom', roomCode);
             setTimeout(() => setSuccessMessage(''), 3000);
         } catch (err) {
             setError('Nem sikerült kilépni a szobából.');
@@ -107,7 +106,7 @@ function Rooms({ apiUrl, userId }) {
             const uniqueUsers = Array.isArray(response.data.users) ? [...new Map(response.data.users.map(user => [user.UserID, user])).values()] : [];
             setRoomUsers(uniqueUsers);
             setRoomCreator(response.data.creator || 'Ismeretlen felhasználó');
-            socketRef.current.emit('refreshUsers', roomCode);
+            socket.emit('refreshUsers', roomCode);
         } catch (err) {
             console.error('Nem sikerült lekérni a szobában lévő felhasználókat:', err.message);
         }
@@ -133,7 +132,7 @@ function Rooms({ apiUrl, userId }) {
             }
     
             setAllReady(response.data.allReady);
-            socketRef.current.emit('checkAllReady', roomCode);
+            socket.emit('checkAllReady', roomCode);
     
         } catch (err) {
             console.error('❌ Nem sikerült frissíteni a készenléti állapotot:', err.message);
