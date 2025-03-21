@@ -26,6 +26,7 @@ import ProgramList from './Admin/ProgramList'; // Program lista megtekintése
 
 // 📌 Context importálása
 import { RoomProvider } from "./context/RoomContext";
+import { SocketProvider } from "./context/SocketContext";
 
 // 📌 API URL beállítása (globális változó)
 const apiUrl = "http://localhost:3001";
@@ -48,6 +49,7 @@ function App() {
   }, []);
 
   return (
+    <SocketProvider> {/* 🔥 SocketProvider beépítése */}
     <RoomProvider> {/* 📌 RoomProvider csomagolás */}
       <Router>
         {/* 📌 Navigációs sáv */}
@@ -79,6 +81,8 @@ function App() {
         <Footer />
       </Router>
     </RoomProvider>
+    </SocketProvider>
+
   );
 }
 
