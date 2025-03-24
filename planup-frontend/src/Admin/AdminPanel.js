@@ -154,7 +154,6 @@ const AdminPanel = () => {
             <TableRow>
               <TableCell>Név</TableCell>
               <TableCell>Email</TableCell>
-              <TableCell>Kitiltva</TableCell>
               <TableCell>Művelet</TableCell>
             </TableRow>
           </TableHead>
