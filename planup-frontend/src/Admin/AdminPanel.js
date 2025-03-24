@@ -75,10 +75,16 @@ const AdminPanel = () => {
     fetchPrograms();
   };
 
-  const banUser = async (id) => {
-    await axios.put(`${API_BASE}/users/${id}/ban`);
-    fetchUsers();
+  const deleteUser = async (id) => {
+    try {
+      await axios.delete(`${API_BASE}/users/${id}`);
+      fetchUsers();
+    } catch (err) {
+      console.error('❌ Hiba a felhasználó törlésekor:', err.response?.data || err.message);
+      alert('Törlés nem sikerült: ' + (err.response?.data?.error || err.message));
+    }
   };
+  
 
   return (
     <Box sx={{ p: 4, fontFamily: 'Arial', backgroundColor: '#f5f5f5', minHeight: '100vh' }}>
@@ -157,9 +163,8 @@ const AdminPanel = () => {
               <TableRow key={u.UserID}>
                 <TableCell>{u.Name || u.Username}</TableCell>
                 <TableCell>{u.Email}</TableCell>
-                <TableCell>{u.Banned ? 'Igen' : 'Nem'}</TableCell>
                 <TableCell>
-                  {!u.Banned && <Button onClick={() => banUser(u.UserID)} color="warning">Kitiltás</Button>}
+                <Button onClick={() => deleteUser(u.UserID)} color="error">Törlés</Button>
                 </TableCell>
               </TableRow>
             ))}
