@@ -1,37 +1,77 @@
-/* Általános stílusok */
 .admin-container {
-    padding: 20px;
-  }
-  
-  .admin-title {
-    font-size: 2rem;
-  }
-  
-  /* Program kártyák */
-  .program-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  }
-  
-  .program-card {
-    background-color: #222;
-  }
-  
-  .program-image {
-    width: 100%;
-  }
-  
-  /* Gombok */
-  .button-group {
-    margin-top: 10px;
-  }
-  
-  .delete-button {
-    background-color: red;
-    color: white;
-  }
-  
-  .edit-button {
-    background-color: yellow;
-  }
-  
+  max-width: 1200px;
+  margin: 40px auto;
+  padding: 20px;
+  background-color: #f9f9f9;
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+.program-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.program-list li {
+  padding: 10px;
+  border-bottom: 1px solid #ccc;
+}
+
+.program-list li:last-child {
+  border-bottom: none;
+}
+
+.program-list li button {
+  margin-left: 10px;
+}
+
+.admin-page footer {
+  display: none;
+}
+
+.modal-header {
+  padding: 10px;
+  border-bottom: 1px solid #ccc;
+}
+
+.modal-body {
+  padding: 20px;
+}
+
+.modal-footer {
+  padding: 10px;
+  border-top: 1px solid #ccc;
+  text-align: right;
+}
+
+/* További stílusok a letisztultság érdekében */
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+th, td {
+  padding: 10px;
+  text-align: left;
+}
+
+th {
+  background-color: #f0f0f0;
+}
+
+input[type="file"] {
+  display: none;
+}
+
+.file-upload {
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.file-upload:hover {
+  background-color: #f0f0f0;
+}

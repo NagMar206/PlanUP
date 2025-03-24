@@ -1,163 +1,172 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import axios from 'axios';
+import {
+  Box, Button, TextField, Typography, Table, TableBody,
+  TableCell, TableContainer, TableHead, TableRow, Paper, Select, MenuItem, InputLabel
+} from '@mui/material';
 
-const durations = [
-  { label: 'Egész hétvégés', value: 3 },
-  { label: 'Egész napos', value: 2 },
-  { label: 'Fél napos', value: 1 },
-];
+const API_BASE = 'http://localhost:3001/api/admin'; // Frissített API végpont
+const UPLOAD_URL = 'http://localhost:3001/api/upload';
+const IMAGE_BASE = 'http://localhost:3001/images';
 
 const AdminPanel = () => {
-  const [newProgram, setNewProgram] = useState({
-    name: '',
-    description: '',
-    duration: '',
-    cost: false,
-    location: '',
-    city: '',
-    image: '',
-    moreInfoLink: '',
-  });
-
-  const handleAddProgram = async () => {
-    try {
-      await axios.post('http://localhost:3001/api/admin/add-program', {
-        ...newProgram,
-        cost: newProgram.cost ? true : false,
-      }, { withCredentials: true });
-
-      setNewProgram({
-        name: '', description: '', duration: '', cost: false,
-        location: '', city: '', image: '', moreInfoLink: '',
-      });
-
-      alert('✅ Program sikeresen hozzáadva!');
-    } catch (error) {
-      console.error('Hiba történt:', error);
-      alert('❌ Hiba történt a program hozzáadásakor.');
-    }
-  };
-
-  const handleImageChange = async (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-
-    // Kép formátum ellenőrzése
-    const validFormats = ['image/jpeg', 'image/jpg'];
-    if (!validFormats.includes(file.type)) {
-      alert('❌ Nem megfelelő formátum! Csak JPG/JPEG képeket tölthetsz fel.');
-      return;
-    }
-
-    // Kép méret ellenőrzése
-    const img = new Image();
-    img.src = URL.createObjectURL(file);
-    img.onload = async () => {
-      if (img.width !== 1024 || img.height !== 1024) {
-        alert('❌ Nem megfelelő képméret! A kép méretének 1024x1024 pixelnek kell lennie.');
-        URL.revokeObjectURL(img.src);
-        return;
-      }
-
-      // Ha minden ellenőrzés sikeres, folytatjuk a feltöltést
-      URL.revokeObjectURL(img.src);
-      const formData = new FormData();
-      formData.append('image', file);
-
-      try {
-        const response = await axios.post('http://localhost:3001/api/upload', formData, {
-          headers: {
-            'Content-Type': 'multipart/form-data'
-          },
-        });
-
-        setNewProgram(prevState => ({
-          ...prevState,
-          image: response.data.filePath
-        }));
-
-        alert('✅ Kép sikeresen feltöltve!');
-      } catch (error) {
-        console.error('Hiba történt:', error);
-        alert('❌ Hiba történt a képfeltöltés során.');
-      }
-    };
-  };
-
+  const [programs, setPrograms] = useState([]);
+  const [users, setUsers] = useState([]);
   const [cities, setCities] = useState([]);
-  const fetchCities = async () => {
-    try {
-      const response = await axios.get('http://localhost:3001/api/admin/cities');
-      setCities(response.data);
-    } catch (error) {
-      console.error('Hiba történt a városok betöltésekor:', error);
-    }
-  };
+  const [form, setForm] = useState({ name: '', description: '', duration: '', cost: false, location: '', image: '', moreInfoLink: '', city: '' });
+  const [editingId, setEditingId] = useState(null);
+  const [imageFile, setImageFile] = useState(null);
 
-  React.useEffect(() => {
+  useEffect(() => {
+    fetchPrograms();
+    fetchUsers();
     fetchCities();
   }, []);
 
+  const fetchPrograms = async () => {
+    const res = await axios.get(`${API_BASE}/programs`);
+    setPrograms(res.data);
+  };
+
+  const fetchUsers = async () => {
+    const res = await axios.get(`${API_BASE}/users`);
+    setUsers(res.data);
+  };
+
+  const fetchCities = async () => {
+    const res = await axios.get(`${API_BASE}/cities`);
+    setCities(res.data);
+  };
+
+  const handleInput = (e) => {
+    setForm({ ...form, [e.target.name]: e.target.value });
+  };
+
+  const handleImageUpload = async () => {
+    if (!imageFile) return;
+    const formData = new FormData();
+    formData.append('image', imageFile);
+    const res = await axios.post(UPLOAD_URL, formData);
+    return res.data.filePath;
+  };
+
+  const saveProgram = async () => {
+    const imagePath = await handleImageUpload();
+    const finalForm = { ...form, image: imagePath || form.image };
+
+    if (editingId) {
+      await axios.put(`${API_BASE}/programs/${editingId}`, finalForm);
+    } else {
+      await axios.post(`${API_BASE}/add-program`, finalForm);
+    }
+    setForm({ name: '', description: '', duration: '', cost: false, location: '', image: '', moreInfoLink: '', city: '' });
+    setEditingId(null);
+    setImageFile(null);
+    fetchPrograms();
+  };
+
+  const editProgram = (program) => {
+    setForm(program);
+    setEditingId(program.ProgramID);
+  };
+
+  const deleteProgram = async (id) => {
+    await axios.delete(`${API_BASE}/programs/${id}`);
+    fetchPrograms();
+  };
+
+  const banUser = async (id) => {
+    await axios.put(`${API_BASE}/users/${id}/ban`);
+    fetchUsers();
+  };
+
   return (
-    <div>
-      <h3>Új program hozzáadása:</h3>
-      <form>
-        <label>Név:
-          <input type="text" value={newProgram.name} onChange={(e) => setNewProgram({ ...newProgram, name: e.target.value })} />
-        </label><br />
+    <Box sx={{ p: 4, fontFamily: 'Arial', backgroundColor: '#f5f5f5', minHeight: '100vh' }}>
+      <Typography variant="h4" gutterBottom sx={{ fontWeight: 'bold' }}>Admin Panel</Typography>
 
-        <label>Leírás:
-          <textarea value={newProgram.description} onChange={(e) => setNewProgram({ ...newProgram, description: e.target.value })} />
-        </label><br />
+      {/* PROGRAMOK */}
+      <Box sx={{ mb: 5, p: 2, backgroundColor: 'white', borderRadius: 2, boxShadow: 2 }}>
+        <Typography variant="h6">Program hozzáadása / szerkesztése</Typography>
+        <Box sx={{ display: 'grid', gap: 2, gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))', mb: 2 }}>
+          <TextField name="name" label="Név" value={form.name} onChange={handleInput} />
+          <TextField name="description" label="Leírás" value={form.description} onChange={handleInput} />
+          <TextField name="duration" label="Időtartam (szám)" value={form.duration} onChange={handleInput} />
+          <Select name="cost" value={form.cost} onChange={handleInput} displayEmpty>
+            <MenuItem value={false}>Ingyenes</MenuItem>
+            <MenuItem value={true}>Fizetős</MenuItem>
+          </Select>
+          <TextField name="location" label="Helyszín" value={form.location} onChange={handleInput} />
+          <Button variant="outlined" component="label">Kép tallózása
+            <input type="file" hidden accept="image/*" onChange={e => setImageFile(e.target.files[0])} />
+          </Button>
+          <TextField name="moreInfoLink" label="További információ" value={form.moreInfoLink} onChange={handleInput} />
+          <Select name="city" value={form.city} onChange={handleInput} displayEmpty>
+            <MenuItem value="">Válassz várost</MenuItem>
+            {cities.map((city, i) => <MenuItem key={i} value={city}>{city}</MenuItem>)}
+          </Select>
+        </Box>
+        <Button variant="contained" onClick={saveProgram}>{editingId ? 'Mentés' : 'Hozzáadás'}</Button>
+      </Box>
 
-        <label>Időtartam:
-          <select
-            value={newProgram.duration}
-            onChange={(e) => setNewProgram({ ...newProgram, duration: e.target.value })}
-          >
-            <option value="">Válassz időtartamot</option>
-            {durations.map(duration => (
-              <option key={duration.value} value={duration.value}>
-                {duration.label}
-              </option>
+      {/* PROGRAM TÁBLÁZAT */}
+      <Typography variant="h6">Programok listája</Typography>
+      <TableContainer component={Paper} sx={{ mb: 5 }}>
+        <Table>
+          <TableHead>
+            <TableRow>
+              <TableCell>Név</TableCell>
+              <TableCell>Leírás</TableCell>
+              <TableCell>Kép</TableCell>
+              <TableCell>Város</TableCell>
+              <TableCell>Műveletek</TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {programs.map((p) => (
+              <TableRow key={p.ProgramID}>
+                <TableCell>{p.Name}</TableCell>
+                <TableCell>{p.Description}</TableCell>
+                <TableCell>
+                  {p.Image && <img src={`${IMAGE_BASE}/${p.Image.replace('/images/', '')}`} alt="" width={80} />}
+                </TableCell>
+                <TableCell>{p.CityName || ''}</TableCell>
+                <TableCell>
+                  <Button onClick={() => editProgram(p)}>Szerkeszt</Button>
+                  <Button onClick={() => deleteProgram(p.ProgramID)} color="error">Törlés</Button>
+                </TableCell>
+              </TableRow>
             ))}
-          </select>
-        </label><br />
+          </TableBody>
+        </Table>
+      </TableContainer>
 
-        <label>Fizetős program:
-          <input type="checkbox" checked={newProgram.cost} onChange={(e) => setNewProgram({ ...newProgram, cost: e.target.checked })} />
-        </label><br />
-
-        <label>Város:
-          <select value={newProgram.city} onChange={(e) => setNewProgram({ ...newProgram, city: e.target.value })}>
-            <option value="">Válassz várost</option>
-            {cities.map(city => (
-              <option key={city} value={city}>{city}</option>
+      {/* FELHASZNÁLÓK */}
+      <Typography variant="h6">Felhasználók</Typography>
+      <TableContainer component={Paper} sx={{ mb: 5 }}>
+        <Table>
+          <TableHead>
+            <TableRow>
+              <TableCell>Név</TableCell>
+              <TableCell>Email</TableCell>
+              <TableCell>Kitiltva</TableCell>
+              <TableCell>Művelet</TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {users.map((u) => (
+              <TableRow key={u.UserID}>
+                <TableCell>{u.Name || u.Username}</TableCell>
+                <TableCell>{u.Email}</TableCell>
+                <TableCell>{u.Banned ? 'Igen' : 'Nem'}</TableCell>
+                <TableCell>
+                  {!u.Banned && <Button onClick={() => banUser(u.UserID)} color="warning">Kitiltás</Button>}
+                </TableCell>
+              </TableRow>
             ))}
-          </select>
-        </label><br />
-
-        <label>Helyszín:
-          <input type="text" value={newProgram.location} onChange={(e) => setNewProgram({ ...newProgram, location: e.target.value })} />
-        </label><br />
-
-        <label>Kép feltöltése 1024x1024:
-          <input type="file" onChange={handleImageChange} />
-          {newProgram.image && (
-            <div style={{ marginTop: "10px" }}>
-              Feltöltött kép:<br />
-              <img src={`http://localhost:3001${newProgram.image}`} alt="Feltöltött kép" width="250px" />
-            </div>
-          )}
-        </label><br />
-
-        <label>További információk link:
-          <input type="text" value={newProgram.moreInfoLink} onChange={(e) => setNewProgram({ ...newProgram, moreInfoLink: e.target.value })} />
-        </label><br />
-
-        <button type="button" onClick={handleAddProgram}>Hozzáadás</button>
-      </form>
-    </div>
+          </TableBody>
+        </Table>
+      </TableContainer>
+    </Box>
   );
 };
 
