@@ -286,48 +286,53 @@ app.get("/programs/random", async (req, res) => {
 });
 
 
-
-
-
-
-
-// 🔹 Program kedvelése   
+// 🔹 Program kedvelése
 app.post("/programs/:programId/like", async (req, res) => {
   const { programId } = req.params;
-  const { userId, roomId } = req.body; // 👈 RoomID-t fogadjuk
+  const { userId } = req.body;
+  const roomCode = req.body.roomCode || req.session.currentRoomCode || null; // Aktuális szobakód sessionből, ha nincs megadva
 
   if (!userId || !programId) {
-      return res.status(400).json({ error: "Hiányzó userId vagy programId." });
+    return res.status(400).json({ error: "Hiányzó userId vagy programId." });
   }
 
   try {
-      console.log(`🔍 Like kérés: UserID = ${userId}, ProgramID = ${programId}, RoomID = ${roomId || "Nincs"}`);
+    console.log(`🔍 Like kérés: UserID = ${userId}, ProgramID = ${programId}, RoomCode = ${roomCode || "Nincs"}`);
 
-      // Ellenőrizzük, hogy a user már like-olta-e ezt a programot
-      const [existingLike] = await req.db.execute(
-          "SELECT * FROM UserLikes WHERE UserID = ? AND ProgramID = ?",
-          [userId, programId]
+    // Ellenőrizzük, hogy a user már like-olta-e ezt a programot
+    const [existingLike] = await req.db.execute(
+      "SELECT * FROM UserLikes WHERE UserID = ? AND ProgramID = ?",
+      [userId, programId]
+    );
+
+    if (existingLike.length > 0) {
+      return res.status(400).json({ error: "A program már like-olva van." });
+    }
+
+    let roomId = null;
+    if (roomCode) {
+      const [roomResult] = await req.db.execute(
+        "SELECT RoomID FROM Rooms WHERE RoomCode = ?",
+        [roomCode]
       );
 
-      if (existingLike.length > 0) {
-          return res.status(400).json({ error: "A program már like-olva van." });
+      if (roomResult.length > 0) {
+        roomId = roomResult[0].RoomID;
       }
+    }
 
-      // 🔥 RoomID beszúrása az adatbázisba (ha létezik)
-      if (roomId) {
-          await req.db.execute("INSERT INTO UserLikes (UserID, ProgramID, RoomID) VALUES (?, ?, ?)", 
-          [userId, programId, roomId]);
-      } else {
-          await req.db.execute("INSERT INTO UserLikes (UserID, ProgramID) VALUES (?, ?)", 
-          [userId, programId]);
-      }
+    await req.db.execute(
+      "INSERT INTO UserLikes (UserID, ProgramID, RoomID) VALUES (?, ?, ?)",
+      [userId, programId, roomId]
+    );
 
-      res.json({ success: true, message: "Program sikeresen like-olva." });
+    res.json({ success: true, message: "Program sikeresen like-olva." });
   } catch (error) {
-      console.error("🔥 Hiba a like mentésekor:", error);
-      res.status(500).json({ error: "Szerverhiba a like mentésekor." });
+    console.error("🔥 Hiba a like mentésekor:", error);
+    res.status(500).json({ error: "Szerverhiba a like mentésekor." });
   }
 });
+
 
 
 
@@ -400,6 +405,9 @@ app.get("/programs/liked", async (req, res) => {
 });
 
 
+
+
+
 //Liked program reset
 app.delete("/programs/liked/reset", async (req, res) => {
   const { userId } = req.body; // Fontos: req.body-ból kapjuk az adatokat!
@@ -415,7 +423,39 @@ app.delete("/programs/liked/reset", async (req, res) => {
   }
 });
 
+//Rooms lájkolt programok
+app.get("/rooms/:roomCode/liked-programs", async (req, res) => {
+  const { roomCode } = req.params;
 
+  try {
+    // Lekérjük a RoomID-t a RoomCode alapján
+    const [roomResult] = await req.db.execute(
+      "SELECT RoomID FROM Rooms WHERE RoomCode = ?",
+      [roomCode]
+    );
+
+    if (roomResult.length === 0) {
+      return res.status(404).json({ error: "A szoba nem található." });
+    }
+
+    const roomId = roomResult[0].RoomID;
+
+    // Lekérjük a szobában lájkolt programokat és a lájkok számát
+    const [likedPrograms] = await req.db.execute(`
+      SELECT p.*, COUNT(ul.UserID) as likeCount
+      FROM Programs p
+      JOIN UserLikes ul ON p.ProgramID = ul.ProgramID
+      WHERE ul.RoomID = ?
+      GROUP BY p.ProgramID
+      ORDER BY likeCount DESC
+    `, [roomId]);
+
+    res.json(likedPrograms);
+  } catch (error) {
+    console.error("🔥 Hiba a lájkolt programok lekérdezésekor:", error);
+    res.status(500).json({ error: "Szerverhiba a lájkolt programok lekérdezésekor." });
+  }
+});
 
 
 //Bejelentkezés API (régi)

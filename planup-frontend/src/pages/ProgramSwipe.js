@@ -100,7 +100,7 @@ function ProgramSwipe({ apiUrl, userId }) {
         const response = await axios.post(`${apiUrl}/programs/${program.ProgramID}/like`, { 
             userId, 
             programId: program.ProgramID,
-            roomId: roomId || null // ✅ Ha van szobakód, akkor elküldi, ha nincs, akkor null
+            roomCode: roomId || null // ✅ Ha van szobakód, akkor elküldi, ha nincs, akkor null
         });
 
         console.log("✅ Like/dislike művelet válasza:", response.data);
