@@ -400,9 +400,6 @@ app.get("/programs/liked", async (req, res) => {
 });
 
 
-
-
-
 //Liked program reset
 app.delete("/programs/liked/reset", async (req, res) => {
   const { userId } = req.body; // Fontos: req.body-ból kapjuk az adatokat!
@@ -552,6 +549,32 @@ io.on("connection", (socket) => {
       console.log("🔴 Felhasználó lecsatlakozott: " + socket.id);
   });
 });
+
+// ✅ RoomCode alapján RoomID visszaadása
+app.get("/rooms/getRoomId", async (req, res) => {
+  const { roomCode } = req.query;
+
+  if (!roomCode) {
+      return res.status(400).json({ error: "Hiányzó roomCode paraméter!" });
+  }
+
+  try {
+      const [rows] = await req.db.execute(
+          "SELECT RoomID FROM Rooms WHERE RoomCode = ?",
+          [roomCode]
+      );
+
+      if (rows.length === 0) {
+          return res.status(404).json({ error: "A szoba nem található." });
+      }
+
+      res.json({ RoomID: rows[0].RoomID });
+  } catch (error) {
+      console.error("🔥 Hiba a RoomID lekérdezésekor:", error.message);
+      res.status(500).json({ error: "Szerverhiba történt." });
+  }
+});
+
 
 
 //RoomsID_Summary

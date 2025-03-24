@@ -3,10 +3,8 @@ import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import "../Style/LikedPrograms.css"; // Új CSS fájl a gridhez
 import LuckyWheel from "./LuckyWheel";
-import { useRoom } from "../context/RoomContext"; // Szobakezelés importálása
 
 function LikedPrograms({ apiUrl, userId }) {
-  const { roomId } = useRoom(); // Szoba azonosító lekérése
   const [likedPrograms, setLikedPrograms] = useState([]);
   const [error, setError] = useState("");
   const navigate = useNavigate();
@@ -19,32 +17,25 @@ function LikedPrograms({ apiUrl, userId }) {
 
   const validUserId = userId || 1; // Ha nincs userId, állítsuk be 1-re
 
-  
   useEffect(() => {
     const fetchLikedPrograms = async () => {
-        try {
-            const endpoint = roomId
-                ? `${apiUrl}/programs/liked?roomId=${roomId}` // 🔥 Szobához kötött like-ok lekérése
-                : `${apiUrl}/programs/liked?userId=${userId}`; // Egyéni like-ok lekérése
-
-            const response = await axios.get(endpoint, { withCredentials: true });
-            setLikedPrograms(response.data);
-        } catch (err) {
-            console.error("❌ Hiba a kedvelt programok lekérésekor:", err);
-            setError("Nem sikerült betölteni a kedvelt programokat.");
-        }
+      try {
+        const endpoint = `${apiUrl}/programs/liked?userId=${validUserId}`; // Egyéni like-ok lekérése
+        const response = await axios.get(endpoint, { withCredentials: true });
+        setLikedPrograms(response.data);
+      } catch (err) {
+        console.error("❌ Hiba a kedvelt programok lekérésekor:", err);
+        setError("Nem sikerült betölteni a kedvelt programokat.");
+      }
     };
 
     fetchLikedPrograms();
-  }, [apiUrl, validUserId, roomId]);
+  }, [apiUrl, validUserId]);
 
   const resetLikedPrograms = async () => {
     try {
-      const endpoint = roomId
-        ? `${apiUrl}/api/room/${roomId}/liked-programs/reset` // Szoba törlése
-        : `${apiUrl}/programs/liked/reset`; // Egyéni törlés
-
-      const data = roomId ? {} : { userId: validUserId }; // Egyéni esetben userId kell
+      const endpoint = `${apiUrl}/programs/liked/reset`; // Egyéni törlés
+      const data = { userId: validUserId }; // Egyéni esetben userId kell
 
       await axios.delete(endpoint, { data });
       setLikedPrograms([]);
@@ -57,9 +48,7 @@ function LikedPrograms({ apiUrl, userId }) {
 
   return (
     <div className="liked-programs-container">
-      <h2 className="liked-title">
-        💙 Kedvelt programok {roomId ? `(Szoba: ${roomId})` : "(Saját)"}
-      </h2>
+      <h2 className="liked-title">💙 Kedvelt programok (Saját)</h2>
 
       {error && <div className="error-message">{error}</div>}
       {likedPrograms.length === 0 && <div className="no-liked">Nincs kedvelt program.</div>}
@@ -73,14 +62,22 @@ function LikedPrograms({ apiUrl, userId }) {
             <p>🌍 Város: {program.CityName}</p>
             <p>📍 Helyszín: {program.Location}</p>
 
-            <p>⏳ Időtartam: {magyarIdotartam[
-              program.Duration === 1 ? "half_day" :
-                program.Duration === 2 ? "whole_day" :
-                  program.Duration === 3 ? "weekend" :
-                    program.Duration
-            ] || "Ismeretlen időtartam"}</p>
+            <p>
+              ⏳ Időtartam:{" "}
+              {magyarIdotartam[
+                program.Duration === 1
+                  ? "half_day"
+                  : program.Duration === 2
+                  ? "whole_day"
+                  : program.Duration === 3
+                  ? "weekend"
+                  : program.Duration
+              ] || "Ismeretlen időtartam"}
+            </p>
             <p>💰 Költség: {program.Cost === "paid" ? "Fizetős" : "Ingyenes"}</p>
-            <p>👍 Kedvelések száma: <strong>{program.LikesCount}</strong></p>
+            <p>
+              👍 Kedvelések száma: <strong>{program.LikesCount}</strong>
+            </p>
             <a href={program.MoreInfoLink} target="_blank" rel="noopener noreferrer">
               <button>További információk</button>
             </a>
@@ -95,13 +92,6 @@ function LikedPrograms({ apiUrl, userId }) {
         <button onClick={resetLikedPrograms} className="reset-button">
           🔄 Összes kedvelt program törlése
         </button>
-
-        {/* 📊 Az összegzés gomb csak akkor jelenik meg, ha a felhasználó szobában van */}
-        {roomId && (
-          <button onClick={() => navigate("/summary")} className="summary-button">
-            📊 Összegzés megtekintése
-          </button>
-        )}
       </div>
 
       {/* 🔥 LuckyWheel csak akkor jelenik meg, ha vannak programok */}
