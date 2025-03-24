@@ -5,9 +5,15 @@ import {
   TableCell, TableContainer, TableHead, TableRow, Paper, Select, MenuItem, InputLabel
 } from '@mui/material';
 
-const API_BASE = 'http://localhost:3001/api/admin'; // Frissített API végpont
+const API_BASE = 'http://localhost:3001/api/admin';
 const UPLOAD_URL = 'http://localhost:3001/api/upload';
 const IMAGE_BASE = 'http://localhost:3001/images';
+
+const magyarIdotartam = {
+  half_day: "Fél napos",
+  whole_day: "Egész napos",
+  weekend: "Egész hétvégés",
+};
 
 const AdminPanel = () => {
   const [programs, setPrograms] = useState([]);
@@ -66,7 +72,12 @@ const AdminPanel = () => {
   };
 
   const editProgram = (program) => {
-    setForm(program);
+    setForm({
+      ...program,
+      duration: program.Duration,
+      cost: program.Cost,
+      city: program.CityName
+    });
     setEditingId(program.ProgramID);
   };
 
@@ -84,7 +95,6 @@ const AdminPanel = () => {
       alert('Törlés nem sikerült: ' + (err.response?.data?.error || err.message));
     }
   };
-  
 
   return (
     <Box sx={{ p: 4, fontFamily: 'Arial', backgroundColor: '#f5f5f5', minHeight: '100vh' }}>
@@ -96,7 +106,12 @@ const AdminPanel = () => {
         <Box sx={{ display: 'grid', gap: 2, gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))', mb: 2 }}>
           <TextField name="name" label="Név" value={form.name} onChange={handleInput} />
           <TextField name="description" label="Leírás" value={form.description} onChange={handleInput} />
-          <TextField name="duration" label="Időtartam (szám)" value={form.duration} onChange={handleInput} />
+          <Select name="duration" value={form.duration} onChange={handleInput} displayEmpty>
+            <MenuItem value="">Válassz időtartamot</MenuItem>
+            <MenuItem value={1}>{magyarIdotartam.half_day}</MenuItem>
+            <MenuItem value={2}>{magyarIdotartam.whole_day}</MenuItem>
+            <MenuItem value={3}>{magyarIdotartam.weekend}</MenuItem>
+          </Select>
           <Select name="cost" value={form.cost} onChange={handleInput} displayEmpty>
             <MenuItem value={false}>Ingyenes</MenuItem>
             <MenuItem value={true}>Fizetős</MenuItem>
@@ -124,6 +139,7 @@ const AdminPanel = () => {
               <TableCell>Leírás</TableCell>
               <TableCell>Kép</TableCell>
               <TableCell>Város</TableCell>
+              <TableCell>Időtartam</TableCell>
               <TableCell>Műveletek</TableCell>
             </TableRow>
           </TableHead>
@@ -136,6 +152,17 @@ const AdminPanel = () => {
                   {p.Image && <img src={`${IMAGE_BASE}/${p.Image.replace('/images/', '')}`} alt="" width={80} />}
                 </TableCell>
                 <TableCell>{p.CityName || ''}</TableCell>
+                <TableCell>{
+                  magyarIdotartam[
+                    p.Duration === 1
+                      ? "half_day"
+                      : p.Duration === 2
+                      ? "whole_day"
+                      : p.Duration === 3
+                      ? "weekend"
+                      : p.Duration
+                  ] || "Ismeretlen időtartam"
+                }</TableCell>
                 <TableCell>
                   <Button onClick={() => editProgram(p)}>Szerkeszt</Button>
                   <Button onClick={() => deleteProgram(p.ProgramID)} color="error">Törlés</Button>
@@ -163,7 +190,7 @@ const AdminPanel = () => {
                 <TableCell>{u.Name || u.Username}</TableCell>
                 <TableCell>{u.Email}</TableCell>
                 <TableCell>
-                <Button onClick={() => deleteUser(u.UserID)} color="error">Törlés</Button>
+                  <Button onClick={() => deleteUser(u.UserID)} color="error">Törlés</Button>
                 </TableCell>
               </TableRow>
             ))}

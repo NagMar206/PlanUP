@@ -1,5 +1,8 @@
 const express = require('express');
 const router = express.Router();
+const adminCheck = require('../middleware/adminMiddleware');
+router.use(adminCheck); // Admin jogosultság middleware
+
 const db = require('../config/dbConfig');
 const multer = require('multer');
 const path = require('path');
@@ -74,7 +77,11 @@ router.post('/add-program', async (req, res) => {
 // Programok listázása
 router.get('/programs', async (req, res) => {
   try {
-    const [programs] = await db.execute(`SELECT ProgramID, Name, Description, Duration, Cost, Location, Image, MoreInfoLink FROM Programs ORDER BY Name ASC`);
+    const [programs] = await db.execute(`SELECT p.*, c.Name AS CityName
+    FROM Programs p
+    JOIN City c ON p.CityID = c.CityID
+    ORDER BY RAND()
+    ASC`);
     res.json(programs);
   } catch (error) {
     console.error('Hiba történt a programok lekérésekor:', error);
