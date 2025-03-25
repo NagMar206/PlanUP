@@ -9,7 +9,9 @@ function Navbar({ user }) {
 
   return (
     <nav className="navbar">
-      <Link className="navbar-title" to="/">PlanUp</Link>
+      <Link className="navbar-title" to="/">
+        PlanUp
+      </Link>
 
       {/* Hamburger ikon */}
       <div className="hamburger" onClick={() => setMenuOpen(!menuOpen)}>

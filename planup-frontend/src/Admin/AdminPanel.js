@@ -1,13 +1,24 @@
-import React, { useEffect, useState } from 'react';
-import axios from 'axios';
+import React, { useEffect, useState } from "react";
+import axios from "axios";
 import {
-  Box, Button, TextField, Typography, Table, TableBody,
-  TableCell, TableContainer, TableHead, TableRow, Paper, Select, MenuItem
-} from '@mui/material';
+  Box,
+  Button,
+  TextField,
+  Typography,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Paper,
+  Select,
+  MenuItem,
+} from "@mui/material";
 
-const API_BASE = 'http://localhost:3001/api/admin';
-const UPLOAD_URL = 'http://localhost:3001/api/upload';
-const IMAGE_BASE = 'http://localhost:3001/images';
+const API_BASE = "http://localhost:3001/api/admin";
+const UPLOAD_URL = "http://localhost:3001/api/upload";
+const IMAGE_BASE = "http://localhost:3001/images";
 
 const magyarIdotartam = {
   1: "Fél napos",
@@ -20,11 +31,17 @@ const AdminPanel = () => {
   const [users, setUsers] = useState([]);
   const [cities, setCities] = useState([]);
   const [form, setForm] = useState({
-    name: '', description: '', duration: '', cost: false, location: '',
-    image: '', moreInfoLink: '', city: ''
+    name: "",
+    description: "",
+    duration: "",
+    cost: false,
+    location: "",
+    image: "",
+    moreInfoLink: "",
+    city: "",
   });
-  const [editingId, setEditingId] = useState(null);
   const [imageFile, setImageFile] = useState(null);
+  const [imageFileName, setImageFileName] = useState("");
 
   useEffect(() => {
     fetchPrograms();
@@ -33,7 +50,9 @@ const AdminPanel = () => {
   }, []);
 
   const fetchPrograms = async () => {
-    const res = await axios.get(`${API_BASE}/programs`, { withCredentials: true });
+    const res = await axios.get(`${API_BASE}/programs`, {
+      withCredentials: true,
+    });
     setPrograms(res.data);
   };
 
@@ -43,7 +62,9 @@ const AdminPanel = () => {
   };
 
   const fetchCities = async () => {
-    const res = await axios.get(`${API_BASE}/cities`, { withCredentials: true });
+    const res = await axios.get(`${API_BASE}/cities`, {
+      withCredentials: true,
+    });
     setCities(res.data);
   };
 
@@ -52,87 +73,156 @@ const AdminPanel = () => {
   };
 
   const handleImageUpload = async () => {
-    if (!imageFile) return '';
+    if (!imageFile) return "";
     const formData = new FormData();
-    formData.append('image', imageFile);
-    const res = await axios.post(UPLOAD_URL, formData, { withCredentials: true });
+    formData.append("image", imageFile);
+    const res = await axios.post(UPLOAD_URL, formData, {
+      withCredentials: true,
+    });
     return res.data.filePath;
   };
 
   const saveProgram = async () => {
     const imagePath = await handleImageUpload();
     const finalForm = { ...form, image: imagePath || form.image };
-
-    if (editingId) {
-      await axios.put(`${API_BASE}/programs/${editingId}`, finalForm, { withCredentials: true });
-    } else {
-      await axios.post(`${API_BASE}/add-program`, finalForm, { withCredentials: true });
-    }
-
-    setForm({ name: '', description: '', duration: '', cost: false, location: '', image: '', moreInfoLink: '', city: '' });
-    setEditingId(null);
+    await axios.post(`${API_BASE}/add-program`, finalForm, {
+      withCredentials: true,
+    });
+    setForm({
+      name: "",
+      description: "",
+      duration: "",
+      cost: false,
+      location: "",
+      image: "",
+      moreInfoLink: "",
+      city: "",
+    });
     setImageFile(null);
+    setImageFileName("");
     fetchPrograms();
   };
 
-  const editProgram = (program) => {
-    setForm({
-      name: program.Name,
-      description: program.Description,
-      duration: program.Duration,
-      cost: program.Cost,
-      location: program.Location,
-      image: program.Image,
-      moreInfoLink: program.MoreInfoLink,
-      city: program.CityName
-    });
-    setEditingId(program.ProgramID);
-  };
-
   const deleteProgram = async (id) => {
-    if (window.confirm('Biztosan törlöd ezt a programot?')) {
-      await axios.delete(`${API_BASE}/programs/${id}`, { withCredentials: true });
+    if (window.confirm("Biztosan törlöd ezt a programot?")) {
+      await axios.delete(`${API_BASE}/programs/${id}`, {
+        withCredentials: true,
+      });
       fetchPrograms();
     }
   };
 
   const deleteUser = async (id) => {
-    if (window.confirm('Biztosan törlöd ezt a felhasználót?')) {
+    if (window.confirm("Biztosan törlöd ezt a felhasználót?")) {
       await axios.delete(`${API_BASE}/users/${id}`, { withCredentials: true });
       fetchUsers();
     }
   };
 
   return (
-    <Box sx={{ p: 4, backgroundColor: '#f5f5f5', minHeight: '100vh' }}>
-      <Typography variant="h4" gutterBottom sx={{ fontWeight: 'bold' }}>Admin Panel</Typography>
+    <Box sx={{ p: 4, backgroundColor: "#f5f5f5", minHeight: "100vh" }}>
+      <Typography variant="h4" gutterBottom sx={{ fontWeight: "bold" }}>
+        Admin Panel
+      </Typography>
 
       {/* Program hozzáadás/szerkesztés */}
-      <Box sx={{ p: 2, backgroundColor: 'white', borderRadius: 2, boxShadow: 2, mb: 5 }}>
+      <Box
+        sx={{
+          p: 2,
+          backgroundColor: "white",
+          borderRadius: 2,
+          boxShadow: 2,
+          mb: 5,
+        }}
+      >
         <Typography variant="h6">Program hozzáadása / szerkesztése</Typography>
-        <Box sx={{ display: 'grid', gap: 2, gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))', mb: 2 }}>
-          <TextField name="name" label="Név" value={form.name} onChange={handleInput} />
-          <TextField name="description" label="Leírás" value={form.description} onChange={handleInput} />
-          <Select name="duration" value={form.duration} onChange={handleInput}>
-            <MenuItem value={1}>{magyarIdotartam[1]}</MenuItem>
-            <MenuItem value={2}>{magyarIdotartam[2]}</MenuItem>
-            <MenuItem value={3}>{magyarIdotartam[3]}</MenuItem>
+        <Box
+          sx={{
+            display: "grid",
+            gap: 2,
+            gridTemplateColumns: "repeat(auto-fill, minmax(250px, 1fr))",
+            mb: 2,
+          }}
+        >
+          <TextField
+            name="name"
+            label="Név"
+            value={form.name}
+            onChange={handleInput}
+          />
+          <TextField
+            name="description"
+            label="Leírás"
+            value={form.description}
+            onChange={handleInput}
+          />
+          <Select
+            value={form.duration}
+            name="duration"
+            onChange={(e) => setForm({ ...form, duration: e.target.value })}
+            displayEmpty
+          >
+            <MenuItem value="" disabled>
+              Válasszon időtartamot
+            </MenuItem>
+            {Object.entries(magyarIdotartam).map(([key, value]) => (
+              <MenuItem key={key} value={key}>
+                {value}
+              </MenuItem>
+            ))}
           </Select>
           <Select name="cost" value={form.cost} onChange={handleInput}>
             <MenuItem value={false}>Ingyenes</MenuItem>
             <MenuItem value={true}>Fizetős</MenuItem>
           </Select>
-          <TextField name="location" label="Helyszín" value={form.location} onChange={handleInput} />
+          <TextField
+            name="location"
+            label="Helyszín"
+            value={form.location}
+            onChange={handleInput}
+          />
           <Button variant="outlined" component="label">
             Kép tallózása
-            <input type="file" hidden onChange={e => setImageFile(e.target.files[0])} />
+            <input
+              type="file"
+              hidden
+              onChange={(e) => {
+                const file = e.target.files[0];
+                setImageFile(file);
+                setImageFileName(file ? file.name : "");
+              }}
+            />
           </Button>
-          <TextField name="moreInfoLink" label="További információ" value={form.moreInfoLink} onChange={handleInput} />
-          <Select name="city" value={form.city} onChange={handleInput}>
-            {cities.map((city, i) => <MenuItem key={i} value={city}>{city}</MenuItem>)}
+          {imageFileName && (
+            <Typography variant="body2" color="primary" sx={{ mt: -1 }}>
+              Tallózott fájl neve: {imageFileName}
+            </Typography>
+          )}
+          <TextField
+            name="moreInfoLink"
+            label="További információ"
+            value={form.moreInfoLink}
+            onChange={handleInput}
+          />
+          <Select
+            value={form.city}
+            name="city"
+            onChange={(e) => setForm({ ...form, city: e.target.value })}
+            displayEmpty
+          >
+            <MenuItem value="" disabled>
+              Válasszon várost
+            </MenuItem>
+            {cities.map((city, index) => (
+              <MenuItem key={index} value={city}>
+                {city}
+              </MenuItem>
+            ))}
           </Select>
         </Box>
-        <Button variant="contained" onClick={saveProgram}>{editingId ? 'Mentés' : 'Hozzáadás'}</Button>
+        <Button variant="contained" onClick={saveProgram}>
+          {"Hozzáadás"}
+        </Button>
       </Box>
 
       {/* Programok listája */}
@@ -146,7 +236,7 @@ const AdminPanel = () => {
               <TableCell>Kép</TableCell>
               <TableCell>Város</TableCell>
               <TableCell>Időtartam</TableCell>
-              <TableCell>Műveletek</TableCell>
+              <TableCell>Művelet</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
@@ -154,12 +244,20 @@ const AdminPanel = () => {
               <TableRow key={p.ProgramID}>
                 <TableCell>{p.Name}</TableCell>
                 <TableCell>{p.Description}</TableCell>
-                <TableCell>{p.Image && <img src={`${IMAGE_BASE}/${p.Image}`} width={80} alt="" />}</TableCell>
+                <TableCell>
+                  {p.Image && (
+                    <img src={`${IMAGE_BASE}/${p.Image}`} width={80} alt="" />
+                  )}
+                </TableCell>
                 <TableCell>{p.CityName}</TableCell>
                 <TableCell>{magyarIdotartam[p.Duration]}</TableCell>
                 <TableCell>
-                  <Button onClick={() => editProgram(p)}>Szerkesztés</Button>
-                  <Button color="error" onClick={() => deleteProgram(p.ProgramID)}>Törlés</Button>
+                  <Button
+                    color="error"
+                    onClick={() => deleteProgram(p.ProgramID)}
+                  >
+                    Törlés
+                  </Button>
                 </TableCell>
               </TableRow>
             ))}
@@ -168,14 +266,16 @@ const AdminPanel = () => {
       </TableContainer>
 
       {/* Felhasználók listája */}
-      <Typography variant="h6" sx={{ mt: 4 }}>Felhasználók</Typography>
+      <Typography variant="h6" sx={{ mt: 4 }}>
+        Felhasználók
+      </Typography>
       <TableContainer component={Paper}>
         <Table>
           <TableHead>
             <TableRow>
               <TableCell>Név</TableCell>
               <TableCell>Email</TableCell>
-              <TableCell>Műveletek</TableCell>
+              <TableCell>Művelet</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
@@ -184,7 +284,9 @@ const AdminPanel = () => {
                 <TableCell>{u.Name || u.Username}</TableCell>
                 <TableCell>{u.Email}</TableCell>
                 <TableCell>
-                  <Button color="error" onClick={() => deleteUser(u.UserID)}>Törlés</Button>
+                  <Button color="error" onClick={() => deleteUser(u.UserID)}>
+                    Törlés
+                  </Button>
                 </TableCell>
               </TableRow>
             ))}
