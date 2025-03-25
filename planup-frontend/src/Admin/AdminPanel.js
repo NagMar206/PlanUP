@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import {
   Box, Button, TextField, Typography, Table, TableBody,
-  TableCell, TableContainer, TableHead, TableRow, Paper, Select, MenuItem, InputLabel
+  TableCell, TableContainer, TableHead, TableRow, Paper, Select, MenuItem
 } from '@mui/material';
 
 const API_BASE = 'http://localhost:3001/api/admin';
@@ -19,50 +19,65 @@ const AdminPanel = () => {
   const [programs, setPrograms] = useState([]);
   const [users, setUsers] = useState([]);
   const [cities, setCities] = useState([]);
-  const [form, setForm] = useState({ name: '', description: '', duration: '', cost: false, location: '', image: '', moreInfoLink: '', city: '' });
+  const [form, setForm] = useState({
+    name: '', description: '', duration: '', cost: false, location: '',
+    image: '', moreInfoLink: '', city: ''
+  });
   const [editingId, setEditingId] = useState(null);
   const [imageFile, setImageFile] = useState(null);
   const [authorized, setAuthorized] = useState(false);
-const [loading, setLoading] = useState(true);
-
-
-useEffect(() => {
-  axios.get('http://localhost:3001/api/auth/status', { withCredentials: true })
-    .then(res => {
-      if (res.data.isAdmin) {
-        setAuthorized(true);
-      } else {
-        alert('Nincs jogosultságod az admin felülethez!');
-        window.location.href = '/';
-      }
-    })
-    .catch(() => {
-      alert('Nem vagy bejelentkezve!');
-      window.location.href = '/';
-    })
-    .finally(() => setLoading(false));
-}, []);
-
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetchPrograms();
-    fetchUsers();
-    fetchCities();
+    axios.get('http://localhost:3001/api/auth/status', { withCredentials: true })
+      .then(res => {
+        if (res.data.isAdmin) {
+          setAuthorized(true);
+        } else {
+          alert('Nincs jogosultságod az admin felülethez!');
+          window.location.href = '/';
+        }
+      })
+      .catch(() => {
+        alert('Nem vagy bejelentkezve!');
+        window.location.href = '/';
+      })
+      .finally(() => setLoading(false));
   }, []);
 
+  useEffect(() => {
+    if (authorized) {
+      fetchPrograms();
+      fetchUsers();
+      fetchCities();
+    }
+  }, [authorized]);
+
   const fetchPrograms = async () => {
-    const res = await axios.get(`${API_BASE}/programs`, { withCredentials: true });
-    setPrograms(res.data);
+    try {
+      const res = await axios.get(`${API_BASE}/programs`, { withCredentials: true });
+      setPrograms(res.data);
+    } catch (error) {
+      console.error("❌ Program fetch error:", error);
+    }
   };
 
   const fetchUsers = async () => {
-    const res = await axios.get(`${API_BASE}/users`, { withCredentials: true });
-    setUsers(res.data);
+    try {
+      const res = await axios.get(`${API_BASE}/users`, { withCredentials: true });
+      setUsers(res.data);
+    } catch (error) {
+      console.error("❌ User fetch error:", error);
+    }
   };
 
   const fetchCities = async () => {
-    const res = await axios.get(`${API_BASE}/cities`, { withCredentials: true });
-    setCities(res.data);
+    try {
+      const res = await axios.get(`${API_BASE}/cities`, { withCredentials: true });
+      setCities(res.data);
+    } catch (error) {
+      console.error("❌ City fetch error:", error);
+    }
   };
 
   const handleInput = (e) => {
@@ -78,18 +93,23 @@ useEffect(() => {
   };
 
   const saveProgram = async () => {
-    const imagePath = await handleImageUpload();
-    const finalForm = { ...form, image: imagePath || form.image };
+    try {
+      const imagePath = await handleImageUpload();
+      const finalForm = { ...form, image: imagePath || form.image };
 
-    if (editingId) {
-      await axios.put(`${API_BASE}/programs/${editingId}`, finalForm, { withCredentials: true });
-    } else {
-      await axios.post(`${API_BASE}/add-program`, finalForm, { withCredentials: true });
+      if (editingId) {
+        await axios.put(`${API_BASE}/programs/${editingId}`, finalForm, { withCredentials: true });
+      } else {
+        await axios.post(`${API_BASE}/add-program`, finalForm, { withCredentials: true });
+      }
+
+      setForm({ name: '', description: '', duration: '', cost: false, location: '', image: '', moreInfoLink: '', city: '' });
+      setEditingId(null);
+      setImageFile(null);
+      fetchPrograms();
+    } catch (error) {
+      console.error("❌ Hiba a program mentésekor:", error);
     }
-    setForm({ name: '', description: '', duration: '', cost: false, location: '', image: '', moreInfoLink: '', city: '' });
-    setEditingId(null);
-    setImageFile(null);
-    fetchPrograms();
   };
 
   const editProgram = (program) => {
@@ -103,8 +123,12 @@ useEffect(() => {
   };
 
   const deleteProgram = async (id) => {
-    await axios.delete(`${API_BASE}/programs/${id}`, { withCredentials: true });
-    fetchPrograms();
+    try {
+      await axios.delete(`${API_BASE}/programs/${id}`, { withCredentials: true });
+      fetchPrograms();
+    } catch (error) {
+      console.error("❌ Hiba a program törlésekor:", error);
+    }
   };
 
   const deleteUser = async (id) => {
@@ -116,6 +140,13 @@ useEffect(() => {
       alert('Törlés nem sikerült: ' + (err.response?.data?.error || err.message));
     }
   };
+
+  useEffect(() => {
+    console.log("📦 Programok:", programs);
+    console.log("👤 Felhasználók:", users);
+    console.log("🏙️ Városok:", cities);
+  }, [programs, users, cities]);
+
   if (loading) return (
     <Typography
       sx={{
@@ -132,13 +163,13 @@ useEffect(() => {
       ⚠️ 403: Admin access denied. Insufficient user privileges.
     </Typography>
   );
-    if (!authorized) return null;
-  
+  if (!authorized) return null;
+
   return (
     <Box sx={{ p: 4, fontFamily: 'Arial', backgroundColor: '#f5f5f5', minHeight: '100vh' }}>
       <Typography variant="h4" gutterBottom sx={{ fontWeight: 'bold' }}>Admin Panel</Typography>
 
-      {/* PROGRAMOK */}
+      {/* Program hozzáadás */}
       <Box sx={{ mb: 5, p: 2, backgroundColor: 'white', borderRadius: 2, boxShadow: 2 }}>
         <Typography variant="h6">Program hozzáadása / szerkesztése</Typography>
         <Box sx={{ display: 'grid', gap: 2, gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))', mb: 2 }}>
@@ -167,7 +198,7 @@ useEffect(() => {
         <Button variant="contained" onClick={saveProgram}>{editingId ? 'Mentés' : 'Hozzáadás'}</Button>
       </Box>
 
-      {/* PROGRAM TÁBLÁZAT */}
+      {/* Programok listája */}
       <Typography variant="h6">Programok listája</Typography>
       <TableContainer component={Paper} sx={{ mb: 5 }}>
         <Table>
@@ -187,7 +218,7 @@ useEffect(() => {
                 <TableCell>{p.Name}</TableCell>
                 <TableCell>{p.Description}</TableCell>
                 <TableCell>
-                  {p.Image && <img src={`${IMAGE_BASE}/${p.Image.replace('/images/', '')}`} alt="" width={80} />}
+                  {p.Image && <img src={`${IMAGE_BASE}/${p.Image}`} alt="" width={80} />}
                 </TableCell>
                 <TableCell>{p.CityName || ''}</TableCell>
                 <TableCell>{
@@ -211,7 +242,7 @@ useEffect(() => {
         </Table>
       </TableContainer>
 
-      {/* FELHASZNÁLÓK */}
+      {/* Felhasználók */}
       <Typography variant="h6">Felhasználók</Typography>
       <TableContainer component={Paper} sx={{ mb: 5 }}>
         <Table>

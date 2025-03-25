@@ -31,7 +31,7 @@ router.post('/login', async (req, res) => {
         );
 
         // Token beállítása HttpOnly sütiben
-        res.cookie("token", token, {
+        res.cookie("planup_token", token, {
             httpOnly: true,
             secure: false,
             maxAge: 3600000,  // 1 óra (miliszekundumban)

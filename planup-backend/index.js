@@ -554,7 +554,7 @@ app.post('/api/users/login', async (req, res) => {
 
 // Felhasználó ellenőrzése JWT alapján
 app.get('/api/auth/status', (req, res) => {
-  const token = req.cookies.planup_auth_token;
+  const token = req.cookies.planup_token;
 
   if (!token) return res.json({ loggedIn: false });
 
