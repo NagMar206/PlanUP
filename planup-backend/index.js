@@ -538,7 +538,7 @@ app.post('/api/users/login', async (req, res) => {
       return res.status(401).json({ error: "Hibás jelszó!" });
     }
 
-    const token = jwt.sign({ userId: user.UserID }, "jwt_secret_key", { expiresIn: '7d' });
+    const token = jwt.sign({ userId: user.UserID, isAdmin: user.IsAdmin }, "jwt_secret_key", { expiresIn: '7d' });
 
     res.cookie('planup_token', token, { 
       httpOnly: true, 
@@ -560,7 +560,7 @@ app.get('/api/auth/status', (req, res) => {
 
   jwt.verify(token, "jwt_secret_key", (err, decoded) => {
     if (err) return res.json({ loggedIn: false });
-    res.json({ loggedIn: true, userId: decoded.userId });
+    res.json({ loggedIn: true, userId: decoded.userId, isAdmin: decoded.isAdmin === 1 || decoded.isAdmin === true });
   });
 });
 

@@ -116,9 +116,23 @@ useEffect(() => {
       alert('Törlés nem sikerült: ' + (err.response?.data?.error || err.message));
     }
   };
-  if (loading) return <Typography sx={{ p: 5 }}>alert('Ez az admin bolygó. Ide csak űrkapitányoknak van bejárásuk.');
-</Typography>;
-  if (!authorized) return null;
+  if (loading) return (
+    <Typography
+      sx={{
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        minHeight: '60vh',
+        textAlign: 'center',
+        fontSize: '1.5rem',
+        fontWeight: 'bold',
+        color: '#c62828'
+      }}
+    >
+      ⚠️ 403: Admin access denied. Insufficient user privileges.
+    </Typography>
+  );
+    if (!authorized) return null;
   
   return (
     <Box sx={{ p: 4, fontFamily: 'Arial', backgroundColor: '#f5f5f5', minHeight: '100vh' }}>

@@ -67,7 +67,7 @@ router.post("/login", async (req, res) => {
 // 🔹 Bejelentkezési állapot ellenőrzése
 router.get("/status", authenticateToken, (req, res) => {
     console.log(`ℹ️ Bejelentkezési státusz lekérdezve. UserID: ${req.user.userId}`);
-    res.json({ loggedIn: true, userId: req.user.userId });
+    res.json({ loggedIn: true, userId: req.user.userId, isAdmin: req.user.isAdmin === 1 || req.user.isAdmin === true });
 });
 
 // 🔹 Kijelentkezés API
