@@ -1,7 +1,25 @@
 const express = require('express');
 const router = express.Router();
-const adminCheck = require('../middleware/adminMiddleware');
+// 🛡️ Admin jogosultság ellenőrző middleware
+const adminCheck = async (req, res, next) => {
+  if (!req.session || !req.session.user || !req.session.user.id) {
+    return res.status(401).json({ error: 'Nem vagy bejelentkezve.' });
+  }
+
+  try {
+    const [rows] = await db.execute('SELECT IsAdmin FROM Users WHERE UserID = ?', [req.session.user.id]);
+    if (rows.length === 0 || !rows[0].IsAdmin) {
+      return res.status(403).json({ error: 'Nincs admin jogosultságod.' });
+    }
+    next();
+  } catch (err) {
+    console.error('Admin ellenőrzési hiba:', err);
+    return res.status(500).json({ error: 'Szerverhiba jogosultság ellenőrzés közben.' });
+  }
+};
+
 router.use(adminCheck); // Admin jogosultság middleware
+
 
 const db = require('../config/dbConfig');
 const multer = require('multer');

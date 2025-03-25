@@ -22,6 +22,27 @@ const AdminPanel = () => {
   const [form, setForm] = useState({ name: '', description: '', duration: '', cost: false, location: '', image: '', moreInfoLink: '', city: '' });
   const [editingId, setEditingId] = useState(null);
   const [imageFile, setImageFile] = useState(null);
+  const [authorized, setAuthorized] = useState(false);
+const [loading, setLoading] = useState(true);
+
+
+useEffect(() => {
+  axios.get('http://localhost:3001/api/auth/status', { withCredentials: true })
+    .then(res => {
+      if (res.data.isAdmin) {
+        setAuthorized(true);
+      } else {
+        alert('Nincs jogosultságod az admin felülethez!');
+        window.location.href = '/';
+      }
+    })
+    .catch(() => {
+      alert('Nem vagy bejelentkezve!');
+      window.location.href = '/';
+    })
+    .finally(() => setLoading(false));
+}, []);
+
 
   useEffect(() => {
     fetchPrograms();
@@ -30,17 +51,17 @@ const AdminPanel = () => {
   }, []);
 
   const fetchPrograms = async () => {
-    const res = await axios.get(`${API_BASE}/programs`);
+    const res = await axios.get(`${API_BASE}/programs`, { withCredentials: true });
     setPrograms(res.data);
   };
 
   const fetchUsers = async () => {
-    const res = await axios.get(`${API_BASE}/users`);
+    const res = await axios.get(`${API_BASE}/users`, { withCredentials: true });
     setUsers(res.data);
   };
 
   const fetchCities = async () => {
-    const res = await axios.get(`${API_BASE}/cities`);
+    const res = await axios.get(`${API_BASE}/cities`, { withCredentials: true });
     setCities(res.data);
   };
 
@@ -52,7 +73,7 @@ const AdminPanel = () => {
     if (!imageFile) return;
     const formData = new FormData();
     formData.append('image', imageFile);
-    const res = await axios.post(UPLOAD_URL, formData);
+    const res = await axios.post(UPLOAD_URL, formData, { withCredentials: true });
     return res.data.filePath;
   };
 
@@ -61,9 +82,9 @@ const AdminPanel = () => {
     const finalForm = { ...form, image: imagePath || form.image };
 
     if (editingId) {
-      await axios.put(`${API_BASE}/programs/${editingId}`, finalForm);
+      await axios.put(`${API_BASE}/programs/${editingId}`, finalForm, { withCredentials: true });
     } else {
-      await axios.post(`${API_BASE}/add-program`, finalForm);
+      await axios.post(`${API_BASE}/add-program`, finalForm, { withCredentials: true });
     }
     setForm({ name: '', description: '', duration: '', cost: false, location: '', image: '', moreInfoLink: '', city: '' });
     setEditingId(null);
@@ -82,20 +103,23 @@ const AdminPanel = () => {
   };
 
   const deleteProgram = async (id) => {
-    await axios.delete(`${API_BASE}/programs/${id}`);
+    await axios.delete(`${API_BASE}/programs/${id}`, { withCredentials: true });
     fetchPrograms();
   };
 
   const deleteUser = async (id) => {
     try {
-      await axios.delete(`${API_BASE}/users/${id}`);
+      await axios.delete(`${API_BASE}/users/${id}`, { withCredentials: true });
       fetchUsers();
     } catch (err) {
       console.error('❌ Hiba a felhasználó törlésekor:', err.response?.data || err.message);
       alert('Törlés nem sikerült: ' + (err.response?.data?.error || err.message));
     }
   };
-
+  if (loading) return <Typography sx={{ p: 5 }}>alert('Ez az admin bolygó. Ide csak űrkapitányoknak van bejárásuk.');
+</Typography>;
+  if (!authorized) return null;
+  
   return (
     <Box sx={{ p: 4, fontFamily: 'Arial', backgroundColor: '#f5f5f5', minHeight: '100vh' }}>
       <Typography variant="h4" gutterBottom sx={{ fontWeight: 'bold' }}>Admin Panel</Typography>
