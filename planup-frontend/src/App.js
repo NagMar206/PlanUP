@@ -19,7 +19,6 @@ import Summary from "./pages/Summary";
 
 // 📌 Admin oldalak importálása
 import AdminPanel from './Admin/AdminPanel'; // Admin főoldal
-import EditProgram from './Admin/EditProgram';
 
 // 📌 Context importálása
 import { RoomProvider } from "./context/RoomContext";
@@ -68,7 +67,6 @@ function App() {
 
            {/* Admin oldalak */}
   <Route path="/admin" element={<AdminPanel />} /> {/* Admin főoldal */}
-  <Route path="/admin/edit/:id" element={<EditProgram />} />
 
 </Routes>
 

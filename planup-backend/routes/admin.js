@@ -203,19 +203,22 @@ router.get('/cities', async (req, res) => {
 // Felhasználó kitiltása
 router.delete('/users/:id', async (req, res) => {
   const { id } = req.params;
-  
+
   try {
-    // Kapcsolódó rekordok törlése a megfelelő sorrendben
+    // Előbb minden kapcsolódó adat törlése
+    await db.execute('DELETE FROM RoomParticipants WHERE UserID = ?', [id]); // Ez hiányzott
     await db.execute('DELETE FROM UserLikes WHERE UserID = ?', [id]);
     await db.execute('DELETE FROM SwipeActions WHERE UserID = ?', [id]);
-    // Most törölhető a felhasználó
+
+    // Most már törölhető a felhasználó
     await db.execute('DELETE FROM Users WHERE UserID = ?', [id]);
-    
+
     res.json({ message: 'Felhasználó sikeresen törölve.' });
   } catch (error) {
     console.error('❌ Hiba a felhasználó törlésekor:', error.message);
     res.status(500).json({ error: 'Hiba a felhasználó törlésekor.', details: error.message });
   }
 });
+
 
 module.exports = router;
