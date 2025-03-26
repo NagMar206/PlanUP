@@ -5,10 +5,8 @@ import "../Style/ProgramSwipe.css";
 import { useRoom } from "../context/RoomContext"; // Szoba kontextus importálása
 import { useSocket } from "../context/SocketContext";
 
-
-
 function ProgramSwipe({ apiUrl, userId }) {
-  const { roomId } = useRoom(); // Szoba azonosító lekérése
+  const { roomId } = useRoom();
   const [program, setProgram] = useState(null);
   const [error, setError] = useState("");
   const [filters, setFilters] = useState({ duration: "", cost: "", city: "" });
@@ -16,7 +14,6 @@ function ProgramSwipe({ apiUrl, userId }) {
   const [filterActive, setFilterActive] = useState(false);
   const [cities, setCities] = useState([]);
   const navigate = useNavigate();
-  //const didFetch = useRef(false);
   const socket = useSocket();
 
   const magyarIdotartam = {
@@ -39,7 +36,6 @@ function ProgramSwipe({ apiUrl, userId }) {
         console.error("Hiba a városok betöltésekor:", err);
       }
     };
-
     fetchCities();
   }, [apiUrl]);
 
@@ -51,35 +47,25 @@ function ProgramSwipe({ apiUrl, userId }) {
         if (filters.cost) params.cost = filters.cost;
         if (filters.city) params.city = filters.city;
       }
-
       const response = await axios.get(`${apiUrl}/programs/random`, { params });
       let fetchedProgram = response.data;
-
       if (!fetchedProgram) {
         setProgram(null);
         return;
       }
-
       let attempts = 0;
       const maxAttempts = 10;
-
       while (processedPrograms.has(fetchedProgram.ProgramID) && attempts < maxAttempts) {
         const retryResponse = await axios.get(`${apiUrl}/programs/random`, { params });
         fetchedProgram = retryResponse.data;
         attempts++;
       }
-
       if (!fetchedProgram || processedPrograms.has(fetchedProgram.ProgramID)) {
         setProgram(null);
         return;
       }
-
       fetchedProgram.Cost = fetchedProgram.Cost ? "paid" : "free";
-      fetchedProgram.Duration =
-        fetchedProgram.Duration === 1 ? "half_day" :
-        fetchedProgram.Duration === 2 ? "whole_day" :
-        fetchedProgram.Duration === 3 ? "weekend" : fetchedProgram.Duration;
-
+      fetchedProgram.Duration = fetchedProgram.Duration === 1 ? "half_day" : fetchedProgram.Duration === 2 ? "whole_day" : fetchedProgram.Duration === 3 ? "weekend" : fetchedProgram.Duration;
       setProgram(fetchedProgram);
     } catch (err) {
       console.error("Hiba a program betöltésekor:", err);
@@ -93,40 +79,37 @@ function ProgramSwipe({ apiUrl, userId }) {
 
   const handleSwipe = async (action) => {
     if (!program) return;
-
     try {
-        console.log(`🔼 Like/dislike küldése: UserID = ${userId}, ProgramID = ${program.ProgramID}, RoomID = ${roomId || "Nincs"}`);
-
-        const response = await axios.post(`${apiUrl}/programs/${program.ProgramID}/like`, { 
-            userId, 
-            programId: program.ProgramID,
-            roomCode: roomId || null // ✅ Ha van szobakód, akkor elküldi, ha nincs, akkor null
-        });
-
-        console.log("✅ Like/dislike művelet válasza:", response.data);
-
-        setProcessedPrograms((prev) => new Set([...prev, program.ProgramID]));
-        fetchFilteredProgram();
+      console.log(`🔼 ${action.toUpperCase()} küldése: UserID = ${userId}, ProgramID = ${program.ProgramID}, RoomID = ${roomId || "Nincs"}`);
+      const endpoint = action === 'like' ? 'like' : 'dislike';
+      const response = await axios.post(`${apiUrl}/programs/${program.ProgramID}/${endpoint}`, {
+        userId,
+        programId: program.ProgramID,
+        roomCode: roomId || null
+      });
+      console.log(`✅ ${action.toUpperCase()} művelet válasza:`, response.data);
+      setProcessedPrograms((prev) => new Set([...prev, program.ProgramID]));
+      fetchFilteredProgram();
     } catch (err) {
-        console.error("❌ Nem sikerült végrehajtani a műveletet:", err);
-
-        if (err.response && err.response.status === 400) {
-            fetchFilteredProgram();
-        } else {
-            setError("Nem sikerült végrehajtani a műveletet.");
-        }
+      console.error(`❌ Nem sikerült végrehajtani a ${action} műveletet:`, err);
+      if (err.response && err.response.status === 400) {
+        fetchFilteredProgram();
+      } else {
+        setError(`Nem sikerült végrehajtani a ${action} műveletet.`);
+      }
     }
-};
+  };
+  
 
-      const handleEndSwipe = () => {
-        if (roomId) {
-            console.log(`🔄 Szobás válogatás vége, átirányítás a Summary oldalra. RoomID: ${roomId}`);
-            navigate(`/summary?room=${roomId}`); // 🔥 Szobás pörgetés után a Summary oldalra megy
-        } else {
-            console.log("🔄 Egyéni válogatás vége, átirányítás a LikedPrograms oldalra.");
-            navigate(`/liked-programs`); // 🔥 Egyéni válogatás végén a LikedPrograms oldalra megy
-        }
-      };
+  const handleEndSwipe = () => {
+    if (roomId) {
+      console.log(`🔄 Szobás válogatás vége, átirányítás a Summary oldalra. RoomID: ${roomId}`);
+      navigate(`/summary?room=${roomId}`);
+    } else {
+      console.log("🔄 Egyéni válogatás vége, átirányítás a LikedPrograms oldalra.");
+      navigate(`/liked-programs`);
+    }
+  };
 
 
   return (
