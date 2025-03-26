@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
+import DeleteIcon from "@mui/icons-material/Delete";
+
 import {
   Box,
   Button,
@@ -14,6 +16,7 @@ import {
   Paper,
   Select,
   MenuItem,
+  IconButton
 } from "@mui/material";
 
 const API_BASE = "http://localhost:3001/api/admin";
@@ -277,13 +280,11 @@ const AdminPanel = () => {
                 <TableCell>{p.CityName}</TableCell>
                 <TableCell>{magyarIdotartam[p.Duration]}</TableCell>
                 <TableCell>
-                  <Button
-                    color="error"
-                    onClick={() => deleteProgram(p.ProgramID)}
-                  >
-                    Törlés
-                  </Button>
+                  <IconButton color="error" size="large" onClick={() => deleteProgram(p.ProgramID)}>
+                    <DeleteIcon fontSize="inherit" /> {/*✅ Ez lesz a helyes!*/}
+                  </IconButton>
                 </TableCell>
+
               </TableRow>
             ))}
           </TableBody>
@@ -309,9 +310,9 @@ const AdminPanel = () => {
                 <TableCell>{u.Name || u.Username}</TableCell>
                 <TableCell>{u.Email}</TableCell>
                 <TableCell>
-                  <Button color="error" onClick={() => deleteUser(u.UserID)}>
-                    Törlés
-                  </Button>
+                  <IconButton color="error" size="large" onClick={() => deleteProgram(p.ProgramID)}>
+                    <DeleteIcon fontSize="inherit" />
+                  </IconButton>
                 </TableCell>
               </TableRow>
             ))}
