@@ -42,8 +42,25 @@ const AdminPanel = () => {
   });
   const [imageFile, setImageFile] = useState(null);
   const [imageFileName, setImageFileName] = useState("");
+  const [authorized, setAuthorized] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    axios.get('http://localhost:3001/api/auth/status', { withCredentials: true })
+      .then(res => {
+        if (res.data.isAdmin) {
+          setAuthorized(true);
+        } else {
+          alert('Nincs jogosultságod az admin felülethez!');
+          window.location.href = '/';
+        }
+      })
+      .catch(() => {
+        alert('Nem vagy bejelentkezve!');
+        window.location.href = '/';
+      })
+      .finally(() => setLoading(false));
+
     fetchPrograms();
     fetchUsers();
     fetchCities();
@@ -118,6 +135,14 @@ const AdminPanel = () => {
       fetchUsers();
     }
   };
+
+  if (loading) return <Typography>Loading...</Typography>;
+  if (!authorized)
+    return (
+      <Typography sx={{ color: "red", fontWeight: "bold", mt: 4 }}>
+        ⚠️ 403: Admin access denied. Insufficient user privileges.
+      </Typography>
+    );
 
   return (
     <Box sx={{ p: 4, backgroundColor: "#f5f5f5", minHeight: "100vh" }}>
