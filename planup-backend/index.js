@@ -291,41 +291,46 @@ app.post("/programs/:programId/like", async (req, res) => {
   const { programId } = req.params;
   const { userId } = req.body;
   const roomCode = req.body.roomCode || req.session.currentRoomCode || null; // Aktuális szobakód sessionből, ha nincs megadva
-
+ 
   if (!userId || !programId) {
     return res.status(400).json({ error: "Hiányzó userId vagy programId." });
   }
-
+ 
   try {
     console.log(`🔍 Like kérés: UserID = ${userId}, ProgramID = ${programId}, RoomCode = ${roomCode || "Nincs"}`);
-
+ 
     // Ellenőrizzük, hogy a user már like-olta-e ezt a programot
     const [existingLike] = await req.db.execute(
       "SELECT * FROM UserLikes WHERE UserID = ? AND ProgramID = ?",
       [userId, programId]
     );
-
+ 
     if (existingLike.length > 0) {
       return res.status(400).json({ error: "A program már like-olva van." });
     }
-
+ 
     let roomId = null;
     if (roomCode) {
       const [roomResult] = await req.db.execute(
         "SELECT RoomID FROM Rooms WHERE RoomCode = ?",
         [roomCode]
       );
-
+ 
       if (roomResult.length > 0) {
         roomId = roomResult[0].RoomID;
       }
     }
 
     await req.db.execute(
+      "INSERT INTO SwipeActions (UserID, ProgramID, Action) VALUES (?, ?, 'like')",
+      [userId, programId]
+    );
+ 
+    await req.db.execute(
       "INSERT INTO UserLikes (UserID, ProgramID, RoomID) VALUES (?, ?, ?)",
       [userId, programId, roomId]
     );
-
+ 
     res.json({ success: true, message: "Program sikeresen like-olva." });
   } catch (error) {
     console.error("🔥 Hiba a like mentésekor:", error);
@@ -334,14 +339,10 @@ app.post("/programs/:programId/like", async (req, res) => {
 });
 
 
-
-
-
 // 🔹 Program elutasítása
 app.post('/programs/:id/dislike', async (req, res) => {
   const { id } = req.params;
   const { userId } = req.body;
-
   if (!userId) {
     return res.status(400).json({ error: 'UserID szükséges!' });
   }
@@ -355,55 +356,50 @@ app.post('/programs/:id/dislike', async (req, res) => {
   }
 });
 
+
+
 // 🔹 Összegzés
 app.get("/programs/liked", async (req, res) => {
   let { userId, roomId } = req.query;
-
   if (!userId && !roomId) {
-      return res.status(400).json({ error: "Hiányzó userId vagy roomId paraméter." });
+    return res.status(400).json({ error: "Hiányzó userId vagy roomId paraméter." });
   }
 
   try {
-      let query, params;
-
-      if (roomId) {
-          // 🔁 Lekérdezzük a RoomID-t a RoomCode alapján
-          const [roomResult] = await req.db.execute(
-              "SELECT RoomID FROM Rooms WHERE RoomCode = ?",
-              [roomId]
-          );
-
-          if (roomResult.length === 0) {
-              return res.status(404).json({ error: "A szoba nem található." });
-          }
-
-          const realRoomId = roomResult[0].RoomID;
-
-          query = `
-              SELECT p.*, COUNT(ul.UserID) AS likeCount 
-              FROM Programs p
-              JOIN UserLikes ul ON p.ProgramID = ul.ProgramID
-              WHERE ul.RoomID = ?
-              GROUP BY p.ProgramID
-          `;
-          params = [realRoomId];
-      } else {
-          query = `
-              SELECT p.* FROM Programs p
-              JOIN UserLikes ul ON p.ProgramID = ul.ProgramID
-              WHERE ul.UserID = ?
-          `;
-          params = [userId];
+    let query, params;
+    if (roomId) {
+      const [roomResult] = await req.db.execute(
+        "SELECT RoomID FROM Rooms WHERE RoomCode = ?",
+        [roomId]
+      );
+      if (roomResult.length === 0) {
+        return res.status(404).json({ error: "A szoba nem található." });
       }
+      const realRoomId = roomResult[0].RoomID;
+      query = `
+        SELECT p.*, COUNT(ua.UserID) AS likeCount
+        FROM Programs p
+        JOIN UserActions ua ON p.ProgramID = ua.ProgramID
+        WHERE ua.RoomID = ? AND ua.Action = 'like'
+        GROUP BY p.ProgramID
+      `;
+      params = [realRoomId];
+    } else {
+      query = `
+        SELECT p.* FROM Programs p
+        JOIN UserActions ua ON p.ProgramID = ua.ProgramID
+        WHERE ua.UserID = ? AND ua.Action = 'like'
+      `;
+      params = [userId];
+    }
 
-      const [likedPrograms] = await req.db.execute(query, params);
-      return res.json(likedPrograms);
+    const [likedPrograms] = await req.db.execute(query, params);
+    return res.json(likedPrograms);
   } catch (error) {
-      console.error("🔥 Hiba a kedvelt programok lekérésekor:", error);
-      res.status(500).json({ error: "Szerverhiba a kedvelt programok betöltésekor." });
+    console.error("🔥 Hiba a kedvelt programok lekérésekor:", error);
+    res.status(500).json({ error: "Szerverhiba a kedvelt programok betöltésekor." });
   }
 });
-
 
 
 

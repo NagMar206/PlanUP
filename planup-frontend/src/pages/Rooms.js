@@ -66,7 +66,7 @@ function Rooms({ apiUrl, userId }) {
             socket.current.emit('joinRoom', response.data.roomCode);
             setTimeout(() => setSuccessMessage(''), 5000);
         } catch (err) {
-            setError('Nem sikerült létrehozni a szobát.');
+            //setError('Nem sikerült létrehozni a szobát.');
         }
     };
 
