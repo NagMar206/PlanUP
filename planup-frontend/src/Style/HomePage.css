@@ -8,6 +8,11 @@
     background: linear-gradient(to bottom, #1a2330, #2d3b50);
     color: #e0e0e0;
   }
+
+  .homepage-logo {
+    max-width: 200px; /* A logó méretének beállítása */
+    margin-bottom: 20px; /* Távolság a feliratoktól */
+  }
   
  /* Homepage H1 */
 .homepage h1 {
