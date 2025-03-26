@@ -12,6 +12,7 @@
   .homepage-logo {
     max-width: 200px; /* A logó méretének beállítása */
     margin-bottom: 20px; /* Távolság a feliratoktól */
+    animation: fade-in-scale 3s ease-in-out infinite; /* Laza animáció */
   }
   
  /* Homepage H1 */
