@@ -10,7 +10,7 @@
 }
 
 h2 {
-  color: #8a6df1;
+  color: #8a6df1; /* Sötétebb lila a jobb kontraszthoz */
   font-size: 24px;
   font-weight: bold;
   text-transform: uppercase;
@@ -30,7 +30,7 @@ h2 {
   border-radius: 8px;
   font-size: 16px;
   width: 100%;
-  background: #3a3a4a;
+  background: #3a3a4a; /* Sötétebb háttér a jobb kontrasztért */
   color: #ffffff;
   transition: 0.3s ease-in-out;
 }
@@ -46,17 +46,19 @@ h2 {
 
 .profile-actions button {
   padding: 12px;
+  border: none;
   border-radius: 8px;
+  cursor: pointer;
   font-size: 16px;
-  background-color: #4a90e2;
+  transition: 0.4s ease-in-out;
+  background: linear-gradient(135deg, #4a90e2, #367bd6);
   color: white;
   font-weight: bold;
   box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
-  transition: background-color 0.4s ease-in-out, box-shadow 0.4s ease-in-out;
 }
 
 .profile-actions button:hover {
-  background-color: #367bd6;
+  background: linear-gradient(135deg, #367bd6, #1f5bb5);
   box-shadow: 0px 6px 12px rgba(0, 0, 0, 0.3);
 }
 
@@ -72,15 +74,19 @@ h2 {
 }
 
 .logout-btn {
-  background-color: #dc3545;
+  background: linear-gradient(135deg, #d9534f, #c9302c);
   color: white;
   padding: 14px;
   font-size: 16px;
+  border: none;
   border-radius: 8px;
+  cursor: pointer;
+  transition: 0.4s ease-in-out;
 }
 
 .logout-btn:hover {
-  background-color: #c82333;
+  background: linear-gradient(135deg, #c9302c, #a81f1a);
+  box-shadow: 0px 6px 12px rgba(0, 0, 0, 0.3);
 }
 
 .modal-overlay {
@@ -89,15 +95,52 @@ h2 {
   left: 0;
   width: 100%;
   height: 100%;
-  background-color: rgba(0, 0, 0, 0.6);
+  background: rgba(0, 0, 0, 0.6);
   display: flex;
   align-items: center;
   justify-content: center;
+  z-index: 1000;
 }
 
 .logout-modal {
-  background-color: #222244; 
-  color:white; 
-padding :30 px 
-border-radius
+  background-color: #222244;
+  color: white;
+  padding: 30px 45px;
+  border-radius: 12px;
+  box-shadow: 0px 6px 15px rgba(0, 0, 0, 0.4);
+  text-align: center;
+  animation: fadeIn 0.4s ease-in-out;
+}
+
+.logout-modal h2 {
+  font-size: 24px;
+  margin-bottom: 15px;
+  color: #d0c7ff; /* Fehéresebb lila a jobb olvashatóságért */
+}
+
+.logout-modal p {
+  font-size: 16px;
+  color: #d0c7ff;
+}
+
+.blur-background {
+  filter: blur(5px);
+  transition: filter 0.3s ease-in-out;
+}
+
+.footer {
+  text-align: center;
+  padding: 10px;
+  color: #d0c7ff;
+} 
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
 }
