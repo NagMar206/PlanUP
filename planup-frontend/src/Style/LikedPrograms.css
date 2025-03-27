@@ -1,75 +1,105 @@
-/* Fő konténer */
+/* === ULTRA GIGA SEXY LIKED PROGRAMS v2: MAX VISUAL IMPACT === */
+
 .liked-programs-container {
   max-width: 1200px;
-  margin: 0 auto;
-  padding: 20px;
+  margin: 60px auto;
+  padding: 50px 30px;
   text-align: center;
+  background: radial-gradient(circle at top, #1f1f3a, #0f0f1f);
+  border-radius: 28px;
+  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.9);
+  color: #ffffff;
+  animation: fadeInUp 0.7s ease-out;
+  position: relative;
+  overflow: hidden;
 }
 
-/* Programkártyák rácsos elrendezése */
+.liked-programs-container::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle, rgba(0, 249, 255, 0.03), transparent 70%);
+  animation: rotateBg 30s linear infinite;
+  z-index: 0;
+}
+
+.liked-programs-container * {
+  position: relative;
+  z-index: 1;
+}
+
+.liked-title {
+  font-size: 3rem;
+  font-weight: 900;
+  background: linear-gradient(to right, #00f9ff, #ff79c6);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  margin-bottom: 40px;
+  text-shadow: 0 0 20px rgba(0, 249, 255, 0.4);
+  animation: popFade 1s ease-out;
+}
+
 .program-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); /* 📏 Dinamikus oszlopok */
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
   gap: 30px;
   justify-content: center;
   align-items: stretch;
   padding: 10px;
 }
 
-/* 📱 Reszponzív beállítások */
 @media (max-width: 1024px) {
   .program-grid {
-      grid-template-columns: repeat(2, 1fr); /* 🟢 Kisebb kijelzőn 2 oszlop */
+    grid-template-columns: repeat(2, 1fr);
   }
 }
 
 @media (max-width: 768px) {
   .program-grid {
-      grid-template-columns: repeat(1, 1fr); /* 📱 Mobilon 1 oszlop */
+    grid-template-columns: repeat(1, 1fr);
   }
 }
 
-/* Egyedi programkártya stílus */
 .program-card {
-  background: #1e1e2e;
+  background: rgba(255, 255, 255, 0.05);
   color: #ffffff;
   padding: 20px;
-  border-radius: 12px;
-  box-shadow: 0 4px 10px rgba(255, 255, 255, 0.15);
+  border-radius: 20px;
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.5);
   text-align: center;
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
-  width: 100%;
-  min-height: 600px; /* 📏 Egyenlő magasság */
+  transition: transform 0.4s ease, box-shadow 0.4s ease;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  margin: 0 auto;
+  min-height: 640px;
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-/* 🖱️ Hover hatás */
 .program-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 6px 12px rgba(255, 255, 255, 0.25);
+  transform: scale(1.03);
+  box-shadow: 0 16px 36px rgba(0, 249, 255, 0.3);
 }
 
-/* Kép stílus */
 .program-image {
   width: 100%;
   height: 220px;
   object-fit: cover;
-  border-radius: 10px;
-  margin-bottom: 10px;
+  border-radius: 14px;
+  margin-bottom: 20px;
+  box-shadow: 0 6px 18px rgba(0, 249, 255, 0.2);
 }
 
-/* Programcím */
 .program-card h3 {
-  font-size: 22px;
-  font-weight: bold;
-  margin: 15px 0;
-  flex-grow: 1;
+  font-size: 26px;
+  font-weight: 800;
+  margin: 15px 0 12px;
+  color: #00f9ff;
 }
 
-/* Programleírás */
 .program-card p {
   flex-grow: 1;
   display: flex;
@@ -77,9 +107,11 @@
   justify-content: center;
   text-align: center;
   min-height: 50px;
+  color: #e0e0ff;
+  margin: 6px 0;
+  font-size: 1.05rem;
 }
 
-/* További részletek */
 .program-details {
   flex-grow: 1;
   display: flex;
@@ -87,49 +119,88 @@
   justify-content: center;
 }
 
-/* 🔘 Gombok konténer */
 .button-container {
-  margin-top: 20px;
+  margin-top: 40px;
   display: flex;
   justify-content: center;
-  gap: 15px;
+  gap: 24px;
 }
 
-/* 🎨 Alap gombstílus */
 .back-button, .reset-button {
-  background-color: #3b82f6;
-  color: white;
-  padding: 12px 22px;
+  background: linear-gradient(135deg, #00f9ff, #1f6feb);
+  color: #121212;
+  padding: 16px 30px;
   border: none;
-  border-radius: 8px;
-  font-size: 16px;
+  border-radius: 12px;
+  font-size: 17px;
+  font-weight: bold;
   cursor: pointer;
   transition: all 0.3s ease;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.5);
 }
 
-/* 🖱️ Hover effekt */
 .back-button:hover, .reset-button:hover {
-  background-color: #2563eb;
-  transform: scale(1.05);
+  transform: scale(1.08);
+  filter: brightness(1.2);
 }
 
-/* 🔴 Reset gomb figyelmeztető szín */
 .reset-button {
-  background-color: #e74c3c;
+  background: linear-gradient(135deg, #ff416c, #ff4b2b);
+  color: white;
 }
 
 .reset-button:hover {
-  background-color: #c0392b;
+  background: linear-gradient(135deg, #ff4b2b, #ff416c);
 }
 
-/* 📱 Kisebb kijelzőkön középre rendezett gombok */
 @media (max-width: 480px) {
   .button-container {
-      flex-direction: column;
-      gap: 10px;
+    flex-direction: column;
+    gap: 14px;
   }
 
   .back-button, .reset-button {
-      width: 100%;
+    width: 100%;
+  }
+}
+
+.no-liked, .no-programs-message, .error-message {
+  font-size: 1.1rem;
+  color: #ff79c6;
+  margin: 24px auto;
+  animation: fadeInUp 0.6s ease;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes rotateBg {
+  0% {
+    transform: rotate(0);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes popFade {
+  0% {
+    opacity: 0;
+    transform: scale(0.85);
+  }
+  60% {
+    opacity: 1;
+    transform: scale(1.05);
+  }
+  100% {
+    transform: scale(1);
   }
 }

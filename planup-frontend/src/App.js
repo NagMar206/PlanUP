@@ -4,7 +4,7 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import axios from 'axios';
 
 // 📌 Oldalak importálása
-import HomePage from './pages/HomePage';
+import HomePage from './components/HomePage';
 import Login from './pages/Login';
 import Registration from './pages/Registration'; 
 import ProgramSwipe from './pages/ProgramSwipe';
