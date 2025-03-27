@@ -135,19 +135,10 @@ app.use('/programs', programRoutes);
 app.use("/api/admin", adminRoutes);
 
 
-// 🔹 3) Statikus fájlok (ha kell)
-app.use('/images', express.static('public/images'));
-
-// 🔹 4) Végül a szerver indítása
-/* const PORT = 3001;
-app.listen(PORT, () => {
-  console.log(`✅ Szerver fut: http://localhost:${PORT}`);
-});
-*/
 
 
 
-// 🔹 Statikus fájlok kiszolgálása (FONTOS!)
+// 🔹 Statikus fájlok kiszolgálása
 app.use('/images', express.static('public/images'));
 app.use('/images', express.static(__dirname + '/public/images'));
 

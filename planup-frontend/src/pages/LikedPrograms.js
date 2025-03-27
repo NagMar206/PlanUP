@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import "../Style/LikedPrograms.css"; // Új CSS fájl a gridhez
-import LuckyWheel from "./LuckyWheel";
+import LuckyWheel from "../components/LuckyWheel";
 
 function LikedPrograms({ apiUrl, userId }) {
   const [likedPrograms, setLikedPrograms] = useState([]);

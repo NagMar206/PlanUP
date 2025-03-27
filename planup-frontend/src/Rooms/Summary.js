@@ -19,24 +19,19 @@ function Summary({ apiUrl }) {
 
     const fetchLikedPrograms = async () => {
       try {
-        const response = await axios.get(`${apiUrl}/rooms/${roomCode}/liked-programs`, {
-          withCredentials: true
-        });
-
-        if (response.data && response.data.length > 0) {
-          setLikedPrograms(response.data);
-        } else {
-          setError("Nincsenek kedvelt programok ebben a szobában.");
-        }
+          const response = await axios.get(`${apiUrl}/rooms/${roomCode}/liked-programs`, { withCredentials: true });
+          if (response.data && response.data.length > 0) {
+              setLikedPrograms(response.data);
+          } else {
+              setError("Nincsenek kedvelt programok ebben a szobában.");
+          }
       } catch (err) {
-        console.error("❌ Hiba a szobás kedvelt programok lekérésekor:", err);
-        setError("Nem sikerült betölteni a kedvelt programokat.");
+          console.error("❌ Hiba a szobás kedvelt programok lekérésekor:", err);
+          setError("Nem sikerült betölteni a kedvelt programokat.");
       }
-    };
-
-    fetchLikedPrograms();
-  }, [apiUrl, location.search]);
-
+  };
+  fetchLikedPrograms();
+}, [apiUrl, location.search]);
   return (
     <div className="liked-programs-container">
       <h2 className="liked-title">💙 Szobában kedvelt programok</h2>
@@ -68,7 +63,7 @@ function Summary({ apiUrl }) {
             </p>
             <p>💰 Költség: {program.Cost === "paid" ? "Fizetős" : "Ingyenes"}</p>
             <p>
-              👍 Kedvelések száma: <strong>{program.likeCount}</strong>
+            👍 Kedvelések száma: {program.likeCount}
             </p>
             {program.MoreInfoLink && (
               <a href={program.MoreInfoLink} target="_blank" rel="noopener noreferrer">

@@ -6,16 +6,17 @@ import axios from 'axios';
 // 📌 Oldalak importálása
 import HomePage from './pages/HomePage';
 import Login from './pages/Login';
-import Registration from './pages/Registration';
-import Programs from './pages/Programs';
+import Registration from './pages/Registration'; 
 import ProgramSwipe from './pages/ProgramSwipe';
-import Rooms from './pages/Rooms';
+import Rooms from './Rooms/Rooms';
 import Profile from './pages/Profile';
-import Navbar from './pages/Navbar';
 import LikedPrograms from './pages/LikedPrograms'; // Kedvelt programok oldal
-import Footer from './pages/Footer';
-import LuckyWheel from './pages/LuckyWheel';
-import Summary from "./pages/Summary";
+import Summary from "./Rooms/Summary";
+
+// 📌 Komponensek importálása
+import LuckyWheel from './components/LuckyWheel';
+import Navbar from './components/Navbar';
+import Footer from './components/Footer';
 
 // 📌 Admin oldalak importálása
 import AdminPanel from './Admin/AdminPanel'; // Admin főoldal
@@ -57,7 +58,6 @@ function App() {
           <Route path="/" element={<HomePage />} />
           <Route path="/login" element={<Login setUser={setUser} />} />
           <Route path="/register" element={<Registration />} />
-          <Route path="/programs" element={<Programs />} />
           <Route path="/rooms" element={<Rooms apiUrl={apiUrl} userId={user} />} />
           <Route path="/profile" element={<Profile user={user} setUser={setUser} />} />
           <Route path="/swipe" element={<ProgramSwipe apiUrl={apiUrl} userId={user} />} />
