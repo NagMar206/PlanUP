@@ -1,146 +1,139 @@
-/* Navbar Container */
+/* Base */
 .navbar {
   display: flex;
   justify-content: space-between;
-  align-items: center; /* Középre igazítás */
-  background-color: #2d3b50;
-  padding: 10px 20px;
-  color: #e0e0e0;
-  position: relative;
+  align-items: center;
+  background: linear-gradient(to right, #1a1a2e, #16213e);
+  padding: 14px 40px;
+  position: sticky;
+  top: 0;
+  z-index: 999;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+  transition: all 0.3s ease-in-out;
 }
 
-/* Navbar Title */
 .navbar-title {
-  font-size: 1.8rem;
+  font-size: 2rem;
+  font-weight: 800;
   color: #ff79c6;
-  
+  text-shadow: 0 2px 4px rgba(255, 121, 198, 0.3);
+  transition: transform 0.3s ease-in-out;
 }
-.navbar-links li:last-child {
-  border-bottom: none; /* Az utolsó elemnél nincs vonal */
+
+.navbar-title:hover {
+  transform: scale(1.08);
 }
-/* Navbar Links */
+
+/* Icons + Links */
 .navbar-links {
+  display: flex;
+  gap: 30px;
   list-style: none;
-  display: flex;
-  align-items: center; /* Középre igazítás */
-  gap: 15px;
-  margin: 0;
-  padding: 0;
+  align-items: center;
 }
 
-/* Navbar Links (Szöveges gombok) */
 .navbar-links li {
-  font-size: 1.2rem;
   display: flex;
-  align-items: center; /* Gombokat középre rendezi */
+  align-items: center;
+  transition: transform 0.2s ease-in-out;
 }
 
-.navbar-links a {
-  color: #e0e0e0; /* Szöveg színe */
-  font-size: 1.2rem; /* Szövegméret növelése */
-  font-weight: bold; /* Félkövér szöveg */
-  transition: color 0.3s ease-in-out;
-
-}
-.navbar-links a:hover {
-  color: #50fa7b;
+.navbar-links li:hover {
+  transform: translateY(-2px) scale(1.05);
 }
 
-/* Hamburger Menu */
-.hamburger {
-  font-size: 28px;
-  cursor: pointer;
-  display: none; /* Hidden on desktop */
-  color: #e0e0e0;
-}
-
-/* Mobile Menu */
-@media (max-width: 768px) {
-  .hamburger {
-    display: block;
-    flex-direction: column;
-    background-color: #2d3b50; /* Háttérszín */
-    text-align: center;
-    z-index: 1000; /* Előtérbe helyezés */
-    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1); /* Árnyék hozzáadása */
-
-  }
-
-  .navbar-links {
-    display: none;
-    flex-direction: column;
-    position: absolute;
-    top: 60px;
-    left: 0;
-    width: 100%;
-    background-color: #2d3b50;
-    text-align: center;
-    padding: 15px 0;
-  }
-
-  /* A menü megnyitott állapotának módosítása */
-  .navbar-links.open {
-    display: flex;
-    flex-direction: column; /* Ez biztosítja, hogy a menüelemek oszlopban jelenjenek meg */
-    z-index: 1000; /* Ez biztosítja, hogy a menü felül legyen */
-    animation: slideDown 0.3s ease-in-out; /* Lenyíló animáció */
-
-  }
-
-  .navbar-links li {
-    padding: 10px 0;
-  }
-}
-
-/* Status Icon (Profile Button) */
-.status-icon img {
-  width: 35px;
-  height: 35px;
-  border-radius: 50%;
-  object-fit: cover;
-  display: block;
-  transition: transform 0.2s;
-}
-
-.status-icon img:hover {
-  transform: scale(1.1);
-}
-/* Lenyíló animáció */
-@keyframes slideDown {
-  from {
-    opacity: 0;
-    transform: translateY(-20px); /* Fentről indul */
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0); /* Alaphelyzetben áll meg */
-  }
-}
 .nav-icon-link {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 10px;
+  text-decoration: none;
+  color: #e0e0e0;
+  font-weight: 600;
+  font-size: 1.1rem;
+  transition: all 0.3s ease-in-out;
+}
+
+.nav-icon-link:hover {
+  color: #00f9ff;
+  text-shadow: 0 0 8px rgba(0, 249, 255, 0.6);
 }
 
 .nav-icon {
   font-size: 1.4rem;
 }
 
-.nav-text {
-  display: inline;
+.status-icon img {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+  transition: transform 0.3s ease-in-out;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
 }
 
-/* Telefonos nézet: csak ikonok maradnak láthatóak */
+.status-icon img:hover {
+  transform: scale(1.1);
+}
+
+/* Hamburger */
+.hamburger {
+  font-size: 30px;
+  color: #ffffff;
+  cursor: pointer;
+  display: none;
+  z-index: 1001;
+}
+
+/* Responsive - Mobile */
 @media (max-width: 768px) {
+  .hamburger {
+    display: block;
+  }
+
+  .navbar-links {
+    display: none;
+    flex-direction: column;
+    position: fixed;
+    top: 0;
+    right: 0;
+    width: 100%;
+    height: 100vh;
+    background: rgba(18, 18, 18, 0.96);
+    backdrop-filter: blur(8px);
+    justify-content: center;
+    align-items: center;
+    gap: 32px;
+    animation: fadeIn 0.3s ease-in-out;
+  }
+
+  .navbar-links.open {
+    display: flex;
+  }
+
   .nav-text {
     display: none;
   }
 
   .nav-icon {
-    font-size: 1.6rem;
+    font-size: 2rem;
   }
+}
 
-  .navbar-links li {
-    justify-content: center;
+/* Animation */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* Hide Hamburger in Desktop */
+@media (min-width: 769px) {
+  .hamburger {
+    display: none !important;
   }
 }

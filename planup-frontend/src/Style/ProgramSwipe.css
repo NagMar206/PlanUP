@@ -196,11 +196,15 @@
   background: linear-gradient(135deg, #58a6ff, #1f6feb);
   border: none;
   color: white;
-  font-size: 22px;
+  font-size: 25px;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
   z-index: 1000;
   cursor: pointer;
   transition: transform 0.2s ease-in-out;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
 }
 
 .floating-filter-button:hover {
