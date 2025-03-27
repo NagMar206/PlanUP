@@ -553,29 +553,23 @@ app.get('/api/auth/status', (req, res) => {
 
 
 io.on("connection", (socket) => {
-  console.log("🟢 Egy felhasználó csatlakozott: " + socket.id);
-
-  // ✅ Szoba csatlakozás
   socket.on("joinRoom", (roomCode) => {
       socket.join(roomCode);
-      console.log(`👥 Felhasználó csatlakozott a szobához: ${roomCode}`);
   });
 
-  // ✅ Szoba elhagyás
-  socket.on("leaveRoom", (roomCode) => {
-      socket.leave(roomCode);
-      console.log(`🚪 Felhasználó elhagyta a szobát: ${roomCode}`);
-  });
-
-  // ✅ Készenlét állapot frissítése
-  socket.on("updateReadyStatus", (status) => {
-      io.emit("updateReadyStatus", status);
-  });
-
-  socket.on("disconnect", () => {
-      console.log("🔴 Felhasználó lecsatlakozott: " + socket.id);
+  socket.on("checkAllReady", async (roomCode) => {
+      const [results] = await db.query(`
+          SELECT COUNT(*) AS notReady
+          FROM RoomParticipants
+          WHERE RoomID = (SELECT RoomID FROM Rooms WHERE RoomCode = ?)
+          AND isReady = FALSE`,
+          [roomCode]
+      );
+      const allReady = results[0].notReady === 0;
+      io.to(roomCode).emit("updateReadyStatus", allReady);
   });
 });
+
 
 // ✅ RoomCode alapján RoomID visszaadása
 app.get("/rooms/getRoomId", async (req, res) => {

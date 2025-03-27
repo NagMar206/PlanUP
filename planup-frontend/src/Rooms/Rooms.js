@@ -115,30 +115,20 @@ function Rooms({ apiUrl, userId }) {
     const toggleReadyStatus = async () => {
         const newReadyState = !isReady;
         setIsReady(newReadyState);
-    
         try {
-            const response = await axios.post(`${apiUrl}/rooms/ready`, {
-                roomCode, 
-                userId, 
-                isReady: newReadyState 
-            }, { withCredentials: true });
-    
-            console.log("📢 API válasz:", response.data);
-    
-            if (!response.data || response.data.success !== true) {
-                console.error("⚠️ API hiba: Érvénytelen válasz");
-                setIsReady(!newReadyState); // Ha hiba van, állítsuk vissza
-                return;
+            const response = await axios.post(`${apiUrl}/rooms/ready`, { roomCode, userId, isReady: newReadyState }, { withCredentials: true });
+            if (response.data.success) {
+                setAllReady(response.data.allReady); // Mindenki készen áll-e
+                socket.emit('checkAllReady', roomCode); // Értesítés más klienseknek
+            } else {
+                setIsReady(!newReadyState); // Hibakezelés
             }
-    
-            setAllReady(response.data.allReady);
-            socket.emit('checkAllReady', roomCode);
-    
         } catch (err) {
-            console.error('❌ Nem sikerült frissíteni a készenléti állapotot:', err.message);
-            setIsReady(!newReadyState); // Ha hiba van, állítsuk vissza
+            console.error('Nem sikerült frissíteni a készenléti állapotot:', err.message);
+            setIsReady(!newReadyState);
         }
     };
+    
     
     const checkReadyStatus = async (roomCode) => {
         try {
@@ -202,13 +192,10 @@ function Rooms({ apiUrl, userId }) {
                     <div className="ready-toggle" onClick={toggleReadyStatus} style={{ fontSize: '2rem', cursor: 'pointer' }}>
                         {isReady ? <FaCheckCircle className="ready-icon ready" style={{ fontSize: '3rem' }} /> : <FaTimesCircle className="ready-icon not-ready" style={{ fontSize: '3rem' }} />}
                     </div>
-                    <button 
-                        onClick={startSwipe} // 🔹 RoomID mentés és navigálás
-                        disabled={!allReady} 
-                        className={`program-button ${allReady ? 'active' : 'disabled'}`}
-                    >
+                    <button disabled={!allReady} onClick={startSwipe}>
                         Válogass a programok közül
                     </button>
+
 
                     <button onClick={leaveRoom} className="leave-room-button">Kilépés a szobából</button>
                 </div>

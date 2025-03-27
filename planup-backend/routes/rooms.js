@@ -151,16 +151,14 @@ router.post('/leave', async (req, res) => {
 // Lekéri egy szoba állapotát
 router.get('/:roomCode/readyStatus', async (req, res) => {
     const { roomCode } = req.params;
-
     try {
         const [results] = await db.query(`
-            SELECT COUNT(*) AS notReady 
-            FROM RoomParticipants 
-            WHERE RoomID = (SELECT RoomID FROM Rooms WHERE RoomCode = ?) 
-            AND isReady = FALSE`, 
+            SELECT COUNT(*) AS notReady
+            FROM RoomParticipants
+            WHERE RoomID = (SELECT RoomID FROM Rooms WHERE RoomCode = ?)
+            AND isReady = FALSE`,
             [roomCode]
         );
-
         const allReady = results[0].notReady === 0;
         res.json({ allReady });
     } catch (error) {
@@ -168,56 +166,29 @@ router.get('/:roomCode/readyStatus', async (req, res) => {
     }
 });
 
+
 // Frissíti egy felhasználó "készen állok" státuszát és értesíti a többi klienst
 router.post('/rooms/ready', async (req, res) => {
     const { roomCode, userId, isReady } = req.body;
-
-    if (!roomCode || !userId) {
-        return res.status(400).json({ success: false, message: "Hiányzó adatok: roomCode vagy userId" });
-    }
-
     try {
-        const [roomResults] = await db.query(
-            `SELECT RoomID FROM Rooms WHERE RoomCode = ?`,
-            [roomCode]
-        );
-
-        if (roomResults.length === 0) {
-            return res.status(404).json({ message: "Szoba nem található" });
-        }
-
+        const [roomResults] = await db.query(`SELECT RoomID FROM Rooms WHERE RoomCode = ?`, [roomCode]);
         const roomId = roomResults[0].RoomID;
 
-        // ✅ Felhasználó készenléti állapotának frissítése
-        await db.query(
-            `UPDATE RoomParticipants SET isReady = ? WHERE RoomID = ? AND UserID = ?`,
-            [isReady, roomId, userId]
-        );
+        await db.query(`UPDATE RoomParticipants SET isReady = ? WHERE RoomID = ? AND UserID = ?`, [isReady, roomId, userId]);
 
-        // ✅ Ellenőrzés, hogy mindenki készen áll-e
-        const [readyResults] = await db.query(
-            `SELECT COUNT(*) AS notReady FROM RoomParticipants WHERE RoomID = ? AND isReady = FALSE`,
-            [roomId]
-        );
-
+        const [readyResults] = await db.query(`SELECT COUNT(*) AS notReady FROM RoomParticipants WHERE RoomID = ? AND isReady = FALSE`, [roomId]);
         const allReady = readyResults[0].notReady === 0;
 
-        // 🔥 Küldjünk frissítést a szobában lévő minden felhasználónak
         const io = req.app.get('io');
+        io.to(roomCode).emit('updateReadyStatus', allReady); // WebSocket értesítés
 
-        if (!io) {
-            console.error("❌ [HIBA] A WebSocket kapcsolat nem lett beállítva az alkalmazásban!");
-            return res.status(500).json({ success: false, message: "WebSocket kapcsolat nem elérhető" });
-        }
-        
-        io.to(roomCode).emit('updateReadyStatus', allReady);
         res.json({ success: true, allReady });
-
     } catch (error) {
-        console.error("❌ Hiba történt a készenléti állapot frissítésekor:", error);
-        res.status(500).json({ message: "Belső szerverhiba", error: error.message });
+        console.error("Hiba történt:", error);
+        res.status(500).json({ success: false });
     }
 });
+
 
 
 //meg fogom ölni magam
