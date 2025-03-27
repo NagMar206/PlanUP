@@ -50,20 +50,26 @@ function Rooms({ apiUrl, userId }) {
             setSuccessMessage(`Szoba létrehozva! Kód: ${response.data.roomCode}`);
             fetchRoomUsers(response.data.roomCode);
             setIsInRoom(true);
-            socket.current.emit('joinRoom', response.data.roomCode);
+            
+            // 👇 Itt adod át a userId-t is
+            socket.emit('joinRoom', response.data.roomCode, userId);
+    
             setTimeout(() => setSuccessMessage(''), 5000);
         } catch (err) {
-            //setError('Nem sikerült létrehozni a szobát.');
+            setError('Nem sikerült létrehozni a szobát.');
         }
     };
-
+    
     const joinRoom = async () => {
         if (!roomCode) return;
         try {
             const response = await axios.post(`${apiUrl}/rooms/join`, { roomCode, userId }, { withCredentials: true });
             setSuccessMessage(response.data.message);
             setIsInRoom(true);
-            socket.emit('joinRoom', response.data.roomCode);
+    
+            // 👇 Itt adod át a userId-t is
+            socket.emit('joinRoom', response.data.roomCode, userId);
+    
             fetchRoomUsers(roomCode);
             checkReadyStatus(roomCode);
             setTimeout(() => setSuccessMessage(''), 3000);
@@ -71,6 +77,7 @@ function Rooms({ apiUrl, userId }) {
             setError('Nem sikerült csatlakozni a szobához.');
         }
     };
+    
 
     const leaveRoom = async () => {
         try {
@@ -80,7 +87,7 @@ function Rooms({ apiUrl, userId }) {
             setRoomCreator('');
             setRoomCode('');
             setIsInRoom(false);
-            socket.current.emit('leaveRoom', roomCode);
+            socket.emit('joinRoom', response.data.roomCode, userId);
             setTimeout(() => setSuccessMessage(''), 3000);
         } catch (err) {
             setError('Nem sikerült kilépni a szobából.');

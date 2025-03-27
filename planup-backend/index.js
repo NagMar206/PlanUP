@@ -555,26 +555,30 @@ app.get('/api/auth/status', (req, res) => {
 io.on("connection", (socket) => {
   console.log("🟢 Egy felhasználó csatlakozott: " + socket.id);
 
-  // ✅ Szoba csatlakozás
-  socket.on("joinRoom", (roomCode) => {
-      socket.join(roomCode);
-      console.log(`👥 Felhasználó csatlakozott a szobához: ${roomCode}`);
-  });
+  socket.on("joinRoom", async (roomCode, userId) => {
+    socket.join(roomCode);
+    console.log(`👥 Felhasználó (${userId}) csatlakozott a szobához: ${roomCode}`);
 
-  // ✅ Szoba elhagyás
-  socket.on("leaveRoom", (roomCode) => {
-      socket.leave(roomCode);
-      console.log(`🚪 Felhasználó elhagyta a szobát: ${roomCode}`);
-  });
+    try {
+      const [roomResult] = await db.execute(
+        "SELECT RoomID FROM Rooms WHERE RoomCode = ?",
+        [roomCode]
+      );
 
-  // ✅ Készenlét állapot frissítése
-  socket.on("updateReadyStatus", (status) => {
- });
+      if (roomResult.length > 0) {
+        await db.execute("DELETE FROM UserLikes WHERE UserID = ?", [userId]);
+        await db.execute("DELETE FROM SwipeActions WHERE UserID = ?", [userId]);
 
-  socket.on("disconnect", () => {
-      console.log("🔴 Felhasználó lecsatlakozott: " + socket.id);
+        console.log(`🗑️ Felhasználó (${userId}) korábbi lájkjai sikeresen törölve.`);
+      } else {
+        console.log("⚠️ Nem található szoba ezzel a kóddal:", roomCode);
+      }
+    } catch (error) {
+      console.error("🔥 Hiba a lájkok törlése során:", error);
+    }
   });
 });
+
 
 // ✅ RoomCode alapján RoomID visszaadása
 app.get("/rooms/getRoomId", async (req, res) => {
