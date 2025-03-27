@@ -37,6 +37,9 @@ function Navbar({ user }) {
           </>
         ) : (
           <>
+          <li>
+              <Link to="/swipe">Programok</Link>
+            </li>
             <li>
               <Link to="/rooms">Szobák</Link>
             </li>
