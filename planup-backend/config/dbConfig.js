@@ -2,10 +2,10 @@ const mysql = require('mysql2/promise');
 /*
 //PlanUP Adatbázis
  const db = mysql.createPool({
-    host: 'localhost', // XAMPP esetén ez maradjon "localhost"
-    user: 'root', // XAMPP alapértelmezett felhasználó
-    password: '', // XAMPP esetén nincs jelszó, hagyd üresen
-    database: 'planup', // Az adatbázis neve (ellenőrizd phpMyAdminban!)
+    host: 'localhost', 
+    user: 'root', 
+    password: '', // lokális esetén nincs jelszó, hagyd üresen
+    database: 'planup', // Az adatbázis neve 
     port: 3307, // Ha a MySQL más porton fut, módosítsd
     waitForConnections: true,
     connectionLimit: 10,
@@ -14,10 +14,10 @@ const mysql = require('mysql2/promise');
 */
 //Iskolai szerver
 const db = mysql.createPool({
-    host: '10.3.1.65', // XAMPP esetén ez maradjon "localhost"
-    user: 'mollev545', // XAMPP alapértelmezett felhasználó
-    password: '72576822545', // XAMPP esetén nincs jelszó, hagyd üresen
-    database: 'mollev545', // Az adatbázis neve (ellenőrizd phpMyAdminban!)
+    host: '10.3.1.65', 
+    user: 'mollev545', // iskolai szerver alapértelmezett felhasználó
+    password: '72576822545', // iskolai szerver jelszó
+    database: 'mollev545', // Az adatbázis neve (ebben van a PlanUP)
     port: 3306, // Ha a MySQL más porton fut, módosítsd
     waitForConnections: true,
     connectionLimit: 10,
