@@ -4,6 +4,10 @@ import { useNavigate } from "react-router-dom";
 import "../Style/ProgramSwipe.css";
 import { useRoom } from "../context/RoomContext"; // Szoba kontextus importálása
 import { useSocket } from "../context/SocketContext";
+import { FaFilter } from "react-icons/fa";
+import { CiFilter } from "react-icons/ci";
+
+
 
 function ProgramSwipe({ apiUrl, userId }) {
   const { roomId } = useRoom();
@@ -99,7 +103,7 @@ function ProgramSwipe({ apiUrl, userId }) {
       }
     }
   };
-  
+
 
   const handleEndSwipe = () => {
     if (roomId) {
@@ -137,7 +141,8 @@ function ProgramSwipe({ apiUrl, userId }) {
         </select>
 
         <button onClick={() => setFilterActive(!filterActive)}>
-          {filterActive ? "Szűrő kikapcsolása" : "Szűrő alkalmazása"}
+          {filterActive ? <FaFilter /> : <CiFilter />
+          }
         </button>
       </div>
 

@@ -3,6 +3,8 @@ import { Link } from "react-router-dom";
 import "../Style/Navbar.css";
 import loginImage from "../images/login.jpg";
 import logoutImage from "../images/logout.jpg";
+import { TbSwipe } from "react-icons/tb";
+
 
 function Navbar({ user }) {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -38,7 +40,10 @@ function Navbar({ user }) {
         ) : (
           <>
           <li>
-              <Link to="/swipe">Programok</Link>
+              <Link to="/swipe">
+              <TbSwipe />
+
+              </Link>
             </li>
             <li>
               <Link to="/rooms">Szobák</Link>
