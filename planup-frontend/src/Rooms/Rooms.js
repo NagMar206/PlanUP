@@ -1,9 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
-import { io } from 'socket.io-client';
 import '../Style/Rooms.css';
-import { FaCheckCircle, FaTimesCircle } from 'react-icons/fa';
 import { useRoom } from "../context/RoomContext"; // 🔹 RoomID tárolása Contextben
 import { useSocket } from "../context/SocketContext"; // ✅ HOZZÁADÁS
 
@@ -101,22 +99,7 @@ function Rooms({ apiUrl, userId }) {
         }
     };
 
-    const toggleReadyStatus = async () => {
-        const newReadyState = !isReady;
-        setIsReady(newReadyState);
-        try {
-            const response = await axios.post(`${apiUrl}/rooms/ready`, { roomCode, userId, isReady: newReadyState }, { withCredentials: true });
-            if (response.data.success) {
-                setAllReady(response.data.allReady); // Mindenki készen áll-e
-                socket.emit('checkAllReady', roomCode); // Értesítés más klienseknek
-            } else {
-                setIsReady(!newReadyState); // Hibakezelés
-            }
-        } catch (err) {
-            console.error('Nem sikerült frissíteni a készenléti állapotot:', err.message);
-            setIsReady(!newReadyState);
-        }
-    };
+    
     
     
     const checkReadyStatus = async (roomCode) => {
@@ -147,6 +130,10 @@ function Rooms({ apiUrl, userId }) {
         <div className="rooms-container">
             <h2 className="title">SZOBÁK</h2>
             {error && <div className="error-message">{error}</div>}
+            <p className="rooms-description">
+  Hozz létre <span>szobát</span> barátaiddal, vagy <span>csatlakozz</span> meglévőhöz – és válogassatok együtt a legjobb programok közül!
+</p>
+
             {successMessage && <div className="success-message">{successMessage}</div>}
             {!isInRoom && (
                 <div className="create-room">

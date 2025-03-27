@@ -1,266 +1,191 @@
+/* === ULTRA GIGA MEGA SEXY ROOMS v4: Glass + Glow + Centered Input + Description === */
+
 .rooms-container {
-    max-width: 700px;
-    margin: 0 auto;
-    padding: 20px;
-    background-color: #1f1f2e;
-    border-radius: 12px;
-    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.4);
-    color: #ffffff;
-  }
-  .room-code-button {
-    background-color: #4a5568;
-    color: white;
-    border: none;
-    border-radius: 4px;
-    padding: 8px 12px;
-    cursor: pointer;
-    font-size: 1rem;
-    transition: background-color 0.2s;
-    margin-bottom: 10px;
+  max-width: 760px;
+  margin: 100px auto;
+  padding: 48px;
+  background: rgba(20, 20, 40, 0.85);
+  border-radius: 30px;
+  backdrop-filter: blur(16px);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.9);
+  color: #ffffff;
+  animation: fadeInUp 0.7s ease-out;
+  position: relative;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  transform: perspective(1200px) rotateX(0deg);
 }
 
-.room-code-button:hover {
-    background-color: #2d3748;
+.rooms-container::before {
+  content: '';
+  position: absolute;
+  top: -40%;
+  left: -40%;
+  width: 180%;
+  height: 180%;
+  background: radial-gradient(circle, rgba(0, 249, 255, 0.05), transparent 70%);
+  animation: rotateBg 30s linear infinite;
+  z-index: 0;
 }
 
-.room-info {
-    display: flex;
-    align-items: center;
-    gap: 10px;
+.rooms-container * {
+  position: relative;
+  z-index: 1;
+}
+
+.title {
+  text-align: center;
+  font-size: 2.6rem;
+  font-weight: 900;
+  background: linear-gradient(to right, #00f9ff, #ff79c6);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: popFade 0.9s ease-out;
+  margin-bottom: 24px;
+  letter-spacing: 1px;
+  text-shadow: 0 0 10px rgba(0, 249, 255, 0.3);
+}
+
+.rooms-description {
+  font-size: 1.15rem;
+  text-align: center;
+  color: #d8d8f8;
+  margin-bottom: 36px;
+  animation: fadeInUp 1s ease;
+  max-width: 560px;
+  margin-left: auto;
+  margin-right: auto;
+  line-height: 1.7;
+  font-weight: 500;
+}
+
+.rooms-description span {
+  color: #00f9ff;
+  font-weight: 700;
+}
+
+
+.room-input,
+.create-room button,
+.program-button,
+.join-button,
+.delete-button {
+  transition: all 0.3s ease;
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.5);
+  border-radius: 12px;
+  font-size: 1.1rem;
+  padding: 14px;
+  background: linear-gradient(135deg, #1e90ff, #00d4ff);
+  color: white;
+  font-weight: bold;
+  border: none;
+}
+
+.room-input {
+  background: rgba(255, 255, 255, 0.05);
+  color: #e0e0e0;
+  border: 1px solid #00f9ff;
+  width: 100%;
+  margin: 16px 0;
+  display: block;
+}
+
+.room-input::placeholder {
+  color: #cccccc;
+}
+
+.room-input:focus {
+  border-color: #00f9ff;
+  background-color: #29294a;
+  box-shadow: 0 0 14px rgba(0, 249, 255, 0.5);
+}
+
+.centered-button {
+  display: flex;
+  justify-content: center;
+  margin-top: 20px;
+  width: 100%;
+}
+
+.centered-button input,
+.centered-button button {
+  width: 100%;
+  max-width: 400px;
+}
+
+.room-item {
+  animation: fadeInUp 0.6s ease-out;
+  margin-bottom: 20px;
+  padding: 20px;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  backdrop-filter: blur(4px);
+}
+
+.room-item:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.5);
+}
+
+.room-code-button:hover,
+.join-button:hover,
+.delete-button:hover,
+.create-room button:hover,
+.program-button:hover {
+  transform: scale(1.06);
+  filter: brightness(1.2);
+  background: linear-gradient(135deg, #00d4ff, #1e90ff);
 }
 
 .copied-message {
-    color: #48bb78;
-    font-weight: bold;
-    animation: fadeOut 2s forwards;
+  color: #00f9ff;
+  font-weight: bold;
+  animation: fadeOut 2s forwards;
+  text-align: center;
+  margin-top: 12px;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(40px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes rotateBg {
+  0% {
+    transform: rotate(0);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes popFade {
+  0% {
+    opacity: 0;
+    transform: scale(0.85);
+  }
+  60% {
+    opacity: 1;
+    transform: scale(1.05);
+  }
+  100% {
+    transform: scale(1);
+  }
 }
 
 @keyframes fadeOut {
-    0% { opacity: 1; }
-    70% { opacity: 1; }
-    100% { opacity: 0; }
-}
-
-/* Title */
-.title {
-  text-align: center;
-  color: #a78bfa; /* Alap szín */
-  font-size: 2rem;
-  margin-bottom: 25px;
-  animation: fade-in-color 3s infinite ease-in-out; /* Laza animáció */
-}
-
-/* Animáció kulcsframe-ek */
-@keyframes fade-in-color {
-  0%, 100% {
-      color: #a78bfa; /* Alap lila szín */
-      opacity: 0.8; /* Enyhén halvány */
+  0% {
+    opacity: 1;
   }
-  50% {
-      color: #c3b5fc; /* Világosabb árnyalat */
-      opacity: 1; /* Teljesen látható */
+  100% {
+    opacity: 0;
   }
 }
-
-  
-  .create-room {
-    display: flex;
-    flex-direction: column; /* Stack input and button */
-    gap: 15px; /* Space between input and button */
-    margin-bottom: 20px;
-  }
-  
-  .room-input {
-    width: 100%; /* Full-width input */
-    padding: 15px 25px; /* Larger padding for spacious input */
-    border-radius: 12px; /* Rounded corners */
-    border: 1px solid #444444; /* Subtle border for visibility */
-    background-color: #2c2c3e; /* Dark background */
-    color: #ffffff; /* White text for contrast */
-    font-size: 1.2rem; /* Larger font for readability */
-    box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.4); /* Inner shadow for depth */
-    outline: none; /* Remove default focus outline */
-  }
-  
-  .room-input:focus {
-    border-color: #8b5cf6; /* Highlight border on focus */
-    background-color: #3a3a4e; /* Slightly lighter background on focus */
-  }
-  
-  .room-input::placeholder {
-    color: #888888; /* Subtle placeholder text */
-    font-size: 1rem;
-  }
-  
-  .create-room button {
-    padding: 15px 20px; /* Spacious button */
-    background-color: #8b5cf6;
-    color: #ffffff;
-    border: none;
-    border-radius: 12px;
-    font-size: 1.2rem;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-  }
-  
-  .create-room button:hover {
-    background-color: #6d28d9;
-  }
-  
-  .rooms-list {
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
-  }
-  
-  .room-item {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 20px;
-    background-color: #2c2c3e;
-    border-radius: 12px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
-  }
-  
-  .room-name {
-    font-size: 1.5rem;
-    font-weight: bold;
-    color: #ffffff;
-    flex: 1;
-    word-break: break-word;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    max-width: 60%;
-  }
-  
-  .room-actions {
-    display: flex;
-    gap: 10px;
-  }
-  
-  .join-button {
-    padding: 12px 15px;
-    background-color: #4ade80;
-    color: #ffffff;
-    border: none;
-    border-radius: 8px;
-    font-size: 1rem;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-  }
-  
-  .join-button:hover {
-    background-color: #16a34a;
-  }
-  
-  .delete-button {
-    padding: 12px 15px;
-    background-color: #e53e3e;
-    color: #ffffff;
-    border: none;
-    border-radius: 8px;
-    font-size: 1rem;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-  }
-  
-  .delete-button:hover {
-    background-color: #c53030;
-  }
-  
-  .error-message,
-  .success-message {
-    padding: 12px;
-    border-radius: 8px;
-    text-align: center;
-    margin-bottom: 20px;
-    font-size: 1rem;
-  }
-  
-  .error-message {
-    background-color: #e11d48;
-    color: #ffffff;
-  }
-  
-  .success-message {
-    background-color: #10b981;
-    color: #ffffff;
-  }
-  
-  .no-rooms {
-    text-align: center;
-    color: #a3a3a3;
-    font-size: 1.2rem;
-  }
-  
-  .room-users {
-    margin-top: 20px;
-    padding: 15px;
-    background-color: #2c2c3e;
-    border-radius: 12px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
-}
-
-.room-users h3 {
-    color: #a78bfa;
-    text-align: center;
-}
-
-.room-users ul {
-    list-style-type: none;
-    padding: 0;
-    color: white;
-}
-
-.room-users li {
-    padding: 5px 0;
-    text-align: center;
-}
-
-.program-button {
-    display: block;
-    width: 100%;
-    padding: 12px;
-    margin-top: 10px;
-    background-color: #8b5cf6;
-    color: #ffffff;
-    border: none;
-    border-radius: 8px;
-    font-size: 1rem;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-}
-
-.program-button:hover {
-    background-color: #6d28d9;
-}
-
-.ready-button {
-  padding: 8px 16px;
-  border: none;
-  border-radius: 5px;
-  font-size: 14px;
-  font-weight: bold;
-  cursor: pointer;
-  transition: background 0.3s, transform 0.2s;
-  width: auto; /* Nem teljes szélességű */
-  min-width: 120px; /* Legalább 120px széles */
-}
-
-.ready-button.ready {
-  background-color: #28a745; /* Zöld */
-  color: white;
-}
-
-.ready-button.not-ready {
-  background-color: #dc3545; /* Piros */
-  color: white;
-}
-
-.ready-button:hover {
-  opacity: 0.85;
-  transform: scale(1.05);
-}
-

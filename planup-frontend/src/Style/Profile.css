@@ -1,146 +1,177 @@
+/* === ULTRA GIGA MEGA SEXY PROFILE STYLES v3: TISZTÁBB + DINAMIKUSABB === */
+
 .profile-container {
-  max-width: 450px;
-  margin: auto;
-  padding: 20px;
-  border-radius: 12px;
-  background: #1e1e2e;
-  box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.3);
+  max-width: 520px;
+  margin: 100px auto;
+  padding: 40px;
+  background: linear-gradient(145deg, #1a1a2f, #232345);
+  border-radius: 28px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.85);
+  color: #f5f5f5;
   text-align: center;
-  color: #ffffff;
+  animation: fadeInUp 0.6s ease-out;
+  position: relative;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.06);
 }
 
-h2 {
-  color: #8a6df1; /* Sötétebb lila a jobb kontraszthoz */
-  font-size: 24px;
-  font-weight: bold;
-  text-transform: uppercase;
-  text-shadow: 1px 1px 8px rgba(138, 109, 241, 0.5);
+.profile-container::before {
+  content: '';
+  position: absolute;
+  top: -30%;
+  left: -30%;
+  width: 160%;
+  height: 160%;
+  background: radial-gradient(circle, rgba(0,249,255,0.05) 0%, transparent 70%);
+  animation: rotateBg 25s linear infinite;
+  z-index: 0;
+}
+
+.profile-container * {
+  position: relative;
+  z-index: 1;
+}
+
+.profile-title {
+  font-size: 2.4rem;
+  font-weight: 800;
+  background: linear-gradient(to right, #00f9ff, #ff79c6);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  margin-bottom: 25px;
+  animation: bounceIn 0.9s ease-out;
+}
+
+.profile-avatar {
+  width: 135px;
+  height: 135px;
+  border-radius: 50%;
+  margin: 28px auto;
+  border: 3px solid #00f9ff;
+  box-shadow: 0 0 25px rgba(0, 249, 255, 0.4);
+  object-fit: cover;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  animation: pulse 3s infinite ease-in-out;
+}
+
+.profile-avatar:hover {
+  transform: scale(1.1);
+  box-shadow: 0 0 35px rgba(255, 121, 198, 0.6);
+}
+
+.profile-info {
+  font-size: 1.15rem;
+  line-height: 1.8;
+  color: #cccccc;
+  margin-bottom: 28px;
+  animation: fadeInUp 1s ease-out;
+}
+
+.profile-info strong {
+  color: #ff79c6;
+  font-weight: 700;
 }
 
 .profile-actions {
   display: flex;
   flex-direction: column;
-  gap: 12px;
-  margin-top: 10px;
-}
-
-.profile-actions input {
-  padding: 12px;
-  border: 1px solid #666;
-  border-radius: 8px;
-  font-size: 16px;
-  width: 100%;
-  background: #3a3a4a; /* Sötétebb háttér a jobb kontrasztért */
-  color: #ffffff;
-  transition: 0.3s ease-in-out;
-}
-
-.profile-actions input::placeholder {
-  color: #aaa;
-}
-
-.profile-actions input:focus {
-  border-color: #a89eff;
-  box-shadow: 0px 0px 10px rgba(168, 158, 255, 0.6);
-}
-
-.profile-actions button {
-  padding: 12px;
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
-  font-size: 16px;
-  transition: 0.4s ease-in-out;
-  background: linear-gradient(135deg, #4a90e2, #367bd6);
-  color: white;
-  font-weight: bold;
-  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
-}
-
-.profile-actions button:hover {
-  background: linear-gradient(135deg, #367bd6, #1f5bb5);
-  box-shadow: 0px 6px 12px rgba(0, 0, 0, 0.3);
-}
-
-.message {
-  margin-top: 15px;
-  font-size: 15px;
-  color: #7ee787;
-}
-
-.loading {
-  font-size: 18px;
-  color: #a89eff;
-}
-
-.logout-btn {
-  background: linear-gradient(135deg, #d9534f, #c9302c);
-  color: white;
-  padding: 14px;
-  font-size: 16px;
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: 0.4s ease-in-out;
-}
-
-.logout-btn:hover {
-  background: linear-gradient(135deg, #c9302c, #a81f1a);
-  box-shadow: 0px 6px 12px rgba(0, 0, 0, 0.3);
-}
-
-.modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0, 0, 0, 0.6);
-  display: flex;
+  gap: 14px;
   align-items: center;
-  justify-content: center;
-  z-index: 1000;
 }
 
-.logout-modal {
-  background-color: #222244;
-  color: white;
-  padding: 30px 45px;
+.profile-button {
+  padding: 14px 24px;
+  border: none;
   border-radius: 12px;
-  box-shadow: 0px 6px 15px rgba(0, 0, 0, 0.4);
-  text-align: center;
-  animation: fadeIn 0.4s ease-in-out;
+  background: linear-gradient(135deg, #58a6ff, #1f6feb);
+  color: #121212;
+  font-weight: bold;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.3s ease-in-out;
+  animation: floatIn 0.6s ease forwards;
+  transform: translateY(20px);
+  opacity: 0;
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.4);
 }
 
-.logout-modal h2 {
-  font-size: 24px;
-  margin-bottom: 15px;
-  color: #d0c7ff; /* Fehéresebb lila a jobb olvashatóságért */
+.profile-button:hover {
+  background: linear-gradient(135deg, #1f6feb, #58a6ff);
+  transform: scale(1.05);
 }
 
-.logout-modal p {
-  font-size: 16px;
-  color: #d0c7ff;
-}
-
-.blur-background {
-  filter: blur(5px);
-  transition: filter 0.3s ease-in-out;
-}
-
-.footer {
-  text-align: center;
-  padding: 10px;
-  color: #d0c7ff;
-} 
-
-@keyframes fadeIn {
+@keyframes fadeInUp {
   from {
     opacity: 0;
-    transform: scale(0.9);
+    transform: translateY(40px);
   }
   to {
     opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes rotateBg {
+  0% {
+    transform: rotate(0);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes bounceIn {
+  0% {
+    transform: scale(0.85);
+    opacity: 0;
+  }
+  60% {
+    transform: scale(1.08);
+    opacity: 1;
+  }
+  100% {
     transform: scale(1);
+  }
+}
+
+@keyframes pulse {
+  0%, 100% {
+    box-shadow: 0 0 25px rgba(0, 249, 255, 0.3);
+  }
+  50% {
+    box-shadow: 0 0 35px rgba(255, 121, 198, 0.4);
+  }
+}
+
+@keyframes floatIn {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (max-width: 768px) {
+  .profile-container {
+    padding: 26px;
+    margin: 60px 16px;
+    border-radius: 22px;
+  }
+
+  .profile-title {
+    font-size: 2rem;
+  }
+
+  .profile-avatar {
+    width: 110px;
+    height: 110px;
+  }
+
+  .profile-info {
+    font-size: 1rem;
+  }
+
+  .profile-button {
+    width: 100%;
+    font-size: 0.95rem;
   }
 }
