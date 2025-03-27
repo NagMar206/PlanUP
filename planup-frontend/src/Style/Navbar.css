@@ -116,3 +116,31 @@
     transform: translateY(0); /* Alaphelyzetben áll meg */
   }
 }
+.nav-icon-link {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.nav-icon {
+  font-size: 1.4rem;
+}
+
+.nav-text {
+  display: inline;
+}
+
+/* Telefonos nézet: csak ikonok maradnak láthatóak */
+@media (max-width: 768px) {
+  .nav-text {
+    display: none;
+  }
+
+  .nav-icon {
+    font-size: 1.6rem;
+  }
+
+  .navbar-links li {
+    justify-content: center;
+  }
+}

@@ -1,13 +1,10 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import "../Style/ProgramSwipe.css";
-import { useRoom } from "../context/RoomContext"; // Szoba kontextus importálása
+import { useRoom } from "../context/RoomContext";
 import { useSocket } from "../context/SocketContext";
-import { FaFilter } from "react-icons/fa";
-import { CiFilter } from "react-icons/ci";
-
-
+import FilterComponent from "../components/Filter";
 
 function ProgramSwipe({ apiUrl, userId }) {
   const { roomId } = useRoom();
@@ -104,7 +101,6 @@ function ProgramSwipe({ apiUrl, userId }) {
     }
   };
 
-
   const handleEndSwipe = () => {
     if (roomId) {
       console.log(`🔄 Szobás válogatás vége, átirányítás a Summary oldalra. RoomID: ${roomId}`);
@@ -115,36 +111,15 @@ function ProgramSwipe({ apiUrl, userId }) {
     }
   };
 
-
   return (
     <div className="program-swipe-container">
-      <div className="filters">
-        <select value={filters.duration} onChange={(e) => setFilters({ ...filters, duration: e.target.value })}>
-          <option value="">Összes időtartam</option>
-          {Object.entries(magyarIdotartam).map(([key, value]) => (
-            <option key={key} value={key}>{value}</option>
-          ))}
-        </select>
-
-        <select value={filters.cost} onChange={(e) => setFilters({ ...filters, cost: e.target.value })}>
-          <option value="">Összes költség</option>
-          {Object.entries(magyarKoltseg).map(([key, value]) => (
-            <option key={key} value={key}>{value}</option>
-          ))}
-        </select>
-
-        <select value={filters.city} onChange={(e) => setFilters({ ...filters, city: e.target.value })}>
-          <option value="">Összes város</option>
-          {cities.map((city) => (
-            <option key={city.CityID} value={city.CityID}>{city.Name}</option>
-          ))}
-        </select>
-
-        <button onClick={() => setFilterActive(!filterActive)}>
-          {filterActive ? <FaFilter /> : <CiFilter />
-          }
-        </button>
-      </div>
+      <FilterComponent
+        filters={filters}
+        setFilters={setFilters}
+        filterActive={filterActive}
+        setFilterActive={setFilterActive}
+        cities={cities}
+      />
 
       {error && <div className="error-message">{error}</div>}
       {!program && (

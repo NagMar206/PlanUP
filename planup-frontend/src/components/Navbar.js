@@ -4,7 +4,9 @@ import "../Style/Navbar.css";
 import loginImage from "../images/login.jpg";
 import logoutImage from "../images/logout.jpg";
 import { TbSwipe } from "react-icons/tb";
-
+import { BsCollection } from "react-icons/bs";
+import { FaUserPlus, FaSignInAlt, FaHeart } from "react-icons/fa";
+import { MdMeetingRoom } from "react-icons/md";
 
 function Navbar({ user }) {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -25,12 +27,17 @@ function Navbar({ user }) {
         {!user ? (
           <>
             <li>
-              <Link to="/register">Regisztráció</Link>
+              <Link to="/register" className="nav-icon-link">
+                <FaUserPlus className="nav-icon" />
+                <span className="nav-text">Regisztráció</span>
+              </Link>
             </li>
             <li>
-              <Link to="/login">Bejelentkezés</Link>
+              <Link to="/login" className="nav-icon-link">
+                <FaSignInAlt className="nav-icon" />
+                <span className="nav-text">Bejelentkezés</span>
+              </Link>
             </li>
-            {/* Profil ikon */}
             <li className="status-icon">
               <Link to="/profile">
                 <img src={logoutImage} alt="Profil" />
@@ -39,19 +46,24 @@ function Navbar({ user }) {
           </>
         ) : (
           <>
-          <li>
-              <Link to="/swipe">
-              <TbSwipe />
-
+            <li>
+              <Link to="/swipe" className="nav-icon-link">
+                <TbSwipe className="nav-icon" />
+                <span className="nav-text">Programok</span>
               </Link>
             </li>
             <li>
-              <Link to="/rooms">Szobák</Link>
+              <Link to="/rooms" className="nav-icon-link">
+                <MdMeetingRoom className="nav-icon" />
+                <span className="nav-text">Szobák</span>
+              </Link>
             </li>
             <li>
-              <Link to="/liked-programs">Kedvelt Programok</Link>
+              <Link to="/liked-programs" className="nav-icon-link">
+                <FaHeart className="nav-icon" />
+                <span className="nav-text">Kedvelt</span>
+              </Link>
             </li>
-            {/* Profil ikon */}
             <li className="status-icon">
               <Link to="/profile">
                 <img src={loginImage} alt="Profil" />
