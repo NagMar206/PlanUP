@@ -15,8 +15,6 @@ function Rooms({ apiUrl, userId }) {
     const [error, setError] = useState('');
     const [successMessage, setSuccessMessage] = useState('');
     const [isInRoom, setIsInRoom] = useState(false);
-    const [isReady, setIsReady] = useState(false);
-    const [allReady, setAllReady] = useState(false);
     const [isCopied, setIsCopied] = useState(false);
     const navigate = useNavigate();
     const { setRoomId } = useRoom(); // 🔹 RoomID tárolása Contextben
@@ -25,16 +23,7 @@ function Rooms({ apiUrl, userId }) {
 
     useEffect(() => {
         if (!socket) return;
-    
         console.log("✅ Socket.io kapcsolat aktív Rooms.js-ben");
-    
-        socket.on("updateReadyStatus", (status) => {
-            setAllReady(status);
-        });
-    
-        return () => {
-            socket.off("updateReadyStatus"); // Leállítjuk az eseményfigyelést
-        };
     }, [socket]);
     
 
@@ -189,13 +178,11 @@ function Rooms({ apiUrl, userId }) {
                             <li key={user.UserID || index}>{user.Username}</li>
                         )) : <li key="no-users">Nincs jelenleg másik felhasználó a szobában.</li>}
                     </ul>
-                    <div className="ready-toggle" onClick={toggleReadyStatus} style={{ fontSize: '2rem', cursor: 'pointer' }}>
-                        {isReady ? <FaCheckCircle className="ready-icon ready" style={{ fontSize: '3rem' }} /> : <FaTimesCircle className="ready-icon not-ready" style={{ fontSize: '3rem' }} />}
-                    </div>
-                    <button disabled={!allReady} onClick={startSwipe}>
+                    <button 
+                        onClick={startSwipe} // 🔹 RoomID mentés és navigálás
+                    >
                         Válogass a programok közül
                     </button>
-
 
                     <button onClick={leaveRoom} className="leave-room-button">Kilépés a szobából</button>
                 </div>
