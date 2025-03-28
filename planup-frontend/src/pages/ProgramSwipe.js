@@ -5,6 +5,7 @@ import "../Style/ProgramSwipe.css";
 import { useRoom } from "../context/RoomContext";
 import { useSocket } from "../context/SocketContext";
 import FilterComponent from "../components/Filter";
+import logo from "../images/logo.png"
 
 function ProgramSwipe({ apiUrl, userId }) {
   const { roomId } = useRoom();
@@ -124,7 +125,7 @@ function ProgramSwipe({ apiUrl, userId }) {
       {error && <div className="error-message">{error}</div>}
       {!program && (
         <div className="program-card no-program-card">
-          <img src="" alt="PlanUp Logo" className="planup-logo" />
+          <img src={logo} className="planup-logo" />
           <h2>🎉 <span style={{ color: "#a855f7" }}>Gratulálunk!</span> 🎉</h2>
           <p>Minden elérhető programot végignéztél.</p>
           <p>🔄 Próbálj új keresést, vagy nézz vissza később új lehetőségekért!</p>

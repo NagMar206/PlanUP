@@ -88,6 +88,7 @@
 
 .program-card img {
   max-width: 100%;
+  margin-left: 175px;
   border-radius: 16px;
   margin-bottom: 20px;
   transition: transform 0.3s ease-in-out;
@@ -307,7 +308,7 @@
   margin: 0 auto;
 }
 
-.no-program-card h2 {
+.no--card h2 {
   margin-bottom: 10px;
 }
 
