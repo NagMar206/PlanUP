@@ -119,20 +119,22 @@ function ProgramSwipe({ apiUrl, userId }) {
         filterActive={filterActive}
         setFilterActive={setFilterActive}
         cities={cities}
+        
       />
-
       {error && <div className="error-message">{error}</div>}
       {!program && (
-        <div className="no-program">
-          <div className="no-program-box">
-            <h2>🎉 Gratulálunk! 🎉</h2>
-            <p>Minden elérhető programot végignéztél.</p>
-            <p>🔄 Próbálj új keresést, vagy nézz vissza később új lehetőségekért!</p>
+        <div className="program-card no-program-card">
+          <img src="" alt="PlanUp Logo" className="planup-logo" />
+          <h2>🎉 <span style={{ color: "#a855f7" }}>Gratulálunk!</span> 🎉</h2>
+          <p>Minden elérhető programot végignéztél.</p>
+          <p>🔄 Próbálj új keresést, vagy nézz vissza később új lehetőségekért!</p>
+          <div className="end-buttons">
             <button className="reload-button" onClick={fetchFilteredProgram}>🔄 Újrapróbálkozás</button>
             <button onClick={handleEndSwipe} className="finish-button">🎯 Összegzés</button>
           </div>
         </div>
       )}
+
       {program && (
         <div className="program-card">
           <img src={`http://localhost:3001/images/${program.Image}`} alt={program.Name} className="program-image" />
@@ -150,6 +152,8 @@ function ProgramSwipe({ apiUrl, userId }) {
         <button className="like-button" onClick={() => handleSwipe("like")}>Tetszik</button>
       </div>
     </div>
+
+    
   );
 }
 
