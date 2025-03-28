@@ -1,74 +1,169 @@
-.homepage {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    text-align: center;
-    height: 100vh;
-    background: linear-gradient(to bottom, #1a2330, #2d3b50);
-    color: #e0e0e0;
-  }
 
-  .homepage-logo {
-    max-width: 200px; /* A logó méretének beállítása */
-    margin-bottom: 20px; /* Távolság a feliratoktól */
-    animation: fade-in-scale 3s ease-in-out infinite; /* Laza animáció */
-  }
-  
- /* Homepage H1 */
-.homepage h1 {
-  font-size: 3rem;
-  color: #ff79c6; /* Alap szín */
-  margin-bottom: 20px;
-  animation: fade-in-scale 3s ease-in-out infinite; /* Laza animáció */
+/* === PLANUP HOMEPAGE – FULL ULTRA NEON COSMIC VERSION === */
+:root {
+  --primary: #00f9ff;
+  --accent: #ff79c6;
+  --dark: #0e0e20;
+  --glow: rgba(0, 249, 255, 0.45);
+  --flare: rgba(255, 255, 255, 0.07);
 }
 
-/* Animáció kulcsframe-ek */
-@keyframes fade-in-scale {
+html, body {
+  margin: 0;
+  padding: 0;
+  background-color: var(--dark);
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.homepage {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  min-height: 100vh;
+  padding: 60px 30px;
+  background: radial-gradient(circle at center, #0e0e20, #12122c 80%);
+  color: #e0e0e0;
+  animation: fadeInUp 1s ease;
+  position: relative;
+  overflow: hidden;
+  z-index: 1;
+}
+
+.homepage::before,
+.homepage::after {
+  content: '';
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(120px);
+  opacity: 0.3;
+  z-index: 0;
+  animation: cosmicFlare 20s ease-in-out infinite;
+}
+
+.homepage::before {
+  width: 600px;
+  height: 600px;
+  background: var(--primary);
+  top: 10%;
+  left: 10%;
+}
+
+.homepage::after {
+  width: 500px;
+  height: 500px;
+  background: var(--accent);
+  bottom: 5%;
+  right: 5%;
+}
+
+.homepage-glow {
+  position: absolute;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle, rgba(0,249,255,0.06), transparent 70%);
+  animation: rotateBg 60s linear infinite;
+  top: -50%;
+  left: -50%;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.homepage * {
+  position: relative;
+  z-index: 1;
+}
+
+.homepage-logo {
+  max-width: 280px;
+  margin-bottom: 40px;
+  filter: drop-shadow(0 0 25px var(--primary));
+  animation: pulseLogo 2.5s infinite ease-in-out;
+}
+
+.homepage h1 {
+  font-size: 3.4rem;
+  font-weight: 900;
+  margin-bottom: 20px;
+  background: linear-gradient(to right, var(--primary), var(--accent));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  text-shadow: 0 0 30px var(--glow);
+  letter-spacing: 2px;
+  animation: pulseText 3s ease-in-out infinite;
+}
+
+.homepage p {
+  font-size: 1.5rem;
+  max-width: 760px;
+  margin-bottom: 40px;
+  color: #d0d0ff;
+  text-shadow: 0 0 20px var(--flare);
+}
+
+.explore-button {
+  padding: 16px 36px;
+  font-size: 1.2rem;
+  border: 2px solid var(--primary);
+  border-radius: 14px;
+  background: transparent;
+  color: var(--primary);
+  font-weight: bold;
+  box-shadow: 0 0 25px var(--glow);
+  cursor: pointer;
+  transition: all 0.4s ease;
+  animation: glowPulse 2.5s infinite alternate;
+}
+
+.explore-button:hover {
+  background: linear-gradient(135deg, #00f9ff, #1f6feb);
+  color: white;
+  transform: scale(1.1);
+  box-shadow: 0 0 60px var(--primary);
+  border: none;
+}
+
+@keyframes pulseLogo {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.08); }
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(40px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes rotateBg {
+  0% { transform: rotate(0); }
+  100% { transform: rotate(360deg); }
+}
+
+@keyframes glowPulse {
+  0% {
+    box-shadow: 0 0 25px var(--glow);
+  }
+  100% {
+    box-shadow: 0 0 45px var(--glow), 0 0 70px var(--glow);
+  }
+}
+
+@keyframes pulseText {
   0%, 100% {
-      opacity: 0.8; /* Enyhén halvány */
-      transform: scale(1); /* Eredeti méret */
+    text-shadow: 0 0 15px var(--glow);
   }
   50% {
-      opacity: 1; /* Teljesen látható */
-      transform: scale(1.05); /* Kicsit nagyobb méret */
+    text-shadow: 0 0 30px var(--glow), 0 0 50px var(--glow);
   }
 }
 
-  
-  .homepage p {
-    font-size: 1.5rem;
-    margin-bottom: 30px;
-  }
-  
-  .explore-button {
-    padding: 15px 30px;
-    font-size: 1.2rem;
-    border: none;
-    border-radius: 5px;
-    color: #1a2330;
-    background: #50fa7b;
-    cursor: pointer;
-    transition: transform 0.3s, background 0.3s;
-  }
-  
-  .explore-button:hover {
-    background: #37c15a;
-    transform: scale(1.1);
-  }
-  
-  .home-container {
-    text-align: center;
-    padding: 20px;
-  }
-  
-  h1 {
-    font-size: 2rem;
-    color: #4a90e2;
-  }
-  
-  p {
-    font-size: 1.2rem;
-    color: #ffffff;
-  }
-  
+@keyframes cosmicFlare {
+  0%, 100% { transform: scale(1) translateY(0); }
+  50% { transform: scale(1.1) translateY(-10px); }
+}
