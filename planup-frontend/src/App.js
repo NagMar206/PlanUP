@@ -2,7 +2,6 @@
 import React, { useEffect, useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 import axios from 'axios';
-const hideFooterRoutes = ['/login', '/register'];
 
 
 
@@ -19,7 +18,6 @@ import Summary from "./Rooms/Summary";
 // 📌 Komponensek importálása
 import LuckyWheel from './components/LuckyWheel';
 import Navbar from './components/Navbar';
-import Footer from './components/Footer';
 
 // 📌 Admin oldalak importálása
 import AdminPanel from './Admin/AdminPanel'; // Admin főoldal
@@ -74,7 +72,6 @@ function App() {
 </Routes>
 
         {/* 📌 Lábjegyzet */}
-        {!hideFooterRoutes.includes(location.pathname) && <Footer />}
       </Router>
     </RoomProvider>
     </SocketProvider>
