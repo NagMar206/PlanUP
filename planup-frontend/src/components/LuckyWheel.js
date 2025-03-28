@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import "../Style/LuckyWheel.css";
+import "../Style/LikedPrograms.css";
 import { Wheel } from "react-custom-roulette";
 
 function LuckyWheel({ apiUrl, userId }) {

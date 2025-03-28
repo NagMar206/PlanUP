@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import axios from 'axios'; // 🔹 Hiányzó import
-import '../Style/Registration.css';
+import '../Style/Auth.css';
 import { useNavigate } from 'react-router-dom';
 
 const apiUrl = "http://localhost:3001/api/users"; // 🔹 Javított útvonal!

@@ -1,11 +1,12 @@
-/* === ULTRA GIGA SEXY LIKED PROGRAMS v2: MAX VISUAL IMPACT === */
+
+/* === PLANUP LIKED PROGRAMS & LUCKYWHEEL — STÍLUS IGAZÍTÁS === */
 
 .liked-programs-container {
   max-width: 1200px;
   margin: 60px auto;
   padding: 50px 30px;
   text-align: center;
-  background: radial-gradient(circle at top, #1f1f3a, #0f0f1f);
+  background: linear-gradient(145deg, #1a1a2f, #232345);
   border-radius: 28px;
   box-shadow: 0 30px 80px rgba(0, 0, 0, 0.9);
   color: #ffffff;
@@ -32,7 +33,7 @@
 }
 
 .liked-title {
-  font-size: 3rem;
+  font-size: 2.5rem;
   font-weight: 900;
   background: linear-gradient(to right, #00f9ff, #ff79c6);
   -webkit-background-clip: text;
@@ -51,32 +52,18 @@
   padding: 10px;
 }
 
-@media (max-width: 1024px) {
-  .program-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
-}
-
-@media (max-width: 768px) {
-  .program-grid {
-    grid-template-columns: repeat(1, 1fr);
-  }
-}
-
 .program-card {
   background: rgba(255, 255, 255, 0.05);
-  color: #ffffff;
   padding: 20px;
   border-radius: 20px;
   box-shadow: 0 10px 28px rgba(0, 0, 0, 0.5);
-  text-align: center;
-  transition: transform 0.4s ease, box-shadow 0.4s ease;
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
   display: flex;
   flex-direction: column;
   justify-content: space-between;
   min-height: 640px;
-  backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  transition: transform 0.4s ease, box-shadow 0.4s ease;
 }
 
 .program-card:hover {
@@ -101,22 +88,26 @@
 }
 
 .program-card p {
-  flex-grow: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-  min-height: 50px;
+  font-size: 1.05rem;
   color: #e0e0ff;
   margin: 6px 0;
-  font-size: 1.05rem;
 }
 
-.program-details {
-  flex-grow: 1;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
+.program-card button {
+  margin-top: 12px;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #00f9ff, #1f6feb);
+  color: white;
+  font-weight: bold;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: transform 0.3s ease;
+}
+
+.program-card button:hover {
+  transform: scale(1.05);
 }
 
 .button-container {
@@ -126,20 +117,24 @@
   gap: 24px;
 }
 
-.back-button, .reset-button {
-  background: linear-gradient(135deg, #00f9ff, #1f6feb);
-  color: #121212;
+.back-button,
+.reset-button {
   padding: 16px 30px;
-  border: none;
   border-radius: 12px;
   font-size: 17px;
   font-weight: bold;
+  border: none;
   cursor: pointer;
   transition: all 0.3s ease;
   box-shadow: 0 6px 20px rgba(0, 0, 0, 0.5);
 }
 
-.back-button:hover, .reset-button:hover {
+.back-button {
+  background: linear-gradient(135deg, #00f9ff, #1f6feb);
+  color: #121212;
+}
+
+.back-button:hover {
   transform: scale(1.08);
   filter: brightness(1.2);
 }
@@ -151,24 +146,83 @@
 
 .reset-button:hover {
   background: linear-gradient(135deg, #ff4b2b, #ff416c);
+  transform: scale(1.08);
 }
 
-@media (max-width: 480px) {
-  .button-container {
-    flex-direction: column;
-    gap: 14px;
-  }
-
-  .back-button, .reset-button {
-    width: 100%;
-  }
-}
-
-.no-liked, .no-programs-message, .error-message {
+.no-liked,
+.no-programs-message,
+.error-message {
   font-size: 1.1rem;
   color: #ff79c6;
   margin: 24px auto;
   animation: fadeInUp 0.6s ease;
+}
+
+.lucky-wheel-container {
+  margin-top: 80px;
+  padding: 50px;
+  border-radius: 28px;
+  background: linear-gradient(145deg, #1a1a2f, #232345);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.85);
+  color: white;
+  animation: fadeInUp 0.8s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.lucky-wheel-container::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle, rgba(0, 249, 255, 0.03), transparent 70%);
+  animation: rotateBg 40s linear infinite;
+  z-index: 0;
+}
+
+.lucky-wheel-container * {
+  position: relative;
+  z-index: 1;
+}
+
+.lucky-wheel-header {
+  font-size: 2.2rem;
+  font-weight: 900;
+  background: linear-gradient(to right, #00f9ff, #ff79c6);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  margin-bottom: 30px;
+}
+
+.winner-text {
+  font-size: 1.4rem;
+  font-weight: bold;
+  color: #00f9ff;
+  margin-bottom: 20px;
+}
+
+.wheel-overlay-container {
+  position: relative;
+  max-width: 400px;
+  margin: 0 auto 30px;
+}
+
+.spin-button {
+  padding: 14px 30px;
+  border-radius: 12px;
+  font-size: 1rem;
+  font-weight: bold;
+  border: none;
+  background: linear-gradient(135deg, #00f9ff, #1f6feb);
+  color: white;
+  cursor: pointer;
+  transition: transform 0.3s ease;
+}
+
+.spin-button:hover {
+  transform: scale(1.05);
 }
 
 @keyframes fadeInUp {

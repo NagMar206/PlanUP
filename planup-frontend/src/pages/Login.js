@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import '../Style/Login.css'; // Gondoskodj róla, hogy a CSS fájl megfelelő legyen!
+import '../Style/Auth.css'; // Gondoskodj róla, hogy a CSS fájl megfelelő legyen!
 
 function Login({ setUser }) {
     const navigate = useNavigate();

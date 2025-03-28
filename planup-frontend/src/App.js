@@ -1,7 +1,10 @@
 // 📌 Szükséges importok
 import React, { useEffect, useState } from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 import axios from 'axios';
+const hideFooterRoutes = ['/login', '/register'];
+
+
 
 // 📌 Oldalak importálása
 import HomePage from './components/HomePage';
@@ -71,7 +74,7 @@ function App() {
 </Routes>
 
         {/* 📌 Lábjegyzet */}
-        <Footer />
+        {!hideFooterRoutes.includes(location.pathname) && <Footer />}
       </Router>
     </RoomProvider>
     </SocketProvider>
