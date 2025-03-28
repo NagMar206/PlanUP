@@ -217,5 +217,60 @@ router.delete('/users/:id', async (req, res) => {
   }
 });
 
+// Szobák listázása
+router.get('/rooms', async (req, res) => {
+  try {
+    const [rooms] = await db.execute('SELECT * FROM Rooms');
+    const detailedRooms = [];
+
+    for (const room of rooms) {
+      const [users] = await db.execute(`
+        SELECT Users.UserID, Username
+        FROM RoomParticipants
+        JOIN Users ON RoomParticipants.UserID = Users.UserID
+        WHERE RoomParticipants.RoomID = ?
+      `, [room.RoomID]);
+
+      detailedRooms.push({
+        ...room,
+        Users: users
+      });
+    }
+
+    res.json(detailedRooms);
+  } catch (error) {
+    console.error('Hiba történt a szobák és felhasználók lekérésekor:', error);
+    res.status(500).json({ error: 'Hiba történt a szobák és felhasználók lekérésekor.' });
+  }
+});
+
+
+router.delete('/rooms/:id', async (req, res) => {
+  const { id } = req.params;
+  try {
+    const [room] = await db.execute('SELECT * FROM Rooms WHERE RoomID = ?', [id]);
+    if (room.length === 0) {
+      return res.status(404).json({ error: 'A szoba nem található.' });
+    }
+
+    // Résztvevők kiléptetése sessionből
+    // Ez csak akkor működik, ha tudjuk, kik voltak bent — vagy ha session alapján van tárolva
+
+    await db.execute('DELETE FROM RoomParticipants WHERE RoomID = ?', [id]);
+    await db.execute('DELETE FROM Rooms WHERE RoomID = ?', [id]);
+
+    // Opcionális: ha van session tárolás (req.session)
+    if (req.session) {
+      req.session.currentRoomCode = null;
+    }
+
+    res.json({ message: 'Szoba sikeresen törölve!' });
+  } catch (error) {
+    console.error('Hiba történt a szoba törlésekor:', error);
+    res.status(500).json({ error: 'Hiba történt a szoba törlésekor.' });
+  }
+});
+
+
 
 module.exports = router;

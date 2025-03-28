@@ -33,6 +33,7 @@ const AdminPanel = () => {
   const [programs, setPrograms] = useState([]);
   const [users, setUsers] = useState([]);
   const [cities, setCities] = useState([]);
+  const [rooms, setRooms] = useState([]);
   const [form, setForm] = useState({
     name: "",
     description: "",
@@ -67,6 +68,7 @@ const AdminPanel = () => {
     fetchPrograms();
     fetchUsers();
     fetchCities();
+    fetchRooms();
   }, []);
 
   const fetchPrograms = async () => {
@@ -138,6 +140,30 @@ const AdminPanel = () => {
       fetchUsers();
     }
   };
+
+  const fetchRooms = async () => {
+    try {
+      const res = await axios.get("http://localhost:3001/api/admin/rooms", { withCredentials: true });
+      setRooms(res.data);
+    } catch (error) {
+      console.error("Hiba történt a szobák lekérésekor:", error);
+    }
+  };
+
+  const deleteRoom = async (roomId) => {
+    if (window.confirm("Biztosan törlöd ezt a szobát?")) {
+      try {
+        await axios.delete(`http://localhost:3001/api/admin/rooms/${roomId}`, {
+          withCredentials: true
+        });
+        fetchRooms();
+      } catch (error) {
+        console.error("Hiba történt a szoba törlésekor:", error);
+      }
+    }
+  };
+  
+  
 
   if (loading) return <Typography>Loading...</Typography>;
   if (!authorized)
@@ -310,15 +336,51 @@ const AdminPanel = () => {
                 <TableCell>{u.Name || u.Username}</TableCell>
                 <TableCell>{u.Email}</TableCell>
                 <TableCell>
-                  <IconButton color="error" size="large" onClick={() => deleteProgram(p.ProgramID)}>
-                    <DeleteIcon fontSize="inherit" />
-                  </IconButton>
+                <IconButton color="error" size="large" onClick={() => deleteRoom(room.RoomID)}>
+                  <DeleteIcon fontSize="inherit" />
+                </IconButton>
+
                 </TableCell>
               </TableRow>
             ))}
           </TableBody>
         </Table>
       </TableContainer>
+
+        {/* Szobák listája */}
+<Typography variant="h6" sx={{ mt: 4 }}>
+  Szobák
+</Typography>
+<TableContainer component={Paper}>
+  <Table>
+    <TableHead>
+      <TableRow>
+        <TableCell>Szoba ID</TableCell>
+        <TableCell>Szoba Kód</TableCell>
+        <TableCell>Felhasználók</TableCell>
+        <TableCell>Művelet</TableCell>
+      </TableRow>
+    </TableHead>
+    <TableBody>
+    {rooms?.map((room) => (
+  <TableRow key={room.RoomID}>
+    <TableCell>{room.RoomID}</TableCell>
+    <TableCell>{room.RoomCode}</TableCell>
+    <TableCell>
+    {room.Users?.map((user) => user.Username).join(", ") || "Nincs felhasználó"}
+    </TableCell>
+    <TableCell>
+      <IconButton color="error" size="large" onClick={() => deleteRoom(room.RoomID, room.Users)}>
+        <DeleteIcon fontSize="inherit" />
+      </IconButton>
+    </TableCell>
+  </TableRow>
+))}
+
+    </TableBody>
+  </Table>
+</TableContainer>
+
     </Box>
   );
 };
