@@ -87,12 +87,16 @@
 }
 
 .program-card img {
-  max-width: 100%;
-  margin-left: 175px;
+  width: 100%;
+  height: auto;
+  display: block;
+  margin: 0 auto 20px auto;
   border-radius: 16px;
-  margin-bottom: 20px;
   transition: transform 0.3s ease-in-out;
+  box-shadow: 0 0 12px rgba(0, 249, 255, 0.15);
 }
+
+
 
 .program-card img:hover {
   transform: scale(1.05);
