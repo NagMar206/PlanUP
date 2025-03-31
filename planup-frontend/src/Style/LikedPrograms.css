@@ -1,5 +1,4 @@
 
-/* === PLANUP LIKED PROGRAMS – LITE / OPTIMALIZÁLT VERZIÓ === */
 .liked-programs-container {
   max-width: 1200px;
   margin: 60px auto;
@@ -14,10 +13,15 @@
 .liked-title {
   font-size: 2.4rem;
   font-weight: 800;
-  background: linear-gradient(to right, #00f9ff, #ff79c6);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
+  color: #00f9ff;
   margin-bottom: 30px;
+}
+
+.lucky-wheel-header {
+  font-size: 2rem;
+  font-weight: 800;
+  color: #00f9ff;
+  margin-bottom: 24px;
 }
 
 .program-grid {
@@ -119,15 +123,6 @@
   background-color: #1a1a2f;
   color: white;
   text-align: center;
-}
-
-.lucky-wheel-header {
-  font-size: 2rem;
-  font-weight: 800;
-  margin-bottom: 24px;
-  background: linear-gradient(to right, #00f9ff, #ff79c6);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
 }
 
 .winner-text {
