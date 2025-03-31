@@ -3,16 +3,16 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import "../Style/LikedPrograms.css";
 
-function SlotMachine({ apiUrl, userId }) {
+function LockedChest({ apiUrl, userId }) {
   const [programs, setPrograms] = useState([]);
-  const [isSpinning, setIsSpinning] = useState(false);
-  const [result, setResult] = useState(null);
+  const [selectedProgram, setSelectedProgram] = useState(null);
+  const [opened, setOpened] = useState(false);
 
   useEffect(() => {
     const fetchPrograms = async () => {
       try {
         const response = await axios.get(`${apiUrl}/programs/liked`, {
-          params: { userId }
+          params: { userId },
         });
         setPrograms(response.data);
       } catch (err) {
@@ -23,17 +23,12 @@ function SlotMachine({ apiUrl, userId }) {
     fetchPrograms();
   }, [apiUrl, userId]);
 
-  const spin = () => {
-    if (!programs.length || isSpinning) return;
+  const openChest = () => {
+    if (!programs.length || opened) return;
 
-    setIsSpinning(true);
-    setResult(null);
-
-    setTimeout(() => {
-      const randomIndex = Math.floor(Math.random() * programs.length);
-      setResult(programs[randomIndex]);
-      setIsSpinning(false);
-    }, 3000);
+    const random = Math.floor(Math.random() * programs.length);
+    setSelectedProgram(programs[random]);
+    setOpened(true);
   };
 
   const magyarIdotartam = {
@@ -54,49 +49,33 @@ function SlotMachine({ apiUrl, userId }) {
     ] || "Ismeretlen időtartam";
   };
 
-  const getRandomProgram = () => {
-    const random = Math.floor(Math.random() * programs.length);
-    return programs[random];
-  };
-
   return (
-    <div className="slot-machine-visual-container">
-      <h2 className="slot-machine-title">🎰 Slot Machine</h2>
+    <div className="chest-container">
+      <h2 className="chest-title">🔐 Meglepetés Láda</h2>
 
-      <div className="slot-reels-wrapper">
-        {[...Array(3)].map((_, i) => (
-          <div className={`slot-reel-box ${isSpinning ? "spinning" : ""}`} key={i}>
-            {Array.from({ length: 10 }).map((_, j) => {
-              const item = getRandomProgram();
-              return (
-                <div className="slot-card" key={j}>
-                  <img src={`http://localhost:3001/images/${item?.Image}`} alt={item?.Name} />
-                  <p>{item?.Name}</p>
-                </div>
-              );
-            })}
-          </div>
-        ))}
+      <div className={`chest ${opened ? "opened" : ""}`} onClick={openChest}>
+        <div className="lid" />
+        <div className="box" />
       </div>
 
-      <button onClick={spin} className="slot-button" disabled={isSpinning}>
-        {isSpinning ? "Pörög..." : "Pörgesd meg!"}
-      </button>
+      {!opened && (
+        <p className="chest-hint">Kattints a ládára, hogy kinyisd!</p>
+      )}
 
-      {result && (
+      {selectedProgram && (
         <div className="winner-card">
           <img
-            src={`http://localhost:3001/images/${result.Image}`}
-            alt={result.Name}
+            src={`http://localhost:3001/images/${selectedProgram.Image}`}
+            alt={selectedProgram.Name}
             className="program-image"
           />
-          <h3>{result.Name}</h3>
-          <p>{result.Description}</p>
-          <p>🌍 Város: {result.CityName}</p>
-          <p>📍 Helyszín: {result.Location}</p>
-          <p>⏳ Időtartam: {getIdotartam(result.Duration)}</p>
-          <p>💰 Költség: {result.Cost === "paid" ? "Fizetős" : "Ingyenes"}</p>
-          <a href={result.MoreInfoLink} target="_blank" rel="noopener noreferrer">
+          <h3>{selectedProgram.Name}</h3>
+          <p>{selectedProgram.Description}</p>
+          <p>🌍 Város: {selectedProgram.CityName}</p>
+          <p>📍 Helyszín: {selectedProgram.Location}</p>
+          <p>⏳ Időtartam: {getIdotartam(selectedProgram.Duration)}</p>
+          <p>💰 Költség: {selectedProgram.Cost === "paid" ? "Fizetős" : "Ingyenes"}</p>
+          <a href={selectedProgram.MoreInfoLink} target="_blank" rel="noopener noreferrer">
             <button>További információk</button>
           </a>
         </div>
@@ -105,4 +84,4 @@ function SlotMachine({ apiUrl, userId }) {
   );
 }
 
-export default SlotMachine;
+export default LockedChest;
