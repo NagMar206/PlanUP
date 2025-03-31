@@ -16,7 +16,7 @@ import LikedPrograms from './pages/LikedPrograms'; // Kedvelt programok oldal
 import Summary from "./Rooms/Summary";
 
 // 📌 Komponensek importálása
-import LuckyWheel from './components/SlotMachine';
+import LuckyWheel from './components/LockedChest';
 import Navbar from './components/Navbar';
 
 // 📌 Admin oldalak importálása
