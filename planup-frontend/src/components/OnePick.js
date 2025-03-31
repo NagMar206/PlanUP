@@ -1,34 +1,45 @@
 
-import React, { useEffect, useState } from "react";
+import React, { useState, useEffect } from "react";
 import axios from "axios";
 import "../Style/LikedPrograms.css";
 
-function LockedChest({ apiUrl, userId }) {
+function OnePick({ apiUrl, userId }) {
   const [programs, setPrograms] = useState([]);
+  const [isPicking, setIsPicking] = useState(false);
+  const [displayedName, setDisplayedName] = useState("");
   const [selectedProgram, setSelectedProgram] = useState(null);
-  const [opened, setOpened] = useState(false);
 
   useEffect(() => {
     const fetchPrograms = async () => {
       try {
-        const response = await axios.get(`${apiUrl}/programs/liked`, {
-          params: { userId },
-        });
-        setPrograms(response.data);
+        const res = await axios.get(`${apiUrl}/programs/liked?userId=${userId}`);
+        setPrograms(res.data);
       } catch (err) {
-        console.error("❌ Hiba a programok betöltésekor:", err);
+        console.error("Nem sikerült betölteni a programokat:", err);
       }
     };
 
     fetchPrograms();
   }, [apiUrl, userId]);
 
-  const openChest = () => {
-    if (!programs.length || opened) return;
+  const pickRandomProgram = () => {
+    if (!programs.length || isPicking) return;
 
-    const random = Math.floor(Math.random() * programs.length);
-    setSelectedProgram(programs[random]);
-    setOpened(true);
+    setSelectedProgram(null);
+    setIsPicking(true);
+
+    let i = 0;
+    const interval = setInterval(() => {
+      const random = programs[Math.floor(Math.random() * programs.length)];
+      setDisplayedName(random.Name);
+      i++;
+      if (i > 20) {
+        clearInterval(interval);
+        const winner = programs[Math.floor(Math.random() * programs.length)];
+        setSelectedProgram(winner);
+        setIsPicking(false);
+      }
+    }, 80);
   };
 
   const magyarIdotartam = {
@@ -50,17 +61,16 @@ function LockedChest({ apiUrl, userId }) {
   };
 
   return (
-    <div className="chest-container">
-      <h2 className="chest-title">🔐 Meglepetés Láda</h2>
+    <div className="onepick-container">
+      <h2 className="onepick-title">🎯 Válassz nekem egy programot</h2>
 
-      <div className={`chest ${opened ? "opened" : ""}`} onClick={openChest}>
-        <div className="lid" />
-        <div className="box" />
+      <div className="display-box">
+        {isPicking ? <span>{displayedName}</span> : <span>Készen állsz?</span>}
       </div>
 
-      {!opened && (
-        <p className="chest-hint">Kattints a ládára, hogy kinyisd!</p>
-      )}
+      <button className="onepick-button" onClick={pickRandomProgram} disabled={isPicking}>
+        {isPicking ? "Kiválasztás folyamatban..." : "🎲 Válassz programot"}
+      </button>
 
       {selectedProgram && (
         <div className="winner-card">
@@ -84,4 +94,4 @@ function LockedChest({ apiUrl, userId }) {
   );
 }
 
-export default LockedChest;
+export default OnePick;

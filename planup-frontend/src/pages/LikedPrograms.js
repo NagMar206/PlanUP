@@ -3,7 +3,7 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import "../Style/LikedPrograms.css"; // Új CSS fájl a gridhez
-import LockedChest from "../components/LockedChest";
+import OnePick from "../components/OnePick";
 
 function LikedPrograms({ apiUrl, userId }) {
   const [likedPrograms, setLikedPrograms] = useState([]);
@@ -92,9 +92,9 @@ function LikedPrograms({ apiUrl, userId }) {
         </button>
       </div>
 
-      {/* 🔥 LuckyWheel csak akkor jelenik meg, ha vannak programok */}
+      {}
       {likedPrograms.length > 0 ? (
-        <LockedChest apiUrl={apiUrl} userId={validUserId} />
+        <OnePick apiUrl={apiUrl} userId={validUserId} />
       ) : (
         <p className="no-programs-message">⚠️ Lájkold a programokat, hogy pörgethess! 😊</p>
       )}

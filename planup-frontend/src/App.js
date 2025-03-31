@@ -16,7 +16,6 @@ import LikedPrograms from './pages/LikedPrograms'; // Kedvelt programok oldal
 import Summary from "./Rooms/Summary";
 
 // 📌 Komponensek importálása
-import LuckyWheel from './components/LockedChest';
 import Navbar from './components/Navbar';
 
 // 📌 Admin oldalak importálása
@@ -64,7 +63,6 @@ function App() {
           <Route path="/swipe" element={<ProgramSwipe apiUrl={apiUrl} userId={user} />} />
           <Route path="/liked-programs" element={<LikedPrograms apiUrl={apiUrl} userId={user} />} />
           <Route path="/summary" element={<Summary apiUrl={apiUrl} />} />
-          <Route path="/lucky-wheel" element={<LuckyWheel apiUrl={apiUrl} userId={user} />} />
 
            {/* Admin oldalak */}
   <Route path="/admin" element={<AdminPanel />} /> {/* Admin főoldal */}
