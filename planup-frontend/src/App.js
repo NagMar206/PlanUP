@@ -3,8 +3,6 @@ import React, { useEffect, useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 import axios from 'axios';
 
-
-
 // 📌 Oldalak importálása
 import HomePage from './components/HomePage';
 import Login from './pages/Login';
