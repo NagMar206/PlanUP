@@ -7,9 +7,11 @@
 
 html, body {
   height: 100%;
-  font-family: Arial, sans-serif;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background-color: #0e0e20;
   background: radial-gradient(circle at center, #0e0e20, #12122c 80%);
-  color: #ecf0f1;
+  color: #e0e0e0;
+  overflow-x: hidden;
 }
 
 h1, h2, h3, h4, h5, h6 {
@@ -101,3 +103,38 @@ button:disabled {
   cursor: not-allowed;
 }
 
+
+
+
+body::before,
+body::after {
+  content: '';
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(120px);
+  opacity: 0.3;
+  z-index: 0;
+  animation: cosmicFlare 20s ease-in-out infinite;
+  pointer-events: none;
+}
+
+body::before {
+  width: 600px;
+  height: 600px;
+  background: #00f9ff;
+  top: 10%;
+  left: 10%;
+}
+
+body::after {
+  width: 500px;
+  height: 500px;
+  background: #ff79c6;
+  bottom: 5%;
+  right: 5%;
+}
+
+@keyframes cosmicFlare {
+  0%, 100% { transform: scale(1) translateY(0); }
+  50% { transform: scale(1.1) translateY(-10px); }
+}
