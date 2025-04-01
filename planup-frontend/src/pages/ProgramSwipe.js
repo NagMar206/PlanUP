@@ -140,11 +140,11 @@ function ProgramSwipe({ apiUrl, userId }) {
         <div className="program-card">
           <img src={`http://localhost:3001/images/${program.Image}`} alt={program.Name} className="program-image" />
           <h2>{program.Name}</h2>
-          <p>{program.Description}</p>
-          <p>🌍 Város: {program.CityName}</p>
-          <p>📍 Helyszín: {program.Location}</p>
-          <p>⏳ Időtartam: {magyarIdotartam[program.Duration] || "Ismeretlen időtartam"}</p>
-          <p>💰 Költség: {magyarKoltseg[program.Cost] || "Ismeretlen"}</p>
+          <p className="description">{program.Description}</p>
+          <p>🌍 Város: <span className="highlighted">{program.CityName}</span></p>
+          <p>📍 Helyszín: <span className="highlighted">{program.Location}</span></p>
+          <p>⏳ Időtartam: <span className="highlighted">{magyarIdotartam[program.Duration] || "Ismeretlen időtartam"}</span></p>
+          <p>💰 Költség: <span className="highlighted">{magyarKoltseg[program.Cost] || "Ismeretlen"}</span></p>
         </div>
       )}
 
