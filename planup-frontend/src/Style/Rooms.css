@@ -229,3 +229,22 @@ body {
   }
 }
 
+/* ÚJ: Swipe kék gomb stílus */
+.swipe-button {
+  background: linear-gradient(135deg, #00c6ff, #0072ff);
+  border: none;
+  color: white;
+  padding: 14px 28px;
+  border-radius: 14px;
+  font-weight: bold;
+  font-size: 1.05rem;
+  cursor: pointer;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  margin-top: 20px;
+}
+
+.swipe-button:hover {
+  transform: scale(1.05);
+  filter: brightness(1.1);
+}

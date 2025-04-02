@@ -173,10 +173,12 @@ function Rooms({ apiUrl, userId }) {
                         )) : <li key="no-users">Nincs jelenleg másik felhasználó a szobában.</li>}
                     </ul>
                     <button 
-                        onClick={startSwipe} // 🔹 RoomID mentés és navigálás
-                    >
-                        Válogass a programok közül
-                    </button>
+  onClick={startSwipe} 
+  className="swipe-button"  // <-- EZ az új stílusosztály
+>
+  Válogass a programok közül
+</button>
+
 
                     <button onClick={leaveRoom} className="leave-room-button">Kilépés a szobából</button>
                 </div>
