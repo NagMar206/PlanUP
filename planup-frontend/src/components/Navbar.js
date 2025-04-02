@@ -4,7 +4,6 @@ import "../Style/Navbar.css";
 import loginImage from "../images/login.jpg";
 import logoutImage from "../images/logout.jpg";
 import { TbSwipe } from "react-icons/tb";
-import { BsCollection } from "react-icons/bs";
 import { FaUserPlus, FaSignInAlt, FaHeart } from "react-icons/fa";
 import { MdMeetingRoom } from "react-icons/md";
 
