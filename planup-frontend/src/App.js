@@ -8,10 +8,15 @@ import HomePage from './components/HomePage';
 import Login from './pages/Login';
 import Registration from './pages/Registration'; 
 import ProgramSwipe from './pages/ProgramSwipe';
-import Rooms from './Rooms/Rooms';
 import Profile from './pages/Profile';
 import LikedPrograms from './pages/LikedPrograms'; // Kedvelt programok oldal
+
+
+// 📌 Szobához kapcsolódó oldalak importálása
 import Summary from "./Rooms/Summary";
+import Rooms from './Rooms/Rooms';
+import RoomSwipe from './Rooms/RoomSwipe';
+
 
 // 📌 Komponensek importálása
 import Navbar from './components/Navbar';
@@ -61,6 +66,8 @@ function App() {
           <Route path="/swipe" element={<ProgramSwipe apiUrl={apiUrl} userId={user} />} />
           <Route path="/liked-programs" element={<LikedPrograms apiUrl={apiUrl} userId={user} />} />
           <Route path="/summary" element={<Summary apiUrl={apiUrl} />} />
+          <Route path="/roomswipe" element={<RoomSwipe apiUrl={apiUrl} />} />
+
 
            {/* Admin oldalak */}
   <Route path="/admin" element={<AdminPanel />} /> {/* Admin főoldal */}
