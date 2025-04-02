@@ -17,6 +17,7 @@ function ProgramSwipe({ apiUrl, userId }) {
   const [cities, setCities] = useState([]);
   const navigate = useNavigate();
   const socket = useSocket();
+  const [isHost, setIsHost] = useState(false);
 
   const magyarIdotartam = {
     half_day: "Fél napos",
@@ -102,6 +103,29 @@ function ProgramSwipe({ apiUrl, userId }) {
     }
   };
 
+  useEffect(() => {
+    axios.get(`${apiUrl}/rooms/${roomId}/users`, { withCredentials: true })
+      .then(res => {
+        const creatorId = res.data.creatorId;
+        setIsHost(creatorId === userId);
+      })
+      .catch(err => console.error("Nem sikerült lekérni a hostot:", err));
+  }, [roomId, userId]);
+  
+  useEffect(() => {
+    if (!isHost && roomId) {
+      axios.get(`${apiUrl}/rooms/${roomId}/filters`, { withCredentials: true })
+        .then((res) => {
+          if(res.data) {
+            setFilters(res.data);
+            setFilterActive(true);
+          }
+        })
+        .catch(err => console.error("Nem sikerült lekérni a szűrőket:", err));
+    }
+  }, [roomId, isHost]);
+
+
   const handleEndSwipe = () => {
     if (roomId) {
       console.log(`🔄 Szobás válogatás vége, átirányítás a Summary oldalra. RoomID: ${roomId}`);
@@ -114,15 +138,25 @@ function ProgramSwipe({ apiUrl, userId }) {
 
   return (
     <div className="program-swipe-container">
-      <FilterComponent
-        filters={filters}
-        setFilters={setFilters}
-        filterActive={filterActive}
-        setFilterActive={setFilterActive}
-        cities={cities}
-        
-      />
+      {(!roomId || isHost) && (
+        <FilterComponent
+          filters={filters}
+          setFilters={(newFilters) => {
+            setFilters(newFilters);
+            if (roomId) { // Ha szobában van és host
+              axios.post(`${apiUrl}/rooms/${roomId}/filters`, { filters: newFilters, userId }, { withCredentials: true })
+                .catch(err => console.error("Hiba a szűrők mentése közben:", err));
+            }
+          }}
+          filterActive={filterActive}
+          setFilterActive={setFilterActive}
+          cities={cities}
+        />
+      )}
+
+  
       {error && <div className="error-message">{error}</div>}
+  
       {!program && (
         <div className="program-card no-program-card">
           <img src={logo} className="planup-logo" />
@@ -135,7 +169,7 @@ function ProgramSwipe({ apiUrl, userId }) {
           </div>
         </div>
       )}
-
+  
       {program && (
         <div className="program-card">
           <img src={`http://localhost:3001/images/${program.Image}`} alt={program.Name} className="program-image" />
@@ -147,15 +181,14 @@ function ProgramSwipe({ apiUrl, userId }) {
           <p>💰 Költség: <span className="highlighted">{magyarKoltseg[program.Cost] || "Ismeretlen"}</span></p>
         </div>
       )}
-
+  
       <div className="swipe-buttons">
         <button className="dislike-button" onClick={() => handleSwipe("dislike")}>Nem tetszik</button>
         <button className="like-button" onClick={() => handleSwipe("like")}>Tetszik</button>
       </div>
     </div>
-
-    
   );
+  
 }
 
 export default ProgramSwipe;
