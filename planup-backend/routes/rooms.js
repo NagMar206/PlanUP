@@ -156,18 +156,21 @@ router.get("/roomswipe/:roomCode/summary", async (req, res) => {
   }
 });
 
-router.get('/:roomCode/creator', async (req, res) => {
-    const { roomCode } = req.params;
-    try {
-      const [result] = await db.execute('SELECT CreatedByUserID FROM Rooms WHERE RoomCode = ?', [roomCode]);
-      if (result.length === 0) {
-        return res.status(404).json({ error: 'Szoba nem található.' });
-      }
-      res.json({ creatorId: result[0].CreatedByUserID });
-    } catch (err) {
-      console.error("🔥 Hiba a szoba létrehozójának lekérdezésekor:", err);
-      res.status(500).json({ error: 'Szerverhiba.' });
+// ÚJ API a rooms.js-ben
+router.get("/:roomCode/creatorId", async (req, res) => {
+  const { roomCode } = req.params;
+  try {
+    const [room] = await db.execute(
+      "SELECT CreatedByUserID FROM Rooms WHERE RoomCode = ?",
+      [roomCode]
+    );
+    if (!room.length) {
+      return res.status(404).json({ error: "Szoba nem található." });
     }
-  });
-  
+    res.json({ creatorId: room[0].CreatedByUserID });
+  } catch (err) {
+    res.status(500).json({ error: "Hiba a létrehozó lekérdezésekor." });
+  }
+});
+
 module.exports = router;

@@ -9,10 +9,27 @@ function RoomSwipe({ apiUrl, roomCode, userId }) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
-  const [isCreator, setIsCreator] = useState(false);
+  const [isHost, setIsHost] = useState(false);
+  const [filterUpdated, setFilterUpdated] = useState(false);
 
+  // Lekérdezzük, hogy a felhasználó host-e
   useEffect(() => {
-    const fetchRoomPrograms = async () => {
+    const checkHost = async () => {
+      try {
+        const res = await axios.get(`${apiUrl}/rooms/${roomCode}/creatorId`);
+        if (res.data.creatorId === userId) {
+          setIsHost(true);
+        }
+      } catch (err) {
+        console.error("Nem sikerült ellenőrizni a host jogosultságot:", err);
+      }
+    };
+    checkHost();
+  }, [apiUrl, roomCode, userId]);
+
+  // Programok betöltése
+  useEffect(() => {
+    const fetchPrograms = async () => {
       try {
         const res = await axios.get(`${apiUrl}/rooms/programs?roomCode=${roomCode}`, {
           withCredentials: true,
@@ -25,31 +42,16 @@ function RoomSwipe({ apiUrl, roomCode, userId }) {
         setLoading(false);
       }
     };
+    fetchPrograms();
+  }, [apiUrl, roomCode, filterUpdated]);
 
-    const checkCreator = async () => {
-      try {
-        const res = await axios.get(`${apiUrl}/rooms/${roomCode}/users`, {
-          withCredentials: true,
-        });
-        if (res.data && res.data.creatorId === userId) {
-          setIsCreator(true);
-        }
-      } catch (err) {
-        console.error("⚠️ Hiba a jogosultság ellenőrzésekor:", err);
-      }
-    };
-
-    fetchRoomPrograms();
-    checkCreator();
-  }, [apiUrl, roomCode, userId]);
-
+  // WebSocket: Frissítés ha a host szűr
   useEffect(() => {
     const socket = new WebSocket(`ws://localhost:3001/ws/room/${roomCode}`);
     socket.onmessage = (event) => {
       const data = JSON.parse(event.data);
       if (data.type === "filterUpdate") {
-        setPrograms(data.filteredPrograms);
-        setCurrentIndex(0);
+        setFilterUpdated((prev) => !prev);
       }
     };
     return () => socket.close();
@@ -67,7 +69,6 @@ function RoomSwipe({ apiUrl, roomCode, userId }) {
         liked,
       }, { withCredentials: true });
 
-      console.log("✅ Mentve:", currentProgram.Name, liked);
     } catch (err) {
       console.error("❌ Mentési hiba:", err);
     }
@@ -89,14 +90,7 @@ function RoomSwipe({ apiUrl, roomCode, userId }) {
 
   return (
     <div className="program-swipe-container">
-      {isCreator && (
-        <Filter
-          roomMode={true}
-          apiUrl={apiUrl}
-          roomCode={roomCode}
-          userId={userId}
-        />
-      )}
+      {isHost && <Filter roomMode={true} apiUrl={apiUrl} roomCode={roomCode} />}
 
       <div className="program-card">
         <img src={`http://localhost:3001/images/${program.Image}`} alt={program.Name} />

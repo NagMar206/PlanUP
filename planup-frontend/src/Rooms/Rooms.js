@@ -17,14 +17,13 @@ function Rooms({ apiUrl, userId }) {
     const navigate = useNavigate();
     const { setRoomId } = useRoom(); // 🔹 RoomID tárolása Contextben
     const socket = useSocket(); // Ez a helyes
-    
-    
+
 
     useEffect(() => {
         if (!socket) return;
         console.log("✅ Socket.io kapcsolat aktív Rooms.js-ben");
     }, [socket]);
-    
+
 
     useEffect(() => {
         const checkExistingRoom = async () => {
@@ -51,26 +50,26 @@ function Rooms({ apiUrl, userId }) {
             setSuccessMessage(`Szoba létrehozva! Kód: ${response.data.roomCode}`);
             fetchRoomUsers(response.data.roomCode);
             setIsInRoom(true);
-            
+
             // 👇 Itt adod át a userId-t is
             socket.emit('joinRoom', response.data.roomCode, userId);
-    
+
             setTimeout(() => setSuccessMessage(''), 5000);
         } catch (err) {
             setError('Nem sikerült létrehozni a szobát.');
         }
     };
-    
+
     const joinRoom = async () => {
         if (!roomCode) return;
         try {
             const response = await axios.post(`${apiUrl}/rooms/join`, { roomCode, userId }, { withCredentials: true });
             setSuccessMessage(response.data.message);
             setIsInRoom(true);
-    
+
             // 👇 Itt adod át a userId-t is
             socket.emit('joinRoom', response.data.roomCode, userId);
-    
+
             fetchRoomUsers(roomCode);
             checkReadyStatus(roomCode);
             setTimeout(() => setSuccessMessage(''), 3000);
@@ -78,7 +77,7 @@ function Rooms({ apiUrl, userId }) {
             setError('Nem sikerült csatlakozni a szobához.');
         }
     };
-    
+
 
     const leaveRoom = async () => {
         try {
@@ -88,8 +87,6 @@ function Rooms({ apiUrl, userId }) {
             setRoomCreator('');
             setRoomCode('');
             setIsInRoom(false);
-            setRoomId(null);  // <-- EZT TEDD BE IDE
-            socket.emit('leaveRoom', roomCode, userId);
             socket.emit('joinRoom', response.data.roomCode, userId);
             setTimeout(() => setSuccessMessage(''), 3000);
         } catch (err) {
@@ -109,9 +106,9 @@ function Rooms({ apiUrl, userId }) {
         }
     };
 
-    
-    
-    
+
+
+
     const checkReadyStatus = async (roomCode) => {
         try {
             const response = await axios.get(`${apiUrl}/rooms/${roomCode}/readyStatus`, { withCredentials: true });
@@ -131,18 +128,15 @@ function Rooms({ apiUrl, userId }) {
         }
     };
 
-    const startSwipe = () => {
-        setRoomId(roomCode); // 🔹 RoomID mentése a Contextben
-        navigate(`/swipe?room=${roomCode}`);
-    };
+   
 
     return (
         <div className="rooms-container">
             <h2 className="title">SZOBÁK</h2>
             {error && <div className="error-message">{error}</div>}
             <p className="rooms-description">
-  Hozz létre <span>szobát</span> barátaiddal, vagy <span>csatlakozz</span> meglévőhöz – és válogassatok együtt a legjobb programok közül!
-</p>
+                Hozz létre <span>szobát</span> barátaiddal, vagy <span>csatlakozz</span> meglévőhöz – és válogassatok együtt a legjobb programok közül!
+            </p>
 
             {successMessage && <div className="success-message">{successMessage}</div>}
             {!isInRoom && (
@@ -160,8 +154,8 @@ function Rooms({ apiUrl, userId }) {
                 <div className="room-users">
                     <h3>Szobában lévő felhasználók:</h3>
                     <div className="room-info">
-                        <button 
-                            className="room-code-button" 
+                        <button
+                            className="room-code-button"
                             onClick={() => copyToClipboard(roomCode)}
                         >
                             Szobakód: {roomCode}
@@ -175,12 +169,10 @@ function Rooms({ apiUrl, userId }) {
                             <li key={user.UserID || index}>{user.Username}</li>
                         )) : <li key="no-users">Nincs jelenleg másik felhasználó a szobában.</li>}
                     </ul>
-                    <button 
-  onClick={startSwipe} 
-  className="swipe-button"  // <-- EZ az új stílusosztály
->
-  Válogass a programok közül
-</button>
+                    <button onClick={() => navigate(`/roomswipe/${room.RoomCode}`)}>
+                        Válogass a programok közül
+                    </button>
+
 
 
                     <button onClick={leaveRoom} className="leave-room-button">Kilépés a szobából</button>
