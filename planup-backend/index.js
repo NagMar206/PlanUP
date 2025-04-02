@@ -640,4 +640,62 @@ app.get("/api/room/:roomId/summary", async (req, res) => {
   }
 });
 
+// Szobafilterek mentése (csak host állíthatja)
+app.post('/rooms/:roomCode/filters', async (req, res) => {
+  const { roomCode } = req.params;
+  const { filters, userId } = req.body;
+
+  try {
+    // Ellenőrizzük, hogy valóban a host akar-e változtatni
+    const [roomRows] = await db.execute(
+      'SELECT CreatorUserID FROM Rooms WHERE RoomCode = ?',
+      [roomCode]
+    );
+
+    if (roomRows.length === 0) {
+      return res.status(404).json({ error: 'Szoba nem található.' });
+    }
+
+    const creatorUserId = roomRows[0].CreatorUserID;
+
+    if (creatorUserId !== userId) {
+      return res.status(403).json({ error: 'Csak a szoba létrehozója állíthatja a szűrőket.' });
+    }
+
+    await db.execute(
+      'UPDATE Rooms SET Filters = ? WHERE RoomCode = ?',
+      [JSON.stringify(filters), roomCode]
+    );
+
+    res.json({ message: 'Szűrők sikeresen frissítve.' });
+  } catch (error) {
+    console.error('🔥 Hiba a szűrők mentésekor:', error);
+    res.status(500).json({ error: 'Hiba a szűrők frissítése közben.' });
+  }
+});
+
+// Szobafilterek lekérése
+app.get('/rooms/:roomCode/filters', async (req, res) => {
+  const { roomCode } = req.params;
+
+  try {
+    const [roomRows] = await db.execute(
+      'SELECT Filters FROM Rooms WHERE RoomCode = ?',
+      [roomCode]
+    );
+
+    if (roomRows.length === 0) {
+      return res.status(404).json({ error: 'Szoba nem található.' });
+    }
+
+    const filters = roomRows[0].Filters ? JSON.parse(roomRows[0].Filters) : null;
+
+    res.json(filters);
+  } catch (error) {
+    console.error('🔥 Hiba a szűrők lekérésekor:', error);
+    res.status(500).json({ error: 'Hiba a szűrők lekérése közben.' });
+  }
+});
+
+
 module.exports = { app, io };

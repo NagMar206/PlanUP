@@ -144,6 +144,7 @@ CREATE TABLE `Rooms` (
   `RoomCode` varchar(10) COLLATE utf8mb4_general_ci NOT NULL,
   `CreatedByUserID` int NOT NULL,
   `CreatedAt` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+	`Filters` JSON DEFAULT NULL,
   PRIMARY KEY (`RoomID`),
   UNIQUE KEY `RoomCode` (`RoomCode`),
   KEY `CreatedByUserID` (`CreatedByUserID`),
