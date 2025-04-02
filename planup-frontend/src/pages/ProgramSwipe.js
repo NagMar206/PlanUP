@@ -18,6 +18,7 @@ function ProgramSwipe({ apiUrl, userId }) {
   const navigate = useNavigate();
   const socket = useSocket();
   const [isHost, setIsHost] = useState(false);
+  
 
   const magyarIdotartam = {
     half_day: "Fél napos",
@@ -103,27 +104,39 @@ function ProgramSwipe({ apiUrl, userId }) {
     }
   };
 
-  useEffect(() => {
+ // HOST ellenőrzés:
+useEffect(() => {
+  if (roomId) {
     axios.get(`${apiUrl}/rooms/${roomId}/users`, { withCredentials: true })
       .then(res => {
         const creatorId = res.data.creatorId;
         setIsHost(creatorId === userId);
       })
-      .catch(err => console.error("Nem sikerült lekérni a hostot:", err));
-  }, [roomId, userId]);
-  
-  useEffect(() => {
-    if (!isHost && roomId) {
-      axios.get(`${apiUrl}/rooms/${roomId}/filters`, { withCredentials: true })
-        .then((res) => {
-          if(res.data) {
-            setFilters(res.data);
-            setFilterActive(true);
-          }
-        })
-        .catch(err => console.error("Nem sikerült lekérni a szűrőket:", err));
-    }
-  }, [roomId, isHost]);
+      .catch(err => {
+        console.error("Nem sikerült lekérni a hostot:", err);
+        setIsHost(false);
+      });
+  } else {
+    setIsHost(false); // FONTOS: ha nincs roomId, reseteljük az isHost állapotot!
+  }
+}, [roomId, userId]);
+
+// Filterek lekérése, ha nem host vagy, de szobában vagy
+useEffect(() => {
+  if (!isHost && roomId) {
+    axios.get(`${apiUrl}/rooms/${roomId}/filters`, { withCredentials: true })
+      .then((res) => {
+        if(res.data) {
+          setFilters(res.data);
+          setFilterActive(true);
+        }
+      })
+      .catch(err => console.error("Nem sikerült lekérni a szűrőket:", err));
+  } else if (!roomId) {
+    setFilters({ duration: "", cost: "", city: "" }); // reseteld a filtereket ha nem vagy szobában
+    setFilterActive(false);
+  }
+}, [roomId, isHost]);
 
 
   const handleEndSwipe = () => {

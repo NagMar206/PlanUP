@@ -18,6 +18,7 @@ function Rooms({ apiUrl, userId }) {
     const { setRoomId } = useRoom(); // 🔹 RoomID tárolása Contextben
     const socket = useSocket(); // Ez a helyes
     
+    
 
     useEffect(() => {
         if (!socket) return;
@@ -87,6 +88,8 @@ function Rooms({ apiUrl, userId }) {
             setRoomCreator('');
             setRoomCode('');
             setIsInRoom(false);
+            setRoomId(null);  // <-- EZT TEDD BE IDE
+            socket.emit('leaveRoom', roomCode, userId);
             socket.emit('joinRoom', response.data.roomCode, userId);
             setTimeout(() => setSuccessMessage(''), 3000);
         } catch (err) {
