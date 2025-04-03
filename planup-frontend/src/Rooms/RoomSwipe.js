@@ -1,18 +1,38 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
+import { useParams, useNavigate } from "react-router-dom";
 import "../Style/ProgramSwipe.css";
 import { FaCheck, FaTimes } from "react-icons/fa";
-import Filter from "../components/Filter";
+import FilterComponent from "../components/Filter";
+import { useRoom } from "../context/RoomContext";
 
-function RoomSwipe({ apiUrl, roomCode, userId }) {
+function RoomSwipe({ apiUrl }) {
+  const { roomCode } = useParams();
+  const navigate = useNavigate();
+  const { userId } = useRoom();
+
   const [programs, setPrograms] = useState([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
   const [isHost, setIsHost] = useState(false);
   const [filterUpdated, setFilterUpdated] = useState(false);
+  const [filters, setFilters] = useState({ duration: "", cost: "", city: "" });
+  const [filterActive, setFilterActive] = useState(false);
+  const [cities, setCities] = useState([]);
 
-  // Lekérdezzük, hogy a felhasználó host-e
+  useEffect(() => {
+    const fetchCities = async () => {
+      try {
+        const response = await axios.get(`${apiUrl}/programs/cities`);
+        setCities(response.data);
+      } catch (err) {
+        console.error("Hiba a városok betöltésekor:", err);
+      }
+    };
+    fetchCities();
+  }, [apiUrl]);
+
   useEffect(() => {
     const checkHost = async () => {
       try {
@@ -24,14 +44,26 @@ function RoomSwipe({ apiUrl, roomCode, userId }) {
         console.error("Nem sikerült ellenőrizni a host jogosultságot:", err);
       }
     };
-    checkHost();
+    if (userId) checkHost();
   }, [apiUrl, roomCode, userId]);
 
-  // Programok betöltése
+  useEffect(() => {
+    if (!isHost && userId) {
+      axios.get(`${apiUrl}/rooms/${roomCode}/filters`, { withCredentials: true })
+        .then((res) => {
+          if (res.data) {
+            setFilters(res.data);
+            setFilterActive(true);
+          }
+        })
+        .catch(err => console.error("Nem sikerült lekérni a szűrőket:", err));
+    }
+  }, [apiUrl, roomCode, isHost, userId]);
+
   useEffect(() => {
     const fetchPrograms = async () => {
       try {
-        const res = await axios.get(`${apiUrl}/rooms/programs?roomCode=${roomCode}`, {
+        const res = await axios.get(`${apiUrl}/rooms/${roomCode}/programs`, {
           withCredentials: true,
         });
         setPrograms(res.data);
@@ -44,8 +76,8 @@ function RoomSwipe({ apiUrl, roomCode, userId }) {
     };
     fetchPrograms();
   }, [apiUrl, roomCode, filterUpdated]);
+  
 
-  // WebSocket: Frissítés ha a host szűr
   useEffect(() => {
     const socket = new WebSocket(`ws://localhost:3001/ws/room/${roomCode}`);
     socket.onmessage = (event) => {
@@ -68,12 +100,15 @@ function RoomSwipe({ apiUrl, roomCode, userId }) {
         programId: currentProgram.ProgramID,
         liked,
       }, { withCredentials: true });
-
     } catch (err) {
       console.error("❌ Mentési hiba:", err);
     }
 
     setCurrentIndex((prev) => prev + 1);
+  };
+
+  const handleEndSwipe = () => {
+    navigate(`/summary?room=${roomCode}`);
   };
 
   if (loading) return <div className="loading">Betöltés...</div>;
@@ -82,6 +117,9 @@ function RoomSwipe({ apiUrl, roomCode, userId }) {
     return (
       <div className="no-program-card">
         <h2>Minden programot értékeltél a szobában 🎉</h2>
+        <div className="end-buttons">
+          <button className="finish-button" onClick={handleEndSwipe}>🎯 Összegzés</button>
+        </div>
       </div>
     );
   }
@@ -90,7 +128,21 @@ function RoomSwipe({ apiUrl, roomCode, userId }) {
 
   return (
     <div className="program-swipe-container">
-      {isHost && <Filter roomMode={true} apiUrl={apiUrl} roomCode={roomCode} />}
+      {isHost && (
+        <FilterComponent
+          filters={filters}
+          setFilters={(newFilters) => {
+            setFilters(newFilters);
+            setFilterActive(true);
+            axios.post(`${apiUrl}/rooms/${roomCode}/filters`, {
+              filters: newFilters, userId
+            }, { withCredentials: true });
+          }}
+          filterActive={filterActive}
+          setFilterActive={setFilterActive}
+          cities={cities}
+        />
+      )}
 
       <div className="program-card">
         <img src={`http://localhost:3001/images/${program.Image}`} alt={program.Name} />
