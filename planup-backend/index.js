@@ -608,6 +608,29 @@ app.get("/rooms/getRoomId", async (req, res) => {
 
 
 //RoomsID_Summary
+
+app.get('/rooms/:roomCode/creatorId', async (req, res) => {
+  const { roomCode } = req.params;
+
+  try {
+    const [rows] = await db.execute(
+      'SELECT CreatedByUserID FROM Rooms WHERE RoomCode = ?',
+      [roomCode]
+    );
+
+    if (rows.length === 0) {
+      return res.status(404).json({ error: 'Szoba nem található.' });
+    }
+
+    const creatorId = rows[0].CreatedByUserID;
+    res.json({ creatorId });
+  } catch (error) {
+    console.error('🔥 Hiba a létrehozó lekérdezésekor:', error.message);
+    res.status(500).json({ error: 'Szerverhiba történt.' });
+  }
+});
+
+
 app.get("/api/room/:roomId/summary", async (req, res) => {
   const { roomId } = req.params;
 

@@ -2,28 +2,43 @@ import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import '../Style/Rooms.css';
-import { useRoom } from "../context/RoomContext"; // 🔹 RoomID tárolása Contextben
-import { useSocket } from "../context/SocketContext"; // ✅ HOZZÁADÁS
-
+import { useRoom } from "../context/RoomContext";
+import { useSocket } from "../context/SocketContext";
+import FilterComponent from "../components/Filter";
 
 function Rooms({ apiUrl, userId }) {
     const [roomCode, setRoomCode] = useState('');
     const [roomUsers, setRoomUsers] = useState([]);
     const [roomCreator, setRoomCreator] = useState('');
+    const [isRoomHost, setIsRoomHost] = useState(false);
     const [error, setError] = useState('');
     const [successMessage, setSuccessMessage] = useState('');
     const [isInRoom, setIsInRoom] = useState(false);
     const [isCopied, setIsCopied] = useState(false);
-    const navigate = useNavigate();
-    const { setRoomId } = useRoom(); // 🔹 RoomID tárolása Contextben
-    const socket = useSocket(); // Ez a helyes
+    const [filters, setFilters] = useState({ duration: '', cost: '', city: '' });
+    const [filterActive, setFilterActive] = useState(false);
+    const [cities, setCities] = useState([]);
 
+    const navigate = useNavigate();
+    const { setRoomId } = useRoom();
+    const socket = useSocket();
 
     useEffect(() => {
         if (!socket) return;
         console.log("✅ Socket.io kapcsolat aktív Rooms.js-ben");
     }, [socket]);
 
+    useEffect(() => {
+        const fetchCities = async () => {
+            try {
+                const response = await axios.get(`${apiUrl}/programs/cities`, { withCredentials: true });
+                setCities(response.data);
+            } catch (err) {
+                console.error('Nem sikerült lekérni a városokat.', err);
+            }
+        };
+        fetchCities();
+    }, [apiUrl]);
 
     useEffect(() => {
         const checkExistingRoom = async () => {
@@ -35,6 +50,15 @@ function Rooms({ apiUrl, userId }) {
                     checkReadyStatus(response.data.roomCode);
                     setIsInRoom(true);
                     socket.emit('joinRoom', response.data.roomCode);
+
+                    const creatorRes = await axios.get(`${apiUrl}/rooms/${response.data.roomCode}/creatorId`);
+                    if (creatorRes.data.creatorId === userId) {
+                        setRoomCreator(userId);
+                        setIsRoomHost(true);
+                    } else {
+                        setRoomCreator(creatorRes.data.creatorId);
+                        setIsRoomHost(false);
+                    }
                 }
             } catch (err) {
                 console.log('Nincs aktív szoba.');
@@ -50,10 +74,16 @@ function Rooms({ apiUrl, userId }) {
             setSuccessMessage(`Szoba létrehozva! Kód: ${response.data.roomCode}`);
             fetchRoomUsers(response.data.roomCode);
             setIsInRoom(true);
+            setIsRoomHost(true);
 
-            // 👇 Itt adod át a userId-t is
+            const creatorRes = await axios.get(`${apiUrl}/rooms/${response.data.roomCode}/creatorId`);
+            if (creatorRes.data.creatorId === userId) {
+                setRoomCreator(userId);
+            } else {
+                setRoomCreator(creatorRes.data.creatorId);
+            }
+
             socket.emit('joinRoom', response.data.roomCode, userId);
-
             setTimeout(() => setSuccessMessage(''), 5000);
         } catch (err) {
             setError('Nem sikerült létrehozni a szobát.');
@@ -66,10 +96,7 @@ function Rooms({ apiUrl, userId }) {
             const response = await axios.post(`${apiUrl}/rooms/join`, { roomCode, userId }, { withCredentials: true });
             setSuccessMessage(response.data.message);
             setIsInRoom(true);
-
-            // 👇 Itt adod át a userId-t is
             socket.emit('joinRoom', response.data.roomCode, userId);
-
             fetchRoomUsers(roomCode);
             checkReadyStatus(roomCode);
             setTimeout(() => setSuccessMessage(''), 3000);
@@ -77,7 +104,6 @@ function Rooms({ apiUrl, userId }) {
             setError('Nem sikerült csatlakozni a szobához.');
         }
     };
-
 
     const leaveRoom = async () => {
         try {
@@ -87,7 +113,7 @@ function Rooms({ apiUrl, userId }) {
             setRoomCreator('');
             setRoomCode('');
             setIsInRoom(false);
-            socket.emit('joinRoom', response.data.roomCode, userId);
+            setIsRoomHost(false);
             setTimeout(() => setSuccessMessage(''), 3000);
         } catch (err) {
             setError('Nem sikerült kilépni a szobából.');
@@ -106,18 +132,6 @@ function Rooms({ apiUrl, userId }) {
         }
     };
 
-
-
-
-    const checkReadyStatus = async (roomCode) => {
-        try {
-            const response = await axios.get(`${apiUrl}/rooms/${roomCode}/readyStatus`, { withCredentials: true });
-            setAllReady(response.data.allReady);
-        } catch (err) {
-            console.error('Nem sikerült ellenőrizni a készenléti állapotot.');
-        }
-    };
-
     const copyToClipboard = async (text) => {
         try {
             await navigator.clipboard.writeText(text);
@@ -127,8 +141,6 @@ function Rooms({ apiUrl, userId }) {
             console.error('Másolási hiba:', err);
         }
     };
-
-   
 
     return (
         <div className="rooms-container">
@@ -169,11 +181,23 @@ function Rooms({ apiUrl, userId }) {
                             <li key={user.UserID || index}>{user.Username}</li>
                         )) : <li key="no-users">Nincs jelenleg másik felhasználó a szobában.</li>}
                     </ul>
-                    <button onClick={() => navigate(`/roomswipe/${room.RoomCode}`)}>
-                        Válogass a programok közül
-                    </button>
 
-
+                    {isRoomHost ? (
+                        <>
+                            <FilterComponent 
+                                filters={filters}
+                                setFilters={setFilters}
+                                filterActive={filterActive}
+                                setFilterActive={setFilterActive}
+                                cities={cities}
+                            />
+                            <button onClick={() => navigate(`/roomswipe/${roomCode}`)}>
+                                Válogass a programok közül
+                            </button>
+                        </>
+                    ) : (
+                        <p>⏳ Várj a hostra, amíg elindítja a válogatást!</p>
+                    )}
 
                     <button onClick={leaveRoom} className="leave-room-button">Kilépés a szobából</button>
                 </div>
