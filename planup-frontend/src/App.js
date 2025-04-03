@@ -66,7 +66,7 @@ function App() {
           <Route path="/swipe" element={<ProgramSwipe apiUrl={apiUrl} userId={user} />} />
           <Route path="/liked-programs" element={<LikedPrograms apiUrl={apiUrl} userId={user} />} />
           <Route path="/summary" element={<Summary apiUrl={apiUrl} />} />
-          <Route path="/roomswipe" element={<RoomSwipe apiUrl={apiUrl} />} />
+          <Route path="/roomswipe/:roomCode" element={<RoomSwipe apiUrl={apiUrl} />} />
 
 
            {/* Admin oldalak */}

@@ -605,9 +605,107 @@ app.get("/rooms/getRoomId", async (req, res) => {
   }
 });
 
+app.get('/rooms/:roomCode/programs', async (req, res) => {
+  const { roomCode } = req.params;
+
+  try {
+    // Lekérjük a RoomID-t a RoomCode alapján
+    const [roomRows] = await db.execute(
+      "SELECT RoomID, Filters FROM Rooms WHERE RoomCode = ?",
+      [roomCode]
+    );
+
+    if (roomRows.length === 0) {
+      return res.status(404).json({ error: "A szoba nem található." });
+    }
+
+    const roomId = roomRows[0].RoomID;
+    const filters = roomRows[0].Filters ? JSON.parse(roomRows[0].Filters) : {};
+
+    // Szűrők alkalmazása (ha vannak)
+    let query = `
+      SELECT p.*, c.Name AS CityName 
+      FROM Programs p
+      LEFT JOIN City c ON p.CityID = c.CityID
+      WHERE 1 = 1
+    `;
+    const params = [];
+
+    if (filters.cost) {
+      query += " AND p.Cost = ?";
+      params.push(filters.cost === "paid" ? 1 : 0);
+    }
+
+    if (filters.duration) {
+      query += " AND p.Duration = ?";
+      params.push(parseInt(filters.duration));
+    }
+
+    if (filters.city) {
+      query += " AND p.CityID = ?";
+      params.push(parseInt(filters.city));
+    }
+
+    const [programs] = await db.execute(query, params);
+
+    res.json(programs);
+  } catch (error) {
+    console.error("🔥 Hiba a szobás programok lekérdezésekor:", error);
+    res.status(500).json({ error: "Hiba történt a szobához tartozó programok lekérdezésekor." });
+  }
+});
+
+app.post("/summary/choose", async (req, res) => {
+  const { roomCode, userId, programId, liked } = req.body;
+
+  try {
+    // Szoba ID lekérdezés
+    const [roomRows] = await db.execute("SELECT RoomID FROM Rooms WHERE RoomCode = ?", [roomCode]);
+    if (roomRows.length === 0) {
+      return res.status(404).json({ error: "A megadott szoba nem található." });
+    }
+
+    const roomId = roomRows[0].RoomID;
+
+    // Adat mentése RoomSwipeLikes táblába
+    await db.execute(`
+      INSERT INTO RoomSwipeLikes (RoomID, UserID, ProgramID, LikedAt, Liked)
+      VALUES (?, ?, ?, NOW(), ?)
+      ON DUPLICATE KEY UPDATE Liked = VALUES(Liked), LikedAt = NOW()
+    `, [roomId, userId, programId, liked ? 1 : 0]);
+
+    res.json({ message: "Mentés sikeres." });
+  } catch (err) {
+    console.error("❌ Mentési hiba a RoomSwipeLikes route-nál:", err);
+    res.status(500).json({ error: "Mentési hiba történt." });
+  }
+});
 
 
 //RoomsID_Summary
+
+app.get('/rooms/:roomCode/creatorId', async (req, res) => {
+  const { roomCode } = req.params;
+
+  try {
+    const [rows] = await db.execute(
+      'SELECT CreatedByUserID FROM Rooms WHERE RoomCode = ?',
+      [roomCode]
+    );
+
+    if (rows.length === 0) {
+      return res.status(404).json({ error: 'Szoba nem található.' });
+    }
+
+    const creatorId = rows[0].CreatedByUserID;
+    res.json({ creatorId });
+  } catch (error) {
+    console.error('🔥 Hiba a létrehozó lekérdezésekor:', error.message);
+    res.status(500).json({ error: 'Szerverhiba történt.' });
+  }
+});
+
+
 app.get("/api/room/:roomId/summary", async (req, res) => {
   const { roomId } = req.params;
 
