@@ -104,6 +104,42 @@ function ProgramSwipe({ apiUrl, userId }) {
     }
   };
 
+  useEffect(() => {
+    if (!userId) {
+      axios.get(`${apiUrl}/api/auth/status`, { withCredentials: true })
+        .then((res) => {
+          if (res.data && res.data.userId) {
+            console.log("🎯 Lekért userId a szervertől:", res.data.userId);
+            setLocalUserId(res.data.userId);
+          } else {
+            console.warn("⚠️ Nincs bejelentkezett user!");
+          }
+        })
+        .catch((err) => {
+          console.error("❌ Nem sikerült lekérni a user státuszt:", err);
+        });
+    }
+  }, [userId]);
+
+  useEffect(() => {
+    if (!userId) {
+      axios.get(`${apiUrl}/api/auth/status`, { withCredentials: true })
+        .then((res) => {
+          if (res.data && res.data.userId) {
+            console.log("🎯 Lekért userId:", res.data.userId);
+            setLocalUserId(res.data.userId);
+          } else {
+            console.warn("⚠️ Nem bejelentkezett felhasználó.");
+          }
+        })
+        .catch((err) => {
+          console.error("❌ Nem sikerült lekérni a userID-t:", err);
+        });
+    }
+  }, [userId]);
+  
+
+
  // HOST ellenőrzés:
 useEffect(() => {
   if (roomId) {

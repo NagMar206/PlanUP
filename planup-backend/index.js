@@ -411,38 +411,44 @@ app.delete("/programs/liked/reset", async (req, res) => {
 });
 
 //Rooms lájkolt programok
-app.get("/rooms/:roomCode/liked-programs", async (req, res) => {
+app.get('/rooms/:roomCode/liked-programs', async (req, res) => {
   const { roomCode } = req.params;
 
   try {
-    // Lekérjük a RoomID-t a RoomCode alapján
-    const [roomResult] = await req.db.execute(
-      "SELECT RoomID FROM Rooms WHERE RoomCode = ?",
-      [roomCode]
-    );
-
-    if (roomResult.length === 0) {
-      return res.status(404).json({ error: "A szoba nem található." });
+    const [room] = await db.query('SELECT RoomID FROM Rooms WHERE RoomCode = ?', [roomCode]);
+    if (room.length === 0) {
+      return res.status(404).json({ message: 'A szoba nem található' });
     }
 
-    const roomId = roomResult[0].RoomID;
+    const roomId = room[0].RoomID;
 
-    // Lekérjük a szobában lájkolt programokat és a lájkok számát
-    const [likedPrograms] = await req.db.execute(`
-      SELECT p.*, COUNT(ul.UserID) as likeCount
-      FROM Programs p
-      JOIN UserLikes ul ON p.ProgramID = ul.ProgramID
-      WHERE ul.RoomID = ?
-      GROUP BY p.ProgramID
-      ORDER BY likeCount DESC
-    `, [roomId]);
+    const [programs] = await db.query(`
+    SELECT 
+      p.ProgramID,
+      p.Name,
+      p.Description,
+      c.Name AS CityName,
+      p.Location,
+      p.Image,
+      p.Duration,
+      p.Cost,
+      COUNT(rsl.UserID) AS likeCount
+    FROM RoomSwipeLikes rsl
+    JOIN Programs p ON rsl.ProgramID = p.ProgramID
+    LEFT JOIN City c ON p.CityID = c.CityID
+    WHERE rsl.RoomID = ?
+    GROUP BY p.ProgramID
+    ORDER BY likeCount DESC
+  `, [roomId]);
 
-    res.json(likedPrograms);
-  } catch (error) {
-    console.error("🔥 Hiba a lájkolt programok lekérdezésekor:", error);
-    res.status(500).json({ error: "Szerverhiba a lájkolt programok lekérdezésekor." });
+    res.json(programs);
+  } catch (err) {
+    console.error("❌ Hiba a liked-programs lekérdezésnél:", err);
+    res.status(500).json({ message: "Nem sikerült betölteni a kedvelt programokat." });
   }
 });
+
+
 
 
 //Bejelentkezés API (régi)
@@ -655,31 +661,29 @@ app.get('/rooms/:roomCode/programs', async (req, res) => {
   }
 });
 
-app.post("/summary/choose", async (req, res) => {
-  const { roomCode, userId, programId, liked } = req.body;
+app.post('/summary/choose', async (req, res) => {
+  const { roomCode, userId, programId } = req.body;
 
   try {
-    // Szoba ID lekérdezés
-    const [roomRows] = await db.execute("SELECT RoomID FROM Rooms WHERE RoomCode = ?", [roomCode]);
-    if (roomRows.length === 0) {
-      return res.status(404).json({ error: "A megadott szoba nem található." });
+    const [roomResult] = await db.query('SELECT RoomID FROM Rooms WHERE RoomCode = ?', [roomCode]);
+    if (roomResult.length === 0) {
+      return res.status(404).json({ message: 'A szoba nem található' });
     }
+    const roomId = roomResult[0].RoomID;
 
-    const roomId = roomRows[0].RoomID;
+    await db.query(`
+      INSERT INTO RoomSwipeLikes (RoomID, UserID, ProgramID, LikedAt)
+      VALUES (?, ?, ?, NOW())
+      ON DUPLICATE KEY UPDATE LikedAt = NOW()
+    `, [roomId, userId, programId]);
 
-    // Adat mentése RoomSwipeLikes táblába
-    await db.execute(`
-      INSERT INTO RoomSwipeLikes (RoomID, UserID, ProgramID, LikedAt, Liked)
-      VALUES (?, ?, ?, NOW(), ?)
-      ON DUPLICATE KEY UPDATE Liked = VALUES(Liked), LikedAt = NOW()
-    `, [roomId, userId, programId, liked ? 1 : 0]);
-
-    res.json({ message: "Mentés sikeres." });
+    res.sendStatus(200);
   } catch (err) {
-    console.error("❌ Mentési hiba a RoomSwipeLikes route-nál:", err);
-    res.status(500).json({ error: "Mentési hiba történt." });
+    console.error("❌ Mentési hiba:", err);
+    res.status(500).json({ message: 'Hiba a lájk mentésekor', error: err.message });
   }
 });
+
 
 
 //RoomsID_Summary

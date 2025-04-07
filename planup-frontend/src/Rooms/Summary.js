@@ -36,7 +36,7 @@ function Summary({ apiUrl }) {
   }, [apiUrl, location.search]);
 
   const handleBack = () => {
-    navigate(-1);
+    navigate("/");
   };
 
   return (
