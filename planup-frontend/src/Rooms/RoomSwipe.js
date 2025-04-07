@@ -5,12 +5,15 @@ import "../Style/ProgramSwipe.css";
 import { FaCheck, FaTimes } from "react-icons/fa";
 import FilterComponent from "../components/Filter";
 import { useRoom } from "../context/RoomContext";
+import { useSocket } from "../context/SocketContext";
+import logo from "../images/logo.png"
 
 function RoomSwipe({ apiUrl }) {
   const { roomCode } = useParams();
   const navigate = useNavigate();
   const { userId } = useRoom();
-
+  const [localUserId, setLocalUserId] = useState(null);
+  const activeUserId = userId || localUserId;
   const [programs, setPrograms] = useState([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [error, setError] = useState("");
@@ -20,6 +23,7 @@ function RoomSwipe({ apiUrl }) {
   const [filters, setFilters] = useState({ duration: "", cost: "", city: "" });
   const [filterActive, setFilterActive] = useState(false);
   const [cities, setCities] = useState([]);
+
 
   useEffect(() => {
     const fetchCities = async () => {
@@ -77,35 +81,89 @@ function RoomSwipe({ apiUrl }) {
     fetchPrograms();
   }, [apiUrl, roomCode, filterUpdated]);
   
+  const socket = useSocket();
 
   useEffect(() => {
-    const socket = new WebSocket(`ws://localhost:3001/ws/room/${roomCode}`);
-    socket.onmessage = (event) => {
-      const data = JSON.parse(event.data);
-      if (data.type === "filterUpdate") {
-        setFilterUpdated((prev) => !prev);
-      }
+    if (!socket || !roomCode || !userId) return;
+  
+    // Csatlakozás a szobához
+    socket.emit("joinRoom", roomCode, userId);
+  
+    // Frissítés ha változik a szűrő
+    socket.on("filterUpdate", () => {
+      setFilterUpdated(prev => !prev);
+    });
+  
+    // Takarítás lecsatlakozáskor
+    return () => {
+      socket.off("filterUpdate");
     };
-    return () => socket.close();
-  }, [roomCode]);
+  }, [socket, roomCode, userId]);
+
+  useEffect(() => {
+    if (!userId) {
+      axios.get(`${apiUrl}/api/auth/status`, { withCredentials: true })
+        .then((res) => {
+          if (res.data && res.data.userId) {
+            console.log("🎯 Lekért userId:", res.data.userId);
+            setLocalUserId(res.data.userId);
+          } else {
+            console.warn("⚠️ Nem bejelentkezett felhasználó.");
+          }
+        })
+        .catch((err) => {
+          console.error("❌ Nem sikerült lekérni a userID-t:", err);
+        });
+    }
+  }, [userId]);
+  
+
+  useEffect(() => {
+    if (!userId) {
+      axios.get(`${apiUrl}/api/auth/status`, { withCredentials: true })
+        .then((res) => {
+          if (res.data && res.data.userId) {
+            console.log("🎯 Lekért userId:", res.data.userId);
+            setLocalUserId(res.data.userId); // <-- ez a helyes
+          } else {
+            console.warn("⚠️ Nem bejelentkezett felhasználó.");
+          }
+        })
+        .catch((err) => {
+          console.error("❌ Nem sikerült lekérni a felhasználó adatait:", err);
+        });
+    }
+  }, [userId]);
+  
+
+  console.log("🧪 RoomSwipe mentéshez userId:", userId);
 
   const handleSwipe = async (liked) => {
-    if (!programs[currentIndex]) return;
     const currentProgram = programs[currentIndex];
-
+  
+    const finalUserId = userId || localUserId;
+    console.log("🧩 Swipe mentéshez használt userId:", finalUserId);
+  
+    if (!finalUserId) {
+      console.warn("⛔️ userId még nem elérhető, mentés kihagyva.");
+      return;
+    }
+  
     try {
       await axios.post(`${apiUrl}/summary/choose`, {
         roomCode,
-        userId,
+        userId: finalUserId,
         programId: currentProgram.ProgramID,
         liked,
       }, { withCredentials: true });
     } catch (err) {
       console.error("❌ Mentési hiba:", err);
     }
-
+  
     setCurrentIndex((prev) => prev + 1);
   };
+  
+  
 
   const handleEndSwipe = () => {
     navigate(`/summary?room=${roomCode}`);
@@ -115,14 +173,20 @@ function RoomSwipe({ apiUrl }) {
   if (error) return <div className="error-message">{error}</div>;
   if (currentIndex >= programs.length) {
     return (
-      <div className="no-program-card">
-        <h2>Minden programot értékeltél a szobában 🎉</h2>
-        <div className="end-buttons">
-          <button className="finish-button" onClick={handleEndSwipe}>🎯 Összegzés</button>
+      <div className="program-swipe-container">
+        <div className="program-card planup-end-card">
+          <img src={logo} className="planup-logo" />
+          <h2>🎉 Kész vagy!</h2>
+          <p>Minden programot értékeltél ebben a szobában.</p>
+          <p>Kattints az összegzéshez és nézd meg, mik a közös kedvencek!</p>
+          <button className="finish-button" onClick={handleEndSwipe}>
+            📊 Összegzés megtekintése
+          </button>
         </div>
       </div>
     );
   }
+  
 
   const program = programs[currentIndex];
 
