@@ -186,7 +186,24 @@ function Rooms({ apiUrl, userId }) {
                         <>
                             <FilterComponent 
                                 filters={filters}
-                                setFilters={setFilters}
+                                setFilters={(newFilters) => {
+                                    setFilters(newFilters);
+                                    setFilterActive(true);
+
+                                    if (!userId) {
+                                        console.warn("⛔️ userId nem elérhető, szűrés nem mentve.");
+                                        return;
+                                    }
+
+                                    // 🔥 Szűrő mentés a szerverre (flattened)
+                                    axios.post(`${apiUrl}/rooms/${roomCode}/filters`, {
+                                        ...newFilters,
+                                        userId
+                                    }, { withCredentials: true });
+
+                                    // 🔊 Szűrő frissítés emitálása
+                                    socket.emit("filterUpdate", roomCode);
+                                }}
                                 filterActive={filterActive}
                                 setFilterActive={setFilterActive}
                                 cities={cities}

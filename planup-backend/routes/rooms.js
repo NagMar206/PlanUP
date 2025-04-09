@@ -173,4 +173,185 @@ router.get("/:roomCode/creatorId", async (req, res) => {
   }
 });
 
+router.get('/:roomCode/liked-programs', async (req, res) => {
+  const { roomCode } = req.params;
+
+  try {
+    const [room] = await db.query('SELECT RoomID FROM Rooms WHERE RoomCode = ?', [roomCode]);
+    if (room.length === 0) {
+      return res.status(404).json({ message: 'A szoba nem található' });
+    }
+
+    const roomId = room[0].RoomID;
+
+    const [programs] = await db.query(`
+      SELECT 
+        p.ProgramID,
+        p.Name,
+        p.Description,
+        c.Name AS CityName,
+        p.Location,
+        p.Image,
+        p.Duration,
+        p.Cost,
+        COUNT(rsl.UserID) AS likeCount
+      FROM RoomSwipeLikes rsl
+      JOIN Programs p ON rsl.ProgramID = p.ProgramID
+      LEFT JOIN City c ON p.CityID = c.CityID
+      WHERE rsl.RoomID = ?
+      GROUP BY p.ProgramID
+      ORDER BY likeCount DESC
+    `, [roomId]);
+
+    res.json(programs);
+  } catch (err) {
+    console.error("❌ Hiba a liked-programs lekérdezésnél:", err);
+    res.status(500).json({ message: "Nem sikerült betölteni a kedvelt programokat." });
+  }
+});
+
+router.post('/summary/choose', async (req, res) => {
+  const { roomCode, userId, programId } = req.body;
+
+  try {
+    const [roomResult] = await db.execute('SELECT RoomID FROM Rooms WHERE RoomCode = ?', [roomCode]);
+    if (roomResult.length === 0) {
+      return res.status(404).json({ message: 'A szoba nem található' });
+    }
+    const roomId = roomResult[0].RoomID;
+
+    await db.execute(`
+      INSERT INTO RoomSwipeLikes (RoomID, UserID, ProgramID, LikedAt)
+      VALUES (?, ?, ?, NOW())
+      ON DUPLICATE KEY UPDATE LikedAt = NOW()
+    `, [roomId, userId, programId]);
+
+    res.sendStatus(200);
+  } catch (err) {
+    console.error("❌ Mentési hiba:", err);
+    res.status(500).json({ message: 'Hiba a lájk mentésekor', error: err.message });
+  }
+});
+
+router.get("/getRoomId", async (req, res) => {
+  const { roomCode } = req.query;
+
+  if (!roomCode) {
+    return res.status(400).json({ error: "Hiányzó roomCode paraméter!" });
+  }
+
+  try {
+    const [rows] = await db.execute(
+      "SELECT RoomID FROM Rooms WHERE RoomCode = ?",
+      [roomCode]
+    );
+
+    if (rows.length === 0) {
+      return res.status(404).json({ error: "A szoba nem található." });
+    }
+
+    res.json({ RoomID: rows[0].RoomID });
+  } catch (error) {
+    console.error("🔥 Hiba a RoomID lekérdezésekor:", error.message);
+    res.status(500).json({ error: "Szerverhiba történt." });
+  }
+});
+
+router.get('/:roomCode/programs', async (req, res) => {
+  const { roomCode } = req.params;
+
+  try {
+    const [roomRows] = await db.execute(
+      "SELECT RoomID, Filters FROM Rooms WHERE RoomCode = ?",
+      [roomCode]
+    );
+
+    if (roomRows.length === 0) {
+      return res.status(404).json({ error: "A szoba nem található." });
+    }
+
+    let filters = {};
+    try {
+      const raw = roomRows[0].Filters;
+      filters = raw && typeof raw === "string" && raw.trim().startsWith('{')
+        ? JSON.parse(raw)
+        : {};
+    } catch (parseError) {
+      console.warn("⚠️ Szűrők nem parse-olhatók:", parseError.message);
+      filters = {};
+    }
+
+    console.log("📦 Szűrési feltételek:", filters);
+
+    let query = `
+      SELECT p.*, c.Name AS CityName 
+      FROM Programs p
+      LEFT JOIN City c ON p.CityID = c.CityID
+      WHERE 1 = 1
+    `;
+    const params = [];
+
+    if (filters.city) {
+      query += " AND p.CityID = ?";
+      params.push(parseInt(filters.city));
+    }
+
+    if (filters.duration) {
+      query += " AND p.Duration = ?";
+      params.push(parseInt(filters.duration));
+    }
+
+    if (filters.cost) {
+      query += " AND p.Cost = ?";
+      params.push(filters.cost === "paid" ? 1 : 0);
+    }
+
+    console.log("📋 SQL:", query);
+    console.log("🧪 Params:", params);
+
+    const [programs] = await db.execute(query, params);
+    res.json(programs);
+  } catch (error) {
+    console.error("🔥 Hiba a szobás programok lekérdezésekor:", error);
+    res.status(500).json({ error: "Hiba történt a szobához tartozó programok lekérdezésekor." });
+  }
+});
+
+
+
+
+router.post('/:roomCode/filters', async (req, res) => {
+  const { roomCode } = req.params;
+  const { duration, cost, city, userId } = req.body;
+
+  const filters = { duration, cost, city };
+
+  try {
+    const [roomRows] = await db.execute(
+      'SELECT CreatedByUserID FROM Rooms WHERE RoomCode = ?',
+      [roomCode]
+    );
+
+    if (roomRows.length === 0) {
+      return res.status(404).json({ error: 'Szoba nem található.' });
+    }
+
+    const creatorUserId = roomRows[0].CreatedByUserID;
+
+    if (creatorUserId !== userId) {
+      return res.status(403).json({ error: 'Csak a szoba létrehozója állíthatja a szűrőket.' });
+    }
+
+    await db.execute(
+      'UPDATE Rooms SET Filters = ? WHERE RoomCode = ?',
+      [JSON.stringify(filters), roomCode]
+    );
+
+    res.json({ message: 'Szűrők sikeresen frissítve.' });
+  } catch (error) {
+    console.error('🔥 Hiba a szűrők mentésekor:', error);
+    res.status(500).json({ error: 'Hiba a szűrők frissítése közben.' });
+  }
+});
+
 module.exports = router;
