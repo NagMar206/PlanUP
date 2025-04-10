@@ -336,7 +336,7 @@ const AdminPanel = () => {
                 <TableCell>{u.Name || u.Username}</TableCell>
                 <TableCell>{u.Email}</TableCell>
                 <TableCell>
-                <IconButton color="error" size="large" onClick={() => deleteRoom(room.RoomID)}>
+                <IconButton color="error" size="large" onClick={() => deleteUser(users.UserID)}>
                   <DeleteIcon fontSize="inherit" />
                 </IconButton>
 

@@ -491,7 +491,14 @@ io.on("connection", (socket) => {
       console.error("🔥 Hiba a lájkok törlése során:", error);
     }
   });
+
+  // 🆕 ESEMÉNY: ha a host elindítja a válogatást, küldje tovább minden résztvevőnek
+  socket.on("startSwipe", (roomCode) => {
+    console.log(`🚀 Válogatás elindítva a ${roomCode} szobában`);
+    io.to(roomCode).emit("startSwipeNow");
+  });
 });
+
 
 
 
