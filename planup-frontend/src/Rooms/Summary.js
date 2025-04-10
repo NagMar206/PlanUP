@@ -20,7 +20,7 @@ function Summary({ apiUrl }) {
 
     const fetchLikedPrograms = async () => {
       try {
-        const response = await axios.get(`${apiUrl}/rooms/${roomCode}/liked-programs`, { withCredentials: true });
+        const response = axios.get(`${apiUrl}/rooms/${roomCode}/liked-programs`)
         if (response.data && response.data.length > 0) {
           setLikedPrograms(response.data);
         } else {

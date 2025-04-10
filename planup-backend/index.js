@@ -347,6 +347,41 @@ app.post('/programs/:id/dislike', async (req, res) => {
   }
 });
 
+//roomstuff
+app.get("/rooms/:roomCode/liked-programs", async (req, res) => {
+  const { roomCode } = req.params;
+
+  if (!roomCode) {
+    return res.status(400).json({ error: "Hiányzó szobakód." });
+  }
+
+  try {
+    const [results] = await req.db.execute(`
+      SELECT 
+        p.*, 
+        COUNT(ul.UserID) AS likeCount
+      FROM 
+        UserLikes ul
+      JOIN 
+        Programs p ON ul.ProgramID = p.ProgramID
+      JOIN 
+        RoomParticipants rp ON ul.UserID = rp.UserID
+      JOIN 
+        Rooms r ON ul.RoomID = r.RoomID
+      WHERE 
+        r.RoomCode = ?
+      GROUP BY 
+        p.ProgramID
+      ORDER BY 
+        likeCount DESC
+    `, [roomCode]);
+
+    res.json(results);
+  } catch (error) {
+    console.error("🔥 Hiba a szobához tartozó kedvelt programok lekérésekor:", error);
+    res.status(500).json({ error: "Nem sikerült lekérni a kedvelt programokat." });
+  }
+});
 
 
 // 🔹 Összegzés

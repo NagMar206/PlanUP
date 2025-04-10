@@ -24,6 +24,12 @@ function RoomSwipe({ apiUrl }) {
   const [filterActive, setFilterActive] = useState(false);
   const [cities, setCities] = useState([]);
 
+  const finalUserId = userId || localUserId;
+if (!finalUserId) {
+  console.warn("⛔️ userId még nem elérhető, mentés kihagyva.");
+  return;
+}
+
 
   useEffect(() => {
     const fetchCities = async () => {
@@ -140,28 +146,27 @@ function RoomSwipe({ apiUrl }) {
 
   const handleSwipe = async (liked) => {
     const currentProgram = programs[currentIndex];
-  
     const finalUserId = userId || localUserId;
-    console.log("🧩 Swipe mentéshez használt userId:", finalUserId);
-  
-    if (!finalUserId) {
-      console.warn("⛔️ userId még nem elérhető, mentés kihagyva.");
-      return;
-    }
+    if (!finalUserId) return;
   
     try {
-      await axios.post(`${apiUrl}/summary/choose`, {
-        roomCode,
-        userId: finalUserId,
-        programId: currentProgram.ProgramID,
-        liked,
-      }, { withCredentials: true });
+      if (liked) {
+        await axios.post(`${apiUrl}/programs/${currentProgram.ProgramID}/like`, {
+          userId: finalUserId,
+          roomCode
+        }, { withCredentials: true });
+      } else {
+        await axios.post(`${apiUrl}/programs/${currentProgram.ProgramID}/dislike`, {
+          userId: finalUserId
+        }, { withCredentials: true });
+      }
     } catch (err) {
       console.error("❌ Mentési hiba:", err);
     }
   
     setCurrentIndex((prev) => prev + 1);
   };
+  
   
   
 
