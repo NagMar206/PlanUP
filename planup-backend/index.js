@@ -348,38 +348,39 @@ app.post('/programs/:id/dislike', async (req, res) => {
 });
 
 //roomstuff
-app.get("/rooms/:roomCode/liked-programs", async (req, res) => {
+app.get('/rooms/:roomCode/liked-programs', async (req, res) => {
   const { roomCode } = req.params;
 
-  if (!roomCode) {
-    return res.status(400).json({ error: "Hiányzó szobakód." });
-  }
-
   try {
-    const [results] = await req.db.execute(`
-      SELECT 
-        p.*, 
-        COUNT(ul.UserID) AS likeCount
-      FROM 
-        UserLikes ul
-      JOIN 
-        Programs p ON ul.ProgramID = p.ProgramID
-      JOIN 
-        RoomParticipants rp ON ul.UserID = rp.UserID
-      JOIN 
-        Rooms r ON ul.RoomID = r.RoomID
-      WHERE 
-        r.RoomCode = ?
-      GROUP BY 
-        p.ProgramID
-      ORDER BY 
-        likeCount DESC
-    `, [roomCode]);
-
-    res.json(results);
+      const query = `
+          SELECT 
+              p.ProgramID,
+              p.Name,
+              p.Description,
+              p.Location,
+              p.Image,
+              COUNT(sa.UserID) AS LikeCount
+          FROM 
+              SwipeActions sa
+          JOIN 
+              Programs p ON sa.ProgramID = p.ProgramID
+          JOIN 
+              RoomParticipants rp ON sa.UserID = rp.UserID
+          JOIN 
+              Rooms r ON rp.RoomID = r.RoomID
+          WHERE 
+              sa.Action = 'like'
+              AND r.RoomCode = ?
+          GROUP BY 
+              p.ProgramID
+          ORDER BY 
+              LikeCount DESC;
+      `;
+      const [results] = await req.db.execute(query, [roomCode]);
+      res.json(results);
   } catch (error) {
-    console.error("🔥 Hiba a szobához tartozó kedvelt programok lekérésekor:", error);
-    res.status(500).json({ error: "Nem sikerült lekérni a kedvelt programokat." });
+      console.error("Hiba a kedvelt programok lekérésekor:", error);
+      res.status(500).json({ error: "Nem sikerült lekérni a kedvelt programokat." });
   }
 });
 

@@ -14,6 +14,8 @@ function RoomSwipe({ apiUrl }) {
   const { userId } = useRoom();
   const [localUserId, setLocalUserId] = useState(null);
   const activeUserId = userId || localUserId;
+
+  // Állapotok és hookok mindig a komponens tetején legyenek!
   const [programs, setPrograms] = useState([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [error, setError] = useState("");
@@ -24,37 +26,33 @@ function RoomSwipe({ apiUrl }) {
   const [filterActive, setFilterActive] = useState(false);
   const [cities, setCities] = useState([]);
 
-  const finalUserId = userId || localUserId;
-if (!finalUserId) {
-  console.warn("⛔️ userId még nem elérhető, mentés kihagyva.");
-  return;
-}
-
-
+  // Hookok hívása mindig fix sorrendben történjen!
   useEffect(() => {
-    const fetchCities = async () => {
-      try {
-        const response = await axios.get(`${apiUrl}/programs/cities`);
-        setCities(response.data);
-      } catch (err) {
-        console.error("Hiba a városok betöltésekor:", err);
-      }
-    };
-    fetchCities();
+      const fetchCities = async () => {
+          try {
+              const response = await axios.get(`${apiUrl}/programs/cities`);
+              setCities(response.data);
+          } catch (err) {
+              console.error("Hiba a városok betöltésekor:", err);
+          }
+      };
+      fetchCities();
   }, [apiUrl]);
 
   useEffect(() => {
-    const checkHost = async () => {
-      try {
-        const res = await axios.get(`${apiUrl}/rooms/${roomCode}/creatorId`);
-        if (res.data.creatorId === userId) {
-          setIsHost(true);
-        }
-      } catch (err) {
-        console.error("Nem sikerült ellenőrizni a host jogosultságot:", err);
+      if (userId) {
+          const checkHost = async () => {
+              try {
+                  const res = await axios.get(`${apiUrl}/rooms/${roomCode}/creatorId`);
+                  if (res.data.creatorId === userId) {
+                      setIsHost(true);
+                  }
+              } catch (err) {
+                  console.error("Nem sikerült ellenőrizni a host jogosultságot:", err);
+              }
+          };
+          checkHost();
       }
-    };
-    if (userId) checkHost();
   }, [apiUrl, roomCode, userId]);
 
   useEffect(() => {
