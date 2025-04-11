@@ -26,7 +26,7 @@ function Profile({ user, setUser }) {
         setLoading(false);
       })
       .catch((error) => {
-        console.error("❌ Hiba a profil lekérésekor:", error);
+        console.error("Hiba a profil lekérésekor:", error);
         setLoading(false);
       });
   }, [user]);
@@ -43,7 +43,7 @@ function Profile({ user, setUser }) {
   // Define handleUpdateName
   const handleUpdateName = async () => {
     if (!newName.trim()) {
-      setMessage("⚠️ A név nem lehet üres!");
+      setMessage("A név nem lehet üres!");
       return;
     }
 
@@ -56,16 +56,16 @@ function Profile({ user, setUser }) {
 
       setUsername(newName);
       setNewName("");
-      setMessage("✅ Név sikeresen frissítve!");
+      setMessage("Név sikeresen frissítve!");
     } catch (error) {
-      console.error("❌ Hiba a névváltoztatáskor:", error);
-      setMessage("⚠️ Hiba történt a név frissítésekor.");
+      console.error("Hiba a névváltoztatáskor:", error);
+      setMessage("Hiba történt a név frissítésekor.");
     }
   };
 
   const handleChangePassword = async () => {
     if (!oldPassword || !newPassword) {
-      setMessage("⚠️ Mindkét mező kitöltése kötelező!");
+      setMessage("Mindkét mező kitöltése kötelező!");
       return;
     }
 
@@ -80,7 +80,7 @@ function Profile({ user, setUser }) {
       setOldPassword("");
       setNewPassword("");
     } catch (error) {
-      setMessage(error.response?.data?.error || "⚠️ Hiba történt!");
+      setMessage(error.response?.data?.error || "Hiba történt!");
     }
   };
 
@@ -98,8 +98,8 @@ function Profile({ user, setUser }) {
         navigate("/login"); // Redirect after 2 seconds
       }, 2000); // 2-second delay for the modal to be visible
     } catch (error) {
-      console.error("❌ Hiba a kijelentkezésnél:", error);
-      setMessage("⚠️ Hiba történt a kijelentkezés során.");
+      console.error("Hiba a kijelentkezésnél:", error);
+      setMessage("Hiba történt a kijelentkezés során.");
     }
   };
   

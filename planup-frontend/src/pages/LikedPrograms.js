@@ -25,7 +25,7 @@ function LikedPrograms({ apiUrl, userId }) {
         const response = await axios.get(endpoint, { withCredentials: true });
         setLikedPrograms(response.data);
       } catch (err) {
-        console.error("❌ Hiba a kedvelt programok lekérésekor:", err);
+        console.error("Hiba a kedvelt programok lekérésekor:", err);
         setError("Nem sikerült betölteni a kedvelt programokat.");
       }
     };
@@ -40,9 +40,9 @@ function LikedPrograms({ apiUrl, userId }) {
 
       await axios.delete(endpoint, { data });
       setLikedPrograms([]);
-      console.log("✅ Kedvelt programok törölve.");
+      console.log("Kedvelt programok törölve.");
     } catch (err) {
-      console.error("❌ Hiba történt a kedvelt programok törlésekor:", err);
+      console.error("Hiba történt a kedvelt programok törlésekor:", err);
       setError("Nem sikerült törölni a kedvelt programokat.");
     }
   };
@@ -96,7 +96,7 @@ function LikedPrograms({ apiUrl, userId }) {
       {likedPrograms.length > 0 ? (
         <OnePick apiUrl={apiUrl} userId={validUserId} />
       ) : (
-        <p className="no-programs-message">⚠️ Lájkold a programokat, hogy pörgethess! 😊</p>
+        <p className="no-programs-message">Lájkold a programokat, hogy pörgethess! 😊</p>
       )}
     </div>
   );

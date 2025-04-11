@@ -18,8 +18,8 @@ function Registration() {
     setError('');
     setSuccess('');
 
-    console.log("🔍 Regisztráció indítása...");
-    console.log("📨 Küldött adatok:", { email, username, password });
+    console.log("Regisztráció indítása...");
+    console.log("Küldött adatok:", { email, username, password });
 
     try {
       const response =fetch('http://localhost:3001/api/users/register', {
@@ -33,7 +33,7 @@ function Registration() {
           password,
         }),
       });
-      console.log("✅ Sikeres regisztráció!", response.data);
+      console.log("Sikeres regisztráció!", response.data);
       setSuccess("Sikeres regisztráció! Jelentkezz be.");
       navigate('/login');
     } catch (err) {
