@@ -1,17 +1,17 @@
 const mysql = require('mysql2/promise');
-/*
+
 //PlanUP Adatbázis
  const db = mysql.createPool({
     host: 'localhost', 
     user: 'root', 
     password: '', // lokális esetén nincs jelszó, hagyd üresen
-    database: 'planup', // Az adatbázis neve 
+    database: 'mollev545', // Az adatbázis neve 
     port: 3307, // Ha a MySQL más porton fut, módosítsd
     waitForConnections: true,
     connectionLimit: 10,
     queueLimit: 0
 }); 
-*/
+/*
 //Iskolai szerver
 const db = mysql.createPool({
     host: '10.3.1.65', 
@@ -22,6 +22,6 @@ const db = mysql.createPool({
     waitForConnections: true,
     connectionLimit: 10,
     queueLimit: 0
-});
+}); */
 
 module.exports = db;
