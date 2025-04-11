@@ -191,7 +191,7 @@ function Rooms({ apiUrl, userId }) {
                   setFilters(newFilters);
                   setFilterActive(true);
                   if (!userId) {
-                    console.warn("⛔️ userId nem elérhető, szűrés nem mentve.");
+                    console.warn("userId nem elérhető, szűrés nem mentve.");
                     return;
                   }
                   axios.post(`${apiUrl}/rooms/${roomCode}/filters`, {

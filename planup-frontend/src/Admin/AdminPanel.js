@@ -307,7 +307,7 @@ const AdminPanel = () => {
                 <TableCell>{magyarIdotartam[p.Duration]}</TableCell>
                 <TableCell>
                   <IconButton color="error" size="large" onClick={() => deleteProgram(p.ProgramID)}>
-                    <DeleteIcon fontSize="inherit" /> {/*✅ Ez lesz a helyes!*/}
+                    <DeleteIcon fontSize="inherit" />
                   </IconButton>
                 </TableCell>
 

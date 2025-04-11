@@ -79,7 +79,7 @@ function RoomSwipe({ apiUrl }) {
                 const res = await axios.get(`${apiUrl}/rooms/${roomCode}/programs`, { withCredentials: true });
                 setPrograms(res.data);
             } catch (err) {
-                console.error("❌ Nem sikerült lekérni a programokat:", err);
+                console.error("Nem sikerült lekérni a programokat:", err);
                 setError("Hiba történt a programok betöltésekor.");
             } finally {
                 setLoading(false);
@@ -109,14 +109,14 @@ function RoomSwipe({ apiUrl }) {
             axios.get(`${apiUrl}/api/auth/status`, { withCredentials: true })
                 .then((res) => {
                     if (res.data && res.data.userId) {
-                        console.log("🎯 Lekért userId:", res.data.userId);
+                        console.log("Lekért userId:", res.data.userId);
                         setLocalUserId(res.data.userId);
                     } else {
-                        console.warn("⚠️ Nem bejelentkezett felhasználó.");
+                        console.warn("Nem bejelentkezett felhasználó.");
                     }
                 })
                 .catch((err) => {
-                    console.error("❌ Nem sikerült lekérni a userID-t:", err);
+                    console.error("Nem sikerült lekérni a userID-t:", err);
                 });
         }
     }, [userId]);
@@ -133,7 +133,7 @@ function RoomSwipe({ apiUrl }) {
                 await axios.post(`${apiUrl}/programs/${currentProgram.ProgramID}/dislike`, { userId: activeUserId }, { withCredentials: true });
             }
         } catch (err) {
-            console.error("❌ Mentési hiba:", err);
+            console.error("Mentési hiba:", err);
         }
 
         setCurrentIndex((prev) => prev + 1);
