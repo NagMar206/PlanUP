@@ -91,11 +91,11 @@ function ProgramSwipe({ apiUrl, userId }) {
         programId: program.ProgramID,
         roomCode: roomId || null
       });
-      console.log(`${action.toUpperCase()} művelet válasza:`, response.data);
+      console.log(`✅ ${action.toUpperCase()} művelet válasza:`, response.data);
       setProcessedPrograms((prev) => new Set([...prev, program.ProgramID]));
       fetchFilteredProgram();
     } catch (err) {
-      console.error(`Nem sikerült végrehajtani a ${action} műveletet:`, err);
+      console.error(`❌ Nem sikerült végrehajtani a ${action} műveletet:`, err);
       if (err.response && err.response.status === 400) {
         fetchFilteredProgram();
       } else {
@@ -109,14 +109,14 @@ function ProgramSwipe({ apiUrl, userId }) {
       axios.get(`${apiUrl}/api/auth/status`, { withCredentials: true })
         .then((res) => {
           if (res.data && res.data.userId) {
-            console.log("Lekért userId a szervertől:", res.data.userId);
+            console.log("🎯 Lekért userId a szervertől:", res.data.userId);
             setLocalUserId(res.data.userId);
           } else {
-            console.warn("Nincs bejelentkezett user!");
+            console.warn("⚠️ Nincs bejelentkezett user!");
           }
         })
         .catch((err) => {
-          console.error("Nem sikerült lekérni a user státuszt:", err);
+          console.error("❌ Nem sikerült lekérni a user státuszt:", err);
         });
     }
   }, [userId]);
@@ -126,14 +126,14 @@ function ProgramSwipe({ apiUrl, userId }) {
       axios.get(`${apiUrl}/api/auth/status`, { withCredentials: true })
         .then((res) => {
           if (res.data && res.data.userId) {
-            console.log("Lekért userId:", res.data.userId);
+            console.log("🎯 Lekért userId:", res.data.userId);
             setLocalUserId(res.data.userId);
           } else {
-            console.warn("Nem bejelentkezett felhasználó.");
+            console.warn("⚠️ Nem bejelentkezett felhasználó.");
           }
         })
         .catch((err) => {
-          console.error("Nem sikerült lekérni a userID-t:", err);
+          console.error("❌ Nem sikerült lekérni a userID-t:", err);
         });
     }
   }, [userId]);
