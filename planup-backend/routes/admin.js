@@ -212,7 +212,7 @@ router.delete('/users/:id', async (req, res) => {
 
     res.json({ message: 'Felhasználó sikeresen törölve.' });
   } catch (error) {
-    console.error('❌ Hiba a felhasználó törlésekor:', error.message);
+    console.error('Hiba a felhasználó törlésekor:', error.message);
     res.status(500).json({ error: 'Hiba a felhasználó törlésekor.', details: error.message });
   }
 });

@@ -1,108 +1,149 @@
-const express = require('express');
+const express = require("express");
 const router = express.Router();
-const db = require('../config/dbConfig');
-const { v4: uuidv4 } = require('uuid');
+const db = require("../config/dbConfig");
+const { v4: uuidv4 } = require("uuid");
 
 // Szoba létrehozása
-router.post('/', async (req, res) => {
+router.post("/", async (req, res) => {
   const { userId } = req.body;
-  if (!userId) return res.status(400).json({ error: 'Felhasználói azonosító szükséges!' });
+  if (!userId)
+    return res.status(400).json({ error: "Felhasználói azonosító szükséges!" });
 
   try {
     const roomCode = uuidv4().substring(0, 8).toUpperCase();
-    await db.execute('INSERT INTO Rooms (RoomCode, CreatedByUserID) VALUES (?, ?)', [roomCode, userId]);
+    await db.execute(
+      "INSERT INTO Rooms (RoomCode, CreatedByUserID) VALUES (?, ?)",
+      [roomCode, userId]
+    );
 
-    const [roomData] = await db.execute('SELECT RoomID FROM Rooms WHERE RoomCode = ?', [roomCode]);
+    const [roomData] = await db.execute(
+      "SELECT RoomID FROM Rooms WHERE RoomCode = ?",
+      [roomCode]
+    );
     const roomId = roomData[0].RoomID;
-    await db.execute('INSERT INTO RoomParticipants (RoomID, UserID) VALUES (?, ?)', [roomId, userId]);
+    await db.execute(
+      "INSERT INTO RoomParticipants (RoomID, UserID) VALUES (?, ?)",
+      [roomId, userId]
+    );
 
     req.session.roomCode = roomCode;
     req.session.userId = userId;
     req.session.createdAt = Date.now();
 
-    res.status(200).json({ message: 'Szoba létrehozva!', roomCode });
+    res.status(200).json({ message: "Szoba létrehozva!", roomCode });
   } catch (error) {
-    console.error('Hiba szobalétrehozáskor:', error);
-    res.status(500).json({ error: 'Szerverhiba' });
+    console.error("Hiba szobalétrehozáskor:", error);
+    res.status(500).json({ error: "Szerverhiba" });
   }
 });
 
 // Szobához csatlakozás
-router.post('/join', async (req, res) => {
+router.post("/join", async (req, res) => {
   const { roomCode, userId } = req.body;
-  if (!roomCode || !userId) return res.status(400).json({ error: 'Hiányzó paraméter' });
+  if (!roomCode || !userId)
+    return res.status(400).json({ error: "Hiányzó paraméter" });
 
   try {
-    const [room] = await db.execute('SELECT RoomID FROM Rooms WHERE RoomCode = ?', [roomCode]);
-    if (room.length === 0) return res.status(404).json({ error: 'Szoba nem található' });
+    const [room] = await db.execute(
+      "SELECT RoomID FROM Rooms WHERE RoomCode = ?",
+      [roomCode]
+    );
+    if (room.length === 0)
+      return res.status(404).json({ error: "Szoba nem található" });
 
     const roomId = room[0].RoomID;
-    const [already] = await db.execute('SELECT * FROM RoomParticipants WHERE RoomID = ? AND UserID = ?', [roomId, userId]);
+    const [already] = await db.execute(
+      "SELECT * FROM RoomParticipants WHERE RoomID = ? AND UserID = ?",
+      [roomId, userId]
+    );
     if (already.length === 0) {
-      await db.execute('INSERT INTO RoomParticipants (RoomID, UserID) VALUES (?, ?)', [roomId, userId]);
+      await db.execute(
+        "INSERT INTO RoomParticipants (RoomID, UserID) VALUES (?, ?)",
+        [roomId, userId]
+      );
     }
 
     req.session.roomCode = roomCode;
     req.session.userId = userId;
     req.session.createdAt = Date.now();
 
-    res.status(200).json({ message: 'Csatlakozás sikeres', roomCode });
+    res.status(200).json({ message: "Csatlakozás sikeres", roomCode });
   } catch (error) {
-    console.error('Hiba a csatlakozás során:', error);
-    res.status(500).json({ error: 'Szerverhiba' });
+    console.error("Hiba a csatlakozás során:", error);
+    res.status(500).json({ error: "Szerverhiba" });
   }
 });
 
 // Aktuális szoba lekérése
-router.get('/current', (req, res) => {
-  if (req.session.roomCode && (Date.now() - req.session.createdAt) < 7200000) {
+router.get("/current", (req, res) => {
+  if (req.session.roomCode && Date.now() - req.session.createdAt < 7200000) {
     return res.status(200).json({ roomCode: req.session.roomCode });
   }
-  res.status(404).json({ error: 'Nincs aktív szoba' });
+  res.status(404).json({ error: "Nincs aktív szoba" });
 });
 
 // Kilépés szobából
-router.post('/leave', async (req, res) => {
+router.post("/leave", async (req, res) => {
   const { userId, roomCode } = req.body;
-  if (!userId || !roomCode) return res.status(400).json({ error: 'Hiányzó paraméter' });
+  if (!userId || !roomCode)
+    return res.status(400).json({ error: "Hiányzó paraméter" });
 
   try {
-    const [room] = await db.execute('SELECT RoomID FROM Rooms WHERE RoomCode = ?', [roomCode]);
-    if (room.length === 0) return res.status(404).json({ error: 'Szoba nem található' });
+    const [room] = await db.execute(
+      "SELECT RoomID FROM Rooms WHERE RoomCode = ?",
+      [roomCode]
+    );
+    if (room.length === 0)
+      return res.status(404).json({ error: "Szoba nem található" });
 
     const roomId = room[0].RoomID;
-    await db.execute('DELETE FROM RoomParticipants WHERE RoomID = ? AND UserID = ?', [roomId, userId]);
+    await db.execute(
+      "DELETE FROM RoomParticipants WHERE RoomID = ? AND UserID = ?",
+      [roomId, userId]
+    );
 
     req.session.roomCode = null;
     req.session.userId = null;
 
-    res.status(200).json({ message: 'Kiléptél a szobából' });
+    res.status(200).json({ message: "Kiléptél a szobából" });
   } catch (error) {
-    console.error('Kilépési hiba:', error);
-    res.status(500).json({ error: 'Szerverhiba' });
+    console.error("Kilépési hiba:", error);
+    res.status(500).json({ error: "Szerverhiba" });
   }
 });
 
 // Szobában lévő felhasználók lekérése
-router.get('/:roomCode/users', async (req, res) => {
+router.get("/:roomCode/users", async (req, res) => {
   const { roomCode } = req.params;
   try {
-    const [room] = await db.execute('SELECT RoomID, CreatedByUserID FROM Rooms WHERE RoomCode = ?', [roomCode]);
-    if (room.length === 0) return res.status(404).json({ error: 'Szoba nem található' });
+    const [room] = await db.execute(
+      "SELECT RoomID, CreatedByUserID FROM Rooms WHERE RoomCode = ?",
+      [roomCode]
+    );
+    if (room.length === 0)
+      return res.status(404).json({ error: "Szoba nem található" });
 
     const roomId = room[0].RoomID;
     const creatorId = room[0].CreatedByUserID;
-    const [creatorData] = await db.execute('SELECT Username FROM Users WHERE UserID = ?', [creatorId]);
-    const [users] = await db.execute(`
+    const [creatorData] = await db.execute(
+      "SELECT Username FROM Users WHERE UserID = ?",
+      [creatorId]
+    );
+    const [users] = await db.execute(
+      `
       SELECT u.Username FROM RoomParticipants rp
       JOIN Users u ON rp.UserID = u.UserID
       WHERE rp.RoomID = ?
-    `, [roomId]);
+    `,
+      [roomId]
+    );
 
-    res.status(200).json({ users, creator: creatorData[0]?.Username || "Ismeretlen" });
+    res
+      .status(200)
+      .json({ users, creator: creatorData[0]?.Username || "Ismeretlen" });
   } catch (err) {
-    console.error('Hiba a felhasználók lekérésekor:', err);
-    res.status(500).json({ error: 'Szerverhiba' });
+    console.error("Hiba a felhasználók lekérésekor:", err);
+    res.status(500).json({ error: "Szerverhiba" });
   }
 });
 
@@ -110,11 +151,16 @@ router.get('/:roomCode/users', async (req, res) => {
 router.post("/roomswipe/:roomCode/like", async (req, res) => {
   const { roomCode } = req.params;
   const { userId, programId } = req.body;
-  if (!userId || !programId || !roomCode) return res.status(400).json({ error: "Hiányzó adat." });
+  if (!userId || !programId || !roomCode)
+    return res.status(400).json({ error: "Hiányzó adat." });
 
   try {
-    const [room] = await db.execute("SELECT RoomID FROM Rooms WHERE RoomCode = ?", [roomCode]);
-    if (room.length === 0) return res.status(404).json({ error: "Szoba nem található." });
+    const [room] = await db.execute(
+      "SELECT RoomID FROM Rooms WHERE RoomCode = ?",
+      [roomCode]
+    );
+    if (room.length === 0)
+      return res.status(404).json({ error: "Szoba nem található." });
 
     const roomId = room[0].RoomID;
 
@@ -135,19 +181,26 @@ router.get("/roomswipe/:roomCode/summary", async (req, res) => {
   const { roomCode } = req.params;
 
   try {
-    const [room] = await db.execute("SELECT RoomID FROM Rooms WHERE RoomCode = ?", [roomCode]);
-    if (room.length === 0) return res.status(404).json({ error: "Szoba nem található." });
+    const [room] = await db.execute(
+      "SELECT RoomID FROM Rooms WHERE RoomCode = ?",
+      [roomCode]
+    );
+    if (room.length === 0)
+      return res.status(404).json({ error: "Szoba nem található." });
 
     const roomId = room[0].RoomID;
 
-    const [summary] = await db.execute(`
+    const [summary] = await db.execute(
+      `
       SELECT p.*, COUNT(r.UserID) AS likeCount
       FROM RoomSwipeLikes r
       JOIN Programs p ON r.ProgramID = p.ProgramID
       WHERE r.RoomID = ?
       GROUP BY r.ProgramID
       ORDER BY likeCount DESC
-    `, [roomId]);
+    `,
+      [roomId]
+    );
 
     res.json(summary);
   } catch (error) {
@@ -173,18 +226,22 @@ router.get("/:roomCode/creatorId", async (req, res) => {
   }
 });
 
-router.get('/:roomCode/liked-programs', async (req, res) => {
+router.get("/:roomCode/liked-programs", async (req, res) => {
   const { roomCode } = req.params;
 
   try {
-    const [room] = await db.query('SELECT RoomID FROM Rooms WHERE RoomCode = ?', [roomCode]);
+    const [room] = await db.query(
+      "SELECT RoomID FROM Rooms WHERE RoomCode = ?",
+      [roomCode]
+    );
     if (room.length === 0) {
-      return res.status(404).json({ message: 'A szoba nem található' });
+      return res.status(404).json({ message: "A szoba nem található" });
     }
 
     const roomId = room[0].RoomID;
 
-    const [programs] = await db.query(`
+    const [programs] = await db.query(
+      `
       SELECT 
         p.ProgramID,
         p.Name,
@@ -201,35 +258,47 @@ router.get('/:roomCode/liked-programs', async (req, res) => {
       WHERE rsl.RoomID = ?
       GROUP BY p.ProgramID
       ORDER BY likeCount DESC
-    `, [roomId]);
+    `,
+      [roomId]
+    );
 
     res.json(programs);
   } catch (err) {
-    console.error("❌ Hiba a liked-programs lekérdezésnél:", err);
-    res.status(500).json({ message: "Nem sikerült betölteni a kedvelt programokat." });
+    console.error("Hiba a liked-programs lekérdezésnél:", err);
+    res
+      .status(500)
+      .json({ message: "Nem sikerült betölteni a kedvelt programokat." });
   }
 });
 
-router.post('/summary/choose', async (req, res) => {
+router.post("/summary/choose", async (req, res) => {
   const { roomCode, userId, programId } = req.body;
 
   try {
-    const [roomResult] = await db.execute('SELECT RoomID FROM Rooms WHERE RoomCode = ?', [roomCode]);
+    const [roomResult] = await db.execute(
+      "SELECT RoomID FROM Rooms WHERE RoomCode = ?",
+      [roomCode]
+    );
     if (roomResult.length === 0) {
-      return res.status(404).json({ message: 'A szoba nem található' });
+      return res.status(404).json({ message: "A szoba nem található" });
     }
     const roomId = roomResult[0].RoomID;
 
-    await db.execute(`
+    await db.execute(
+      `
       INSERT INTO RoomSwipeLikes (RoomID, UserID, ProgramID, LikedAt)
       VALUES (?, ?, ?, NOW())
       ON DUPLICATE KEY UPDATE LikedAt = NOW()
-    `, [roomId, userId, programId]);
+    `,
+      [roomId, userId, programId]
+    );
 
     res.sendStatus(200);
   } catch (err) {
-    console.error("❌ Mentési hiba:", err);
-    res.status(500).json({ message: 'Hiba a lájk mentésekor', error: err.message });
+    console.error("Mentési hiba:", err);
+    res
+      .status(500)
+      .json({ message: "Hiba a lájk mentésekor", error: err.message });
   }
 });
 
@@ -252,12 +321,12 @@ router.get("/getRoomId", async (req, res) => {
 
     res.json({ RoomID: rows[0].RoomID });
   } catch (error) {
-    console.error("🔥 Hiba a RoomID lekérdezésekor:", error.message);
+    console.error("Hiba a RoomID lekérdezésekor:", error.message);
     res.status(500).json({ error: "Szerverhiba történt." });
   }
 });
 
-router.get('/:roomCode/programs', async (req, res) => {
+router.get("/:roomCode/programs", async (req, res) => {
   const { roomCode } = req.params;
 
   try {
@@ -273,11 +342,12 @@ router.get('/:roomCode/programs', async (req, res) => {
     let filters = {};
     try {
       const raw = roomRows[0].Filters;
-      filters = raw && typeof raw === "string" && raw.trim().startsWith('{')
-        ? JSON.parse(raw)
-        : {};
+      filters =
+        raw && typeof raw === "string" && raw.trim().startsWith("{")
+          ? JSON.parse(raw)
+          : {};
     } catch (parseError) {
-      console.warn("⚠️ Szűrők nem parse-olhatók:", parseError.message);
+      console.warn("Szűrők nem parse-olhatók:", parseError.message);
       filters = {};
     }
 
@@ -312,15 +382,14 @@ router.get('/:roomCode/programs', async (req, res) => {
     const [programs] = await db.execute(query, params);
     res.json(programs);
   } catch (error) {
-    console.error("🔥 Hiba a szobás programok lekérdezésekor:", error);
-    res.status(500).json({ error: "Hiba történt a szobához tartozó programok lekérdezésekor." });
+    console.error("Hiba a szobás programok lekérdezésekor:", error);
+    res.status(500).json({
+      error: "Hiba történt a szobához tartozó programok lekérdezésekor.",
+    });
   }
 });
 
-
-
-
-router.post('/:roomCode/filters', async (req, res) => {
+router.post("/:roomCode/filters", async (req, res) => {
   const { roomCode } = req.params;
   const { duration, cost, city, userId } = req.body;
 
@@ -328,29 +397,31 @@ router.post('/:roomCode/filters', async (req, res) => {
 
   try {
     const [roomRows] = await db.execute(
-      'SELECT CreatedByUserID FROM Rooms WHERE RoomCode = ?',
+      "SELECT CreatedByUserID FROM Rooms WHERE RoomCode = ?",
       [roomCode]
     );
 
     if (roomRows.length === 0) {
-      return res.status(404).json({ error: 'Szoba nem található.' });
+      return res.status(404).json({ error: "Szoba nem található." });
     }
 
     const creatorUserId = roomRows[0].CreatedByUserID;
 
     if (creatorUserId !== userId) {
-      return res.status(403).json({ error: 'Csak a szoba létrehozója állíthatja a szűrőket.' });
+      return res
+        .status(403)
+        .json({ error: "Csak a szoba létrehozója állíthatja a szűrőket." });
     }
 
-    await db.execute(
-      'UPDATE Rooms SET Filters = ? WHERE RoomCode = ?',
-      [JSON.stringify(filters), roomCode]
-    );
+    await db.execute("UPDATE Rooms SET Filters = ? WHERE RoomCode = ?", [
+      JSON.stringify(filters),
+      roomCode,
+    ]);
 
-    res.json({ message: 'Szűrők sikeresen frissítve.' });
+    res.json({ message: "Szűrők sikeresen frissítve." });
   } catch (error) {
-    console.error('🔥 Hiba a szűrők mentésekor:', error);
-    res.status(500).json({ error: 'Hiba a szűrők frissítése közben.' });
+    console.error("Hiba a szűrők mentésekor:", error);
+    res.status(500).json({ error: "Hiba a szűrők frissítése közben." });
   }
 });
 
