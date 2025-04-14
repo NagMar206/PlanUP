@@ -14,17 +14,23 @@
   transition: all 0.3s ease-in-out;
 }
 
-/* Bal oldali PlanUp felirat */
-.navbar-title {
-  font-size: 2rem;
-  font-weight: 800;
-  color: #ff79c6;
-  text-shadow: 0 2px 4px rgba(255, 121, 198, 0.3);
-  transition: transform 0.3s ease-in-out;
+/* Bal oldali PlanUp logó és üdvözlő szöveg */
+.navbar-left {
+  display: flex;
+  flex-direction: column; /* Üdvözlő szöveg a logó alatt */
 }
 
-.navbar-title:hover {
-  transform: scale(1.08);
+.navbar-title {
+  font-size: 2rem;
+  font-weight: bold;
+  color: #ff79c6;
+}
+
+.navbar-welcome {
+  font-size: 1rem;
+  font-weight: normal;
+  color: #e0e0e0;
+  margin-top: 5px; /* Távolság a logótól */
 }
 
 /* Icons + Links */
