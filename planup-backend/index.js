@@ -18,7 +18,7 @@ SESSION_SECRET="125eef9d70e5e65deb3e877eca66f1d805463e8062390de14b33bdad0ba58b8a
 const { Server } = require("socket.io");
 
 const app = express();
-const server = http.createServer(app);  // 🛠️ KELL egy HTTP szerver is!
+const server = http.createServer(app); 
 
 const io = new Server(server, {
   cors: {
@@ -28,14 +28,11 @@ const io = new Server(server, {
 });
 
 server.listen(3001, () => {
-  console.log('✅ Szerver fut a 3001-es porton');
+  console.log('Szerver fut a 3001-es porton');
 });
 
-
-// 🔥 Ezzel a sorral elérhetővé tesszük a `req.app.get('io')` hívást!
 app.set('io', io);
 
-// 🔹 1) MINDIG ELŐSZÖR a middleware-ek:
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
@@ -59,7 +56,6 @@ app.use(cors({
   methods: ['GET', 'POST', 'PUT', 'DELETE']
 }));
 
-// Ha van más “header override”, mint pl. Access-Control-Allow, azt is tedd ide
 app.use((req, res, next) => {
   res.header("Access-Control-Allow-Origin", "http://localhost:3000");
   res.header("Access-Control-Allow-Credentials", "true");
@@ -85,7 +81,7 @@ app.use(session({
 // Statikus fájlok kiszolgálása (képek elérhetősége)
 app.use('/images', express.static(path.join(__dirname, 'public/images')));
 
-// Multer konfiguráció (képfeltöltés)
+// képfeltöltés
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
     cb(null, './public/images'); // ide menti a képeket
@@ -109,8 +105,6 @@ app.post('/api/upload', upload.single('image'), (req, res) => {
 });
 
 
-
-// 🔹 2) Ezután jöjjenek a ROUTE-ok
 // Adatbázis kapcsolat betöltése minden kéréshez
 app.use(async (req, res, next) => {
   try {
@@ -126,7 +120,7 @@ app.use(async (req, res, next) => {
   }
 });
 
-// Itt regisztráld a routes
+// route
 app.use('/api/users', userRoutes);
 app.use("/api/auth", authRoutes);
 app.use('/rooms', roomRoutes);
@@ -134,11 +128,7 @@ app.use('/profile', profileRoutes);
 app.use('/programs', programRoutes);
 app.use("/api/admin", adminRoutes);
 
-
-
-
-
-// 🔹 Statikus fájlok kiszolgálása
+// Statikus fájlok kiszolgálása
 app.use('/images', express.static('public/images'));
 app.use('/images', express.static(__dirname + '/public/images'));
 
@@ -147,10 +137,10 @@ app.use('/images', express.static(__dirname + '/public/images'));
 app.post('/auth/register', async (req, res) => {
   const { username, email, password } = req.body;
 
-  console.log("🔍 Regisztráció indult, beérkező adatok:", req.body);
+  console.log("Regisztráció indult, beérkező adatok:", req.body);
 
   if (!username || !email || !password) {
-    console.error("⚠️ Hiányzó adat!");
+    console.error("Hiányzó adat!");
     return res.status(400).json({ error: "Minden mező kitöltése kötelező!" });
   }
 
@@ -161,10 +151,10 @@ app.post('/auth/register', async (req, res) => {
       [username, hashedPassword, email]
     );
 
-    console.log("✅ Sikeres regisztráció! UserID:", result.insertId);
+    console.log("Sikeres regisztráció! UserID:", result.insertId);
     res.status(201).json({ message: "Sikeres regisztráció!", userID: result.insertId });
   } catch (error) {
-    console.error("🔥 Hiba a regisztráció során:", error.message);
+    console.error("Hiba a regisztráció során:", error.message);
     res.status(500).json({ error: "Nem sikerült a regisztráció", details: error.message });
   }
 });
@@ -178,7 +168,7 @@ app.get('/', (req, res) => {
 });
 
 
-// 🔹 Program funkciók
+// Program funkciók
 app.get('/programs', async (req, res) => {
   const { cost, duration } = req.query;
 
@@ -212,17 +202,17 @@ if (duration !== undefined) {
   }
 });
 
-// 🔹 Véletlenszerű program lekérése
+// Véletlenszerű program lekérése
 app.get("/programs/random", async (req, res) => {
   try {
     const { userId } = req.query;
 
     if (!userId) {
-      console.error("❌ Hiányzó userId paraméter!");
+      console.error("Hiányzó userId paraméter!");
       return res.status(400).json({ error: "Hiányzó userId paraméter." });
     }
 
-    console.log(`🔍 Véletlenszerű program lekérése UserID = ${userId}`);
+    console.log(`Véletlenszerű program lekérése UserID = ${userId}`);
 
     let likedPrograms = [];
     try {
@@ -231,9 +221,9 @@ app.get("/programs/random", async (req, res) => {
         [userId]
       );
       likedPrograms = likedProgramsRows.map(p => p.ProgramID);
-      console.log("👍 Like-olt programok:", likedPrograms);
+      console.log("Like-olt programok:", likedPrograms);
     } catch (dbError) {
-      console.error("⚠️ Hiba a like-olt programok lekérésekor:", dbError);
+      console.error("Hiba a like-olt programok lekérésekor:", dbError);
       return res.status(500).json({ error: "Hiba a like-olt programok lekérésekor.", details: dbError.message });
     }
 
@@ -251,33 +241,33 @@ app.get("/programs/random", async (req, res) => {
       queryParams = [];
     }
 
-    console.log("🔍 SQL Lekérdezés:", sqlQuery, queryParams);
+    console.log("SQL Lekérdezés:", sqlQuery, queryParams);
 
     let randomProgram;
     try {
       const [randomProgramRows] = await db.execute(sqlQuery, queryParams);
       randomProgram = randomProgramRows.length > 0 ? randomProgramRows[0] : null;
     } catch (sqlError) {
-      console.error("⚠️ Hiba az SQL lekérdezés végrehajtásakor:", sqlError);
+      console.error("Hiba az SQL lekérdezés végrehajtásakor:", sqlError);
       return res.status(500).json({ error: "SQL hiba a program lekérésekor.", details: sqlError.message });
     }
 
     if (!randomProgram) {
-      console.log("⚠️ Nincs több elérhető program.");
+      console.log("Nincs több elérhető program.");
       return res.json(null);
     }
 
-    console.log("🎯 Visszaküldött program:", randomProgram);
+    console.log("Visszaküldött program:", randomProgram);
     res.json(randomProgram);
 
   } catch (error) {
-    console.error("🔥 Általános hiba történt a random program lekérésekor:", error);
+    console.error("Általános hiba történt a random program lekérésekor:", error);
     res.status(500).json({ error: "Szerverhiba a program betöltésekor.", details: error.message });
   }
 });
 
 
-// 🔹 Program kedvelése
+// Program kedvelése
 app.post("/programs/:programId/like", async (req, res) => {
   const { programId } = req.params;
   const { userId } = req.body;
@@ -324,13 +314,13 @@ app.post("/programs/:programId/like", async (req, res) => {
  
     res.json({ success: true, message: "Program sikeresen like-olva." });
   } catch (error) {
-    console.error("🔥 Hiba a like mentésekor:", error);
+    console.error("Hiba a like mentésekor:", error);
     res.status(500).json({ error: "Szerverhiba a like mentésekor." });
   }
 });
 
 
-// 🔹 Program elutasítása
+// Program elutasítása
 app.post('/programs/:id/dislike', async (req, res) => {
   const { id } = req.params;
   const { userId } = req.body;
@@ -349,7 +339,7 @@ app.post('/programs/:id/dislike', async (req, res) => {
 
 
 
-// 🔹 Összegzés
+// Összegzés
 app.get("/programs/liked", async (req, res) => {
   let { userId, roomId } = req.query;
   if (!userId && !roomId) {
@@ -387,7 +377,7 @@ app.get("/programs/liked", async (req, res) => {
     const [likedPrograms] = await req.db.execute(query, params);
     return res.json(likedPrograms);
   } catch (error) {
-    console.error("🔥 Hiba a kedvelt programok lekérésekor:", error);
+    console.error("Hiba a kedvelt programok lekérésekor:", error);
     res.status(500).json({ error: "Szerverhiba a kedvelt programok betöltésekor." });
   }
 });
@@ -443,7 +433,7 @@ app.get('/rooms/:roomCode/liked-programs', async (req, res) => {
 
     res.json(programs);
   } catch (err) {
-    console.error("❌ Hiba a liked-programs lekérdezésnél:", err);
+    console.error("Hiba a liked-programs lekérdezésnél:", err);
     res.status(500).json({ message: "Nem sikerült betölteni a kedvelt programokat." });
   }
 });
@@ -479,9 +469,9 @@ app.post("/api/users/login", async (req, res) => {
     }
 
     req.session.user = { id: user.UserID, email: user.Email };
-    res.json({ message: "✅ Sikeres bejelentkezés!", user: req.session.user });
+    res.json({ message: "Sikeres bejelentkezés!", user: req.session.user });
   } catch (error) {
-    console.error("🔥 Bejelentkezési hiba:", error.message);
+    console.error("Bejelentkezési hiba:", error.message);
     res.status(500).json({ error: "Szerverhiba!" });
   }
 });
@@ -497,7 +487,7 @@ app.get("/api/users/status", (req, res) => {
 // Kijelentkezés API
 app.post("/api/users/logout", (req, res) => {
   req.session.destroy(() => {
-    res.json({ message: "👋 Sikeres kijelentkezés!" });
+    res.json({ message: "Sikeres kijelentkezés!" });
   });
 });
 
@@ -559,11 +549,11 @@ app.get('/api/auth/status', (req, res) => {
 
 
 io.on("connection", (socket) => {
-  console.log("🟢 Egy felhasználó csatlakozott: " + socket.id);
+  console.log("Egy felhasználó csatlakozott: " + socket.id);
 
   socket.on("joinRoom", async (roomCode, userId) => {
     socket.join(roomCode);
-    console.log(`👥 Felhasználó (${userId}) csatlakozott a szobához: ${roomCode}`);
+    console.log(`Felhasználó (${userId}) csatlakozott a szobához: ${roomCode}`);
 
     try {
       const [roomResult] = await db.execute(
@@ -575,18 +565,18 @@ io.on("connection", (socket) => {
         await db.execute("DELETE FROM UserLikes WHERE UserID = ?", [userId]);
         await db.execute("DELETE FROM SwipeActions WHERE UserID = ?", [userId]);
 
-        console.log(`🗑️ Felhasználó (${userId}) korábbi lájkjai sikeresen törölve.`);
+        console.log(`Felhasználó (${userId}) korábbi lájkjai sikeresen törölve.`);
       } else {
-        console.log("⚠️ Nem található szoba ezzel a kóddal:", roomCode);
+        console.log("Nem található szoba ezzel a kóddal:", roomCode);
       }
     } catch (error) {
-      console.error("🔥 Hiba a lájkok törlése során:", error);
+      console.error("Hiba a lájkok törlése során:", error);
     }
   });
 });
 
 
-// ✅ RoomCode alapján RoomID visszaadása
+// RoomCode alapján RoomID visszaadása
 app.get("/rooms/getRoomId", async (req, res) => {
   const { roomCode } = req.query;
 
@@ -606,7 +596,7 @@ app.get("/rooms/getRoomId", async (req, res) => {
 
       res.json({ RoomID: rows[0].RoomID });
   } catch (error) {
-      console.error("🔥 Hiba a RoomID lekérdezésekor:", error.message);
+      console.error("Hiba a RoomID lekérdezésekor:", error.message);
       res.status(500).json({ error: "Szerverhiba történt." });
   }
 });
@@ -656,7 +646,7 @@ app.get('/rooms/:roomCode/programs', async (req, res) => {
 
     res.json(programs);
   } catch (error) {
-    console.error("🔥 Hiba a szobás programok lekérdezésekor:", error);
+    console.error("Hiba a szobás programok lekérdezésekor:", error);
     res.status(500).json({ error: "Hiba történt a szobához tartozó programok lekérdezésekor." });
   }
 });
@@ -679,7 +669,7 @@ app.post('/summary/choose', async (req, res) => {
 
     res.sendStatus(200);
   } catch (err) {
-    console.error("❌ Mentési hiba:", err);
+    console.error("Mentési hiba:", err);
     res.status(500).json({ message: 'Hiba a lájk mentésekor', error: err.message });
   }
 });
@@ -704,7 +694,7 @@ app.get('/rooms/:roomCode/creatorId', async (req, res) => {
     const creatorId = rows[0].CreatedByUserID;
     res.json({ creatorId });
   } catch (error) {
-    console.error('🔥 Hiba a létrehozó lekérdezésekor:', error.message);
+    console.error('Hiba a létrehozó lekérdezésekor:', error.message);
     res.status(500).json({ error: 'Szerverhiba történt.' });
   }
 });
@@ -737,7 +727,7 @@ app.get("/api/room/:roomId/summary", async (req, res) => {
 
       res.json(formattedResults);
   } catch (error) {
-      console.error("❌ Hiba az összegzés lekérésekor:", error);
+      console.error("Hiba az összegzés lekérésekor:", error);
       res.status(500).json({ error: "Nem sikerült lekérni az összegzést." });
   }
 });
@@ -771,7 +761,7 @@ app.post('/rooms/:roomCode/filters', async (req, res) => {
 
     res.json({ message: 'Szűrők sikeresen frissítve.' });
   } catch (error) {
-    console.error('🔥 Hiba a szűrők mentésekor:', error);
+    console.error('Hiba a szűrők mentésekor:', error);
     res.status(500).json({ error: 'Hiba a szűrők frissítése közben.' });
   }
 });
@@ -794,7 +784,7 @@ app.get('/rooms/:roomCode/filters', async (req, res) => {
 
     res.json(filters);
   } catch (error) {
-    console.error('🔥 Hiba a szűrők lekérésekor:', error);
+    console.error('Hiba a szűrők lekérésekor:', error);
     res.status(500).json({ error: 'Hiba a szűrők lekérése közben.' });
   }
 });
