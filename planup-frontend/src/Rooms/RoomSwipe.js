@@ -123,7 +123,7 @@ function RoomSwipe({ apiUrl }) {
         .then((res) => {
           if (res.data && res.data.userId) {
             console.log("Lekért userId:", res.data.userId);
-            setLocalUserId(res.data.userId); // <-- ez a helyes
+            setLocalUserId(res.data.userId); 
           } else {
             console.warn("Nem bejelentkezett felhasználó.");
           }
@@ -134,14 +134,11 @@ function RoomSwipe({ apiUrl }) {
     }
   }, [userId]);
   
-
-  console.log("🧪 RoomSwipe mentéshez userId:", userId);
-
   const handleSwipe = async (liked) => {
     const currentProgram = programs[currentIndex];
   
     const finalUserId = userId || localUserId;
-    console.log("🧩 Swipe mentéshez használt userId:", finalUserId);
+    console.log("Swipe mentéshez használt userId:", finalUserId);
   
     if (!finalUserId) {
       console.warn("userId még nem elérhető, mentés kihagyva.");
@@ -222,10 +219,10 @@ function RoomSwipe({ apiUrl }) {
 
       <div className="swipe-buttons">
         <button className="dislike-button" onClick={() => handleSwipe(false)}>
-          <FaTimes /> Nem
+          Nem tetszik
         </button>
         <button className="like-button" onClick={() => handleSwipe(true)}>
-          <FaCheck /> Igen
+          Tetszik
         </button>
       </div>
     </div>
