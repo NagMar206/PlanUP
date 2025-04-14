@@ -12,7 +12,7 @@ function Picker({ apiUrl, userId = null, roomCode = null }) {
   useEffect(() => {
     const fetchPrograms = async () => {
       if (!userId && !roomCode) {
-        console.error("❌ Nincs megadva sem userId, sem roomCode!");
+        console.error("Nincs megadva sem userId, sem roomCode!");
         return;
       }
 
@@ -28,7 +28,7 @@ function Picker({ apiUrl, userId = null, roomCode = null }) {
         if (res.data && res.data.length > 0) {
           setPrograms(res.data);
         } else {
-          console.warn("⚠️ Nincsenek elérhető programok.");
+          console.warn("Nincsenek elérhető programok.");
         }
       } catch (err) {
         console.error("Nem sikerült betölteni a programokat:", err);
