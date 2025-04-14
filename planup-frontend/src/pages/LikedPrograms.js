@@ -3,8 +3,7 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import "../Style/LikedPrograms.css"; // Új CSS fájl a gridhez
-import OnePick from "../components/OnePick";
-
+import Picker from "../components/Picker";
 function LikedPrograms({ apiUrl, userId }) {
   const [likedPrograms, setLikedPrograms] = useState([]);
   const [error, setError] = useState("");
@@ -94,7 +93,7 @@ function LikedPrograms({ apiUrl, userId }) {
 
       {}
       {likedPrograms.length > 0 ? (
-        <OnePick apiUrl={apiUrl} userId={validUserId} />
+        <Picker apiUrl={apiUrl} userId={validUserId} />
       ) : (
         <p className="no-programs-message">Lájkold a programokat, hogy pörgethess! 😊</p>
       )}

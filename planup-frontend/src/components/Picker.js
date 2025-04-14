@@ -1,27 +1,44 @@
-
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import "../Style/LikedPrograms.css";
 
-function OnePick({ apiUrl, userId }) {
+function Picker({ apiUrl, userId = null, roomCode = null }) {
   const [programs, setPrograms] = useState([]);
   const [isPicking, setIsPicking] = useState(false);
   const [displayedName, setDisplayedName] = useState("");
   const [selectedProgram, setSelectedProgram] = useState(null);
 
+  // Programok lekérése az API-ból
   useEffect(() => {
     const fetchPrograms = async () => {
+      if (!userId && !roomCode) {
+        console.error("❌ Nincs megadva sem userId, sem roomCode!");
+        return;
+      }
+
+      let endpoint;
+      if (userId) {
+        endpoint = `${apiUrl}/programs/liked?userId=${userId}`; // Felhasználói kedvencek
+      } else if (roomCode) {
+        endpoint = `${apiUrl}/rooms/${roomCode}/liked-programs`; // Szobai kedvencek
+      }
+
       try {
-        const res = await axios.get(`${apiUrl}/programs/liked?userId=${userId}`);
-        setPrograms(res.data);
+        const res = await axios.get(endpoint, { withCredentials: true });
+        if (res.data && res.data.length > 0) {
+          setPrograms(res.data);
+        } else {
+          console.warn("⚠️ Nincsenek elérhető programok.");
+        }
       } catch (err) {
         console.error("Nem sikerült betölteni a programokat:", err);
       }
     };
 
     fetchPrograms();
-  }, [apiUrl, userId]);
+  }, [apiUrl, userId, roomCode]);
 
+  // Véletlenszerű program kiválasztása
   const pickRandomProgram = () => {
     if (!programs.length || isPicking) return;
 
@@ -61,17 +78,17 @@ function OnePick({ apiUrl, userId }) {
   };
 
   return (
-    <div className="onepick-container">
-      <h2 className="onepick-title">🎯 Válassz nekem egy programot</h2>
-
+    <div className="pick-container">
+      <h2 className="pick-title">🎯 Véletlenszerű program kiválasztása</h2>
+  
       <div className="display-box">
         {isPicking ? <span>{displayedName}</span> : <span>Készen állsz?</span>}
       </div>
-
-      <button className="onepick-button" onClick={pickRandomProgram} disabled={isPicking}>
+  
+      <button className="pick-button" onClick={pickRandomProgram} disabled={isPicking}>
         {isPicking ? "Kiválasztás folyamatban..." : "🎲 Válassz programot"}
       </button>
-
+  
       {selectedProgram && (
         <div className="winner-card">
           <img
@@ -92,6 +109,7 @@ function OnePick({ apiUrl, userId }) {
       )}
     </div>
   );
+  
 }
 
-export default OnePick;
+export default Picker;

@@ -308,7 +308,8 @@
 
 /* === ONEPICK MODUL – RANDOM AJÁNLÓ === */
 
-.onepick-container {
+/* Picker modul konténer */
+.pick-container {
   margin-top: 60px;
   padding: 40px;
   text-align: center;
@@ -317,13 +318,15 @@
   color: white;
 }
 
-.onepick-title {
+/* Picker modul címe */
+.pick-title {
   font-size: 2.2rem;
   font-weight: bold;
   color: #00f9ff;
   margin-bottom: 30px;
 }
 
+/* Program megjelenítő doboz */
 .display-box {
   font-size: 1.5rem;
   padding: 16px 30px;
@@ -336,7 +339,8 @@
   color: #ff79c6;
 }
 
-.onepick-button {
+/* Picker gomb */
+.pick-button {
   background-color: #00f9ff;
   color: black;
   border: none;
@@ -346,10 +350,21 @@
   border-radius: 10px;
   cursor: pointer;
   transition: all 0.3s ease;
-  margin-bottom: 30px;
 }
 
-.onepick-button:hover {
+/* Hover állapot a gombhoz */
+.pick-button:hover {
   background-color: #1f6feb;
   color: white;
+}
+
+/* Kiválasztott program kártya */
+.winner-card {
+  margin-top: 30px;
+}
+
+.program-image {
+  max-width: 100%;
+  height: auto;
+  border-radius: 10px;
 }

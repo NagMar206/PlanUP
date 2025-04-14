@@ -13,7 +13,6 @@ function RoomSwipe({ apiUrl }) {
   const navigate = useNavigate();
   const { userId } = useRoom();
   const [localUserId, setLocalUserId] = useState(null);
-  const activeUserId = userId || localUserId;
   const [programs, setPrograms] = useState([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [error, setError] = useState("");
@@ -72,7 +71,7 @@ function RoomSwipe({ apiUrl }) {
         });
         setPrograms(res.data);
       } catch (err) {
-        console.error("❌ Nem sikerült lekérni a programokat:", err);
+        console.error("Nem sikerült lekérni a programokat:", err);
         setError("Hiba történt a programok betöltésekor.");
       } finally {
         setLoading(false);
@@ -105,14 +104,14 @@ function RoomSwipe({ apiUrl }) {
       axios.get(`${apiUrl}/api/auth/status`, { withCredentials: true })
         .then((res) => {
           if (res.data && res.data.userId) {
-            console.log("🎯 Lekért userId:", res.data.userId);
+            console.log("Lekért userId:", res.data.userId);
             setLocalUserId(res.data.userId);
           } else {
-            console.warn("⚠️ Nem bejelentkezett felhasználó.");
+            console.warn("Nem bejelentkezett felhasználó.");
           }
         })
         .catch((err) => {
-          console.error("❌ Nem sikerült lekérni a userID-t:", err);
+          console.error("Nem sikerült lekérni a userID-t:", err);
         });
     }
   }, [userId]);
@@ -123,14 +122,14 @@ function RoomSwipe({ apiUrl }) {
       axios.get(`${apiUrl}/api/auth/status`, { withCredentials: true })
         .then((res) => {
           if (res.data && res.data.userId) {
-            console.log("🎯 Lekért userId:", res.data.userId);
+            console.log("Lekért userId:", res.data.userId);
             setLocalUserId(res.data.userId); // <-- ez a helyes
           } else {
-            console.warn("⚠️ Nem bejelentkezett felhasználó.");
+            console.warn("Nem bejelentkezett felhasználó.");
           }
         })
         .catch((err) => {
-          console.error("❌ Nem sikerült lekérni a felhasználó adatait:", err);
+          console.error("Nem sikerült lekérni a felhasználó adatait:", err);
         });
     }
   }, [userId]);
@@ -145,7 +144,7 @@ function RoomSwipe({ apiUrl }) {
     console.log("🧩 Swipe mentéshez használt userId:", finalUserId);
   
     if (!finalUserId) {
-      console.warn("⛔️ userId még nem elérhető, mentés kihagyva.");
+      console.warn("userId még nem elérhető, mentés kihagyva.");
       return;
     }
   
@@ -157,7 +156,7 @@ function RoomSwipe({ apiUrl }) {
         liked,
       }, { withCredentials: true });
     } catch (err) {
-      console.error("❌ Mentési hiba:", err);
+      console.error("Mentési hiba:", err);
     }
   
     setCurrentIndex((prev) => prev + 1);

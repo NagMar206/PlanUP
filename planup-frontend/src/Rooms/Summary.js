@@ -2,19 +2,21 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { useLocation, useNavigate } from "react-router-dom";
 import "../Style/LikedPrograms.css";
+import Picker from "../components/Picker";
+
 
 function Summary({ apiUrl }) {
   const location = useLocation();
   const navigate = useNavigate();
   const [likedPrograms, setLikedPrograms] = useState([]);
   const [error, setError] = useState("");
+  const queryParams = new URLSearchParams(location.search);
+  const roomCode = queryParams.get("room")
 
   useEffect(() => {
-    const queryParams = new URLSearchParams(location.search);
-    const roomCode = queryParams.get("room");
-
+   
     if (!roomCode) {
-      setError("⚠️ Hiba: Nem található szobakód.");
+      setError("Hiba: Nem található szobakód.");
       return;
     }
 
@@ -27,7 +29,7 @@ function Summary({ apiUrl }) {
           setError("Nincsenek kedvelt programok ebben a szobában.");
         }
       } catch (err) {
-        console.error("❌ Hiba a szobás kedvelt programok lekérésekor:", err);
+        console.error(" Hiba a szobás kedvelt programok lekérésekor:", err);
         setError("Nem sikerült betölteni a kedvelt programokat.");
       }
     };
@@ -77,7 +79,11 @@ function Summary({ apiUrl }) {
           </div>
         ))}
       </div>
-
+      <div>
+      <h1>Összegzés</h1>
+      {/* RoomsPick komponens hozzáadása */}
+      {roomCode && <Picker apiUrl={apiUrl} roomCode={roomCode} />}
+    </div>
       <div className="button-container">
         <button onClick={handleBack} className="back-button">
           ⬅️ Vissza
