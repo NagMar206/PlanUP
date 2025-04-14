@@ -124,12 +124,45 @@ function RoomSwipe({ apiUrl }) {
         });
     }
   }, [userId]);
+<<<<<<< HEAD
 
   // Swipe művelet kezelése
   const handleSwipe = async (liked) => {
     const currentProgram = programs[currentIndex];
     if (!activeUserId || !currentProgram) return;
 
+=======
+  
+
+  useEffect(() => {
+    if (!userId) {
+      axios.get(`${apiUrl}/api/auth/status`, { withCredentials: true })
+        .then((res) => {
+          if (res.data && res.data.userId) {
+            console.log("Lekért userId:", res.data.userId);
+            setLocalUserId(res.data.userId); 
+          } else {
+            console.warn("Nem bejelentkezett felhasználó.");
+          }
+        })
+        .catch((err) => {
+          console.error("Nem sikerült lekérni a felhasználó adatait:", err);
+        });
+    }
+  }, [userId]);
+  
+  const handleSwipe = async (liked) => {
+    const currentProgram = programs[currentIndex];
+  
+    const finalUserId = userId || localUserId;
+    console.log("Swipe mentéshez használt userId:", finalUserId);
+  
+    if (!finalUserId) {
+      console.warn("userId még nem elérhető, mentés kihagyva.");
+      return;
+    }
+  
+>>>>>>> d02a9ed0dce7867b68a481c4c1b4cdeb25f932cf
     try {
       if (liked) {
         await axios.post(
@@ -228,10 +261,10 @@ function RoomSwipe({ apiUrl }) {
 
       <div className="swipe-buttons">
         <button className="dislike-button" onClick={() => handleSwipe(false)}>
-          <FaTimes /> Nem
+          Nem tetszik
         </button>
         <button className="like-button" onClick={() => handleSwipe(true)}>
-          <FaCheck /> Igen
+          Tetszik
         </button>
       </div>
     </div>
