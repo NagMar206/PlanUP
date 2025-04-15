@@ -539,3 +539,6 @@ app.get('/api/auth/status', (req, res) => {
     res.json({ loggedIn: true, userId: decoded.userId, isAdmin: decoded.isAdmin === 1 || decoded.isAdmin === true });
   });
 });
+
+// Export más fáljokhoz
+module.exports = { app, io };
