@@ -13,6 +13,12 @@
   border: 1px solid rgba(255, 255, 255, 0.06);
 }
 
+.welcome-message {
+  margin-bottom: 10px;
+  font-size: 1.1rem;
+}
+
+
 .profile-container::before {
   content: '';
   position: absolute;

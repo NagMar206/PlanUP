@@ -18,7 +18,9 @@ function Profile({ user, setUser }) {
   const welcomeMessages = [
     "Hagyd ránk a tervezést!",
     "Fedezd fel a legjobb programokat!",
-    "Kalandra fel, jó szórakozást!"
+    "Válogass több mint egy tucat program közül!",
+    "PlanUP: Tervezz velünk!",
+    "Sikerült programot választani?",
   ];
   
   const [welcomeMessage, setWelcomeMessage] = useState("");
