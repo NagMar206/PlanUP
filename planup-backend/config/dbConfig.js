@@ -5,7 +5,7 @@ const mysql = require('mysql2/promise');
     host: 'localhost', 
     user: 'root', 
     password: '', // lokális esetén nincs jelszó, hagyd üresen
-    database: 'mollev545', // Az adatbázis neve 
+    database: 'PlanUp', // Az adatbázis neve 
     port: 3307, // Ha a MySQL más porton fut, módosítsd
     waitForConnections: true,
     connectionLimit: 10,
