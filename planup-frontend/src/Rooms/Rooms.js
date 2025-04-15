@@ -1,3 +1,5 @@
+// ✅ MODOSÍTOTT Rooms.js – új funkciókkal adatbázis-módosítás nélkül
+
 import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
@@ -19,30 +21,35 @@ function Rooms({ apiUrl, userId }) {
     const [filterActive, setFilterActive] = useState(false);
     const [cities, setCities] = useState([]);
     const [swipeStarted, setSwipeStarted] = useState(false);
+    const [statusText, setStatusText] = useState("🟢 Várakozás");
 
     const navigate = useNavigate();
     const { setRoomId } = useRoom();
     const socket = useSocket();
-    const roomCodeRef = useRef(roomCode);
+    const roomCodeRef = useRef('');
 
     useEffect(() => {
         roomCodeRef.current = roomCode;
     }, [roomCode]);
 
     useEffect(() => {
-        if (!socket) return;
+        if (!socket || !roomCode) return;
+        socket.emit("checkSwipeStarted", roomCode, (started) => {
+            if (started) {
+                setSwipeStarted(true);
+                setStatusText("🟡 Válogatás folyamatban");
+            }
+        });
 
-        socket.on('receiveStartSwipe', ({ filters }) => {
-            setFilters(filters);
-            setFilterActive(true);
+        socket.on("swipeStarted", () => {
             setSwipeStarted(true);
-            alert(`A host a következő szűrőket állította be:\n- Időtartam: ${filters.duration}\n- Ár: ${filters.cost}\n- Város: ${filters.city}`);
+            setStatusText("🟡 Válogatás folyamatban");
         });
 
         return () => {
-            socket.off('receiveStartSwipe');
+            socket.off("swipeStarted");
         };
-    }, [socket]);
+    }, [socket, roomCode]);
 
     useEffect(() => {
         const fetchCities = async () => {
@@ -129,6 +136,7 @@ function Rooms({ apiUrl, userId }) {
             setIsInRoom(false);
             setIsRoomHost(false);
             setSwipeStarted(false);
+            setStatusText("🟢 Várakozás");
             setTimeout(() => setSuccessMessage(''), 3000);
         } catch (err) {
             setError('Nem sikerült kilépni a szobából.');
@@ -162,11 +170,9 @@ function Rooms({ apiUrl, userId }) {
     return (
         <div className="rooms-container">
             <h2 className="title">SZOBÁK</h2>
-            {error && <div className="error-message">{error}</div>}
-            <p className="rooms-description">
-                Hozz létre <span>szobát</span> barátaiddal, vagy <span>csatlakozz</span> meglévőhöz – és válogassatok együtt a legjobb programok közül!
-            </p>
+            <div className="room-status">{statusText}</div>
 
+            {error && <div className="error-message">{error}</div>}
             {successMessage && <div className="success-message">{successMessage}</div>}
 
             {!isInRoom && (
@@ -206,35 +212,29 @@ function Rooms({ apiUrl, userId }) {
                             : <li key="no-users">Nincs jelenleg másik felhasználó a szobában.</li>}
                     </ul>
 
-                    {isRoomHost ? (
-                        <>
-                            <FilterComponent
-                                filters={filters}
-                                setFilters={setFilters}
-                                filterActive={filterActive}
-                                setFilterActive={setFilterActive}
-                                cities={cities}
-                            />
-                            <button
-                                className='swipe-button'
-                                onClick={() => {
-                                    socket.emit('startSwipe', { roomCode, filters });
-                                    setSwipeStarted(true);
-                                    navigate(`/roomswipe/${roomCode}`);
-                                }}
-                            >
-                                Válogass a programok közül
-                            </button>
-                        </>
-                    ) : (
-                        swipeStarted ? (
-                            <button className='swipe-button' onClick={() => navigate(`/roomswipe/${roomCode}`)}>
-                                Válogass a programok közül
-                            </button>
-                        ) : (
-                            <p>⏳ Várj a hostra, amíg elindítja a válogatást!</p>
-                        )
+                    {isRoomHost && (
+                        <FilterComponent
+                            filters={filters}
+                            setFilters={setFilters}
+                            filterActive={filterActive}
+                            setFilterActive={setFilterActive}
+                            cities={cities}
+                        />
                     )}
+
+                    <button
+                        className='swipe-button'
+                        onClick={() => {
+                            if (isRoomHost && !swipeStarted) {
+                                socket.emit("startSwipe", { roomCode });
+                                setSwipeStarted(true);
+                                setStatusText("🟡 Válogatás folyamatban");
+                            }
+                            navigate(`/roomswipe/${roomCode}`);
+                        }}
+                    >
+                        {swipeStarted ? "🔁 Újrakezdés" : "🎯 Válogass a programok közül"}
+                    </button>
 
                     <button onClick={leaveRoom} className="leave-room-button">Kilépés a szobából</button>
                 </div>

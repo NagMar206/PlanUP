@@ -1,3 +1,5 @@
+// ✅ MODOSÍTOTT RoomSwipe.js – UX tuning + új funkciók
+
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { useParams, useNavigate } from "react-router-dom";
@@ -23,6 +25,7 @@ function RoomSwipe({ apiUrl }) {
   const [filterActive, setFilterActive] = useState(false);
   const [cities, setCities] = useState([]);
 
+  const socket = useSocket();
 
   useEffect(() => {
     const fetchCities = async () => {
@@ -80,20 +83,15 @@ function RoomSwipe({ apiUrl }) {
     fetchPrograms();
   }, [apiUrl, roomCode, filterUpdated]);
 
-  const socket = useSocket();
-
   useEffect(() => {
     if (!socket || !roomCode || !userId) return;
 
-    // Csatlakozás a szobához
     socket.emit("joinRoom", roomCode, userId);
 
-    // Frissítés ha változik a szűrő
     socket.on("filterUpdate", () => {
       setFilterUpdated(prev => !prev);
     });
 
-    // Takarítás lecsatlakozáskor
     return () => {
       socket.off("filterUpdate");
     };
@@ -104,10 +102,7 @@ function RoomSwipe({ apiUrl }) {
       axios.get(`${apiUrl}/api/auth/status`, { withCredentials: true })
         .then((res) => {
           if (res.data && res.data.userId) {
-            console.log("Lekért userId:", res.data.userId);
             setLocalUserId(res.data.userId);
-          } else {
-            console.warn("Nem bejelentkezett felhasználó.");
           }
         })
         .catch((err) => {
@@ -116,34 +111,11 @@ function RoomSwipe({ apiUrl }) {
     }
   }, [userId]);
 
-
-  useEffect(() => {
-    if (!userId) {
-      axios.get(`${apiUrl}/api/auth/status`, { withCredentials: true })
-        .then((res) => {
-          if (res.data && res.data.userId) {
-            console.log("Lekért userId:", res.data.userId);
-            setLocalUserId(res.data.userId);
-          } else {
-            console.warn("Nem bejelentkezett felhasználó.");
-          }
-        })
-        .catch((err) => {
-          console.error("Nem sikerült lekérni a felhasználó adatait:", err);
-        });
-    }
-  }, [userId]);
-
   const handleSwipe = async (liked) => {
     const currentProgram = programs[currentIndex];
-
     const finalUserId = userId || localUserId;
-    console.log("Swipe mentéshez használt userId:", finalUserId);
 
-    if (!finalUserId) {
-      console.warn("userId még nem elérhető, mentés kihagyva.");
-      return;
-    }
+    if (!finalUserId) return;
 
     try {
       await axios.post(`${apiUrl}/summary/choose`, {
@@ -159,19 +131,18 @@ function RoomSwipe({ apiUrl }) {
     setCurrentIndex((prev) => prev + 1);
   };
 
-
-
   const handleEndSwipe = () => {
     navigate(`/summary?room=${roomCode}`);
   };
 
   if (loading) return <div className="loading">Betöltés...</div>;
   if (error) return <div className="error-message">{error}</div>;
+
   if (currentIndex >= programs.length) {
     return (
       <div className="program-swipe-container">
         <div className="program-card planup-end-card">
-          <img src={logo} className="planup-logo" />
+          <img src={logo} className="planup-logo" alt="PlanUp logó" />
           <h2>🎉 Kész vagy!</h2>
           <p>Minden programot értékeltél ebben a szobában.</p>
           <p>Kattints az összegzéshez és nézd meg, mik a közös kedvencek!</p>
@@ -182,7 +153,6 @@ function RoomSwipe({ apiUrl }) {
       </div>
     );
   }
-
 
   const program = programs[currentIndex];
 
@@ -210,20 +180,20 @@ function RoomSwipe({ apiUrl }) {
         <p className="description">{program.Description}</p>
         <p>🌍  <span className="highlighted">{program.CityName}</span></p>
         <p>📍  <span className="highlighted">{program.Location}</span></p>
-        <p>💰  <span className="highlighted">{program.Cost === "paid" ? "Fizetős" : "Ingyenes"}</span> </p>
+        <p>💰  <span className="highlighted">{program.Cost === "paid" ? "Fizetős" : "Ingyenes"}</span></p>
         <p>⏳ <span className="highlighted">{
           program.Duration === 1 ? "Fél napos" :
-            program.Duration === 2 ? "Egész napos" :
-              "Hétvégés"
-        }</span> </p>
+          program.Duration === 2 ? "Egész napos" :
+          "Hétvégés"
+        }</span></p>
       </div>
 
       <div className="swipe-buttons">
-        <button className="dislike-button" onClick={() => handleSwipe(false)}>
-          Nem tetszik
+        <button className="dislike-button animate-dislike" onClick={() => handleSwipe(false)}>
+          <FaTimes /> Nem tetszik
         </button>
-        <button className="like-button" onClick={() => handleSwipe(true)}>
-          Tetszik
+        <button className="like-button animate-like" onClick={() => handleSwipe(true)}>
+          <FaCheck /> Tetszik
         </button>
       </div>
     </div>
