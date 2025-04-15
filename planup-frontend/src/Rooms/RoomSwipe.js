@@ -79,20 +79,20 @@ function RoomSwipe({ apiUrl }) {
     };
     fetchPrograms();
   }, [apiUrl, roomCode, filterUpdated]);
-  
+
   const socket = useSocket();
 
   useEffect(() => {
     if (!socket || !roomCode || !userId) return;
-  
+
     // Csatlakozás a szobához
     socket.emit("joinRoom", roomCode, userId);
-  
+
     // Frissítés ha változik a szűrő
     socket.on("filterUpdate", () => {
       setFilterUpdated(prev => !prev);
     });
-  
+
     // Takarítás lecsatlakozáskor
     return () => {
       socket.off("filterUpdate");
@@ -115,7 +115,7 @@ function RoomSwipe({ apiUrl }) {
         });
     }
   }, [userId]);
-  
+
 
   useEffect(() => {
     if (!userId) {
@@ -123,7 +123,7 @@ function RoomSwipe({ apiUrl }) {
         .then((res) => {
           if (res.data && res.data.userId) {
             console.log("Lekért userId:", res.data.userId);
-            setLocalUserId(res.data.userId); 
+            setLocalUserId(res.data.userId);
           } else {
             console.warn("Nem bejelentkezett felhasználó.");
           }
@@ -133,18 +133,18 @@ function RoomSwipe({ apiUrl }) {
         });
     }
   }, [userId]);
-  
+
   const handleSwipe = async (liked) => {
     const currentProgram = programs[currentIndex];
-  
+
     const finalUserId = userId || localUserId;
     console.log("Swipe mentéshez használt userId:", finalUserId);
-  
+
     if (!finalUserId) {
       console.warn("userId még nem elérhető, mentés kihagyva.");
       return;
     }
-  
+
     try {
       await axios.post(`${apiUrl}/summary/choose`, {
         roomCode,
@@ -155,11 +155,11 @@ function RoomSwipe({ apiUrl }) {
     } catch (err) {
       console.error("Mentési hiba:", err);
     }
-  
+
     setCurrentIndex((prev) => prev + 1);
   };
-  
-  
+
+
 
   const handleEndSwipe = () => {
     navigate(`/summary?room=${roomCode}`);
@@ -182,7 +182,7 @@ function RoomSwipe({ apiUrl }) {
       </div>
     );
   }
-  
+
 
   const program = programs[currentIndex];
 
@@ -208,13 +208,14 @@ function RoomSwipe({ apiUrl }) {
         <img src={`http://localhost:3001/images/${program.Image}`} alt={program.Name} />
         <h2>{program.Name}</h2>
         <p className="description">{program.Description}</p>
-        <p>📍 {program.Location} – {program.CityName}</p>
-        <p>💰 {program.Cost === "paid" ? "Fizetős" : "Ingyenes"}</p>
-        <p>⏳ {
+        <p>🌍  <span className="highlighted">{program.CityName}</span></p>
+        <p>📍  <span className="highlighted">{program.Location}</span></p>
+        <p>💰  <span className="highlighted">{program.Cost === "paid" ? "Fizetős" : "Ingyenes"}</span> </p>
+        <p>⏳ <span className="highlighted">{
           program.Duration === 1 ? "Fél napos" :
-          program.Duration === 2 ? "Egész napos" :
-          "Hétvégés"
-        }</p>
+            program.Duration === 2 ? "Egész napos" :
+              "Hétvégés"
+        }</span> </p>
       </div>
 
       <div className="swipe-buttons">

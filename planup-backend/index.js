@@ -41,6 +41,25 @@ server.listen(3001, () => {
   console.log('✅ Szerver fut a 3001-es porton');
 });
 
+io.on("connection", (socket) => {
+  console.log("🧩 Új socket kapcsolat:", socket.id);
+
+  socket.on("joinRoom", (roomCode, userId) => {
+    socket.join(roomCode);
+    console.log(`👥 Felhasználó ${userId} belépett a(z) ${roomCode} szobába.`);
+  });
+
+  socket.on("startSwipe", ({ roomCode, filters }) => {
+    console.log(`🚀 Host elindította a válogatást szobában: ${roomCode}`);
+    socket.to(roomCode).emit("receiveStartSwipe", { filters });
+  });
+
+  socket.on("disconnect", () => {
+    console.log("❌ Socket kapcsolat megszakadt:", socket.id);
+  });
+});
+
+
 // Middleware-ek
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));

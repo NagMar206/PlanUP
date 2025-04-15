@@ -101,6 +101,7 @@ body {
   margin-bottom: 24px;
 }
 
+.swipe-button,
 .create-room-button,
 .join-room-button,
 .refresh-button,
@@ -120,7 +121,7 @@ body {
 .leave-room-button {
   background: linear-gradient(135deg, #ff416c, #ff4b2b);
 }
-
+.swipe-button:hover,
 .create-room-button:hover,
 .join-room-button:hover,
 .refresh-button:hover,

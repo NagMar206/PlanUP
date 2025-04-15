@@ -19,7 +19,7 @@ function ProgramSwipe({ apiUrl, userId }) {
   const navigate = useNavigate();
   const socket = useSocket();
   const [isHost, setIsHost] = useState(false);
-  
+
 
   const magyarIdotartam = {
     half_day: "Fél napos",
@@ -138,42 +138,42 @@ function ProgramSwipe({ apiUrl, userId }) {
         });
     }
   }, [userId]);
-  
 
 
- // HOST ellenőrzés:
-useEffect(() => {
-  if (roomId) {
-    axios.get(`${apiUrl}/rooms/${roomId}/users`, { withCredentials: true })
-      .then(res => {
-        const creatorId = res.data.creatorId;
-        setIsHost(creatorId === userId);
-      })
-      .catch(err => {
-        console.error("Nem sikerült lekérni a hostot:", err);
-        setIsHost(false);
-      });
-  } else {
-    setIsHost(false); // FONTOS: ha nincs roomId, reseteljük az isHost állapotot!
-  }
-}, [roomId, userId]);
 
-// Filterek lekérése, ha nem host vagy, de szobában vagy
-useEffect(() => {
-  if (!isHost && roomId) {
-    axios.get(`${apiUrl}/rooms/${roomId}/filters`, { withCredentials: true })
-      .then((res) => {
-        if(res.data) {
-          setFilters(res.data);
-          setFilterActive(true);
-        }
-      })
-      .catch(err => console.error("Nem sikerült lekérni a szűrőket:", err));
-  } else if (!roomId) {
-    setFilters({ duration: "", cost: "", city: "" }); // reseteld a filtereket ha nem vagy szobában
-    setFilterActive(false);
-  }
-}, [roomId, isHost]);
+  // HOST ellenőrzés:
+  useEffect(() => {
+    if (roomId) {
+      axios.get(`${apiUrl}/rooms/${roomId}/users`, { withCredentials: true })
+        .then(res => {
+          const creatorId = res.data.creatorId;
+          setIsHost(creatorId === userId);
+        })
+        .catch(err => {
+          console.error("Nem sikerült lekérni a hostot:", err);
+          setIsHost(false);
+        });
+    } else {
+      setIsHost(false); // FONTOS: ha nincs roomId, reseteljük az isHost állapotot!
+    }
+  }, [roomId, userId]);
+
+  // Filterek lekérése, ha nem host vagy, de szobában vagy
+  useEffect(() => {
+    if (!isHost && roomId) {
+      axios.get(`${apiUrl}/rooms/${roomId}/filters`, { withCredentials: true })
+        .then((res) => {
+          if (res.data) {
+            setFilters(res.data);
+            setFilterActive(true);
+          }
+        })
+        .catch(err => console.error("Nem sikerült lekérni a szűrőket:", err));
+    } else if (!roomId) {
+      setFilters({ duration: "", cost: "", city: "" }); // reseteld a filtereket ha nem vagy szobában
+      setFilterActive(false);
+    }
+  }, [roomId, isHost]);
 
 
   const handleEndSwipe = () => {
@@ -204,9 +204,9 @@ useEffect(() => {
         />
       )}
 
-  
+
       {error && <div className="error-message">{error}</div>}
-  
+
       {!program && (
         <div className="program-card no-program-card">
           <img src={logo} className="planup-logo" />
@@ -219,26 +219,26 @@ useEffect(() => {
           </div>
         </div>
       )}
-  
+
       {program && (
         <div className="program-card">
           <img src={`http://localhost:3001/images/${program.Image}`} alt={program.Name} className="program-image" />
           <h2>{program.Name}</h2>
           <p className="description">{program.Description}</p>
-          <p>🌍 Város: <span className="highlighted">{program.CityName}</span></p>
-          <p>📍 Helyszín: <span className="highlighted">{program.Location}</span></p>
-          <p>⏳ Időtartam: <span className="highlighted">{magyarIdotartam[program.Duration] || "Ismeretlen időtartam"}</span></p>
-          <p>💰 Költség: <span className="highlighted">{magyarKoltseg[program.Cost] || "Ismeretlen"}</span></p>
+          <p>🌍 <span className="highlighted">{program.CityName}</span></p>
+          <p>📍  <span className="highlighted">{program.Location}</span></p>
+          <p>⏳  <span className="highlighted">{magyarIdotartam[program.Duration] || "Ismeretlen időtartam"}</span></p>
+          <p>💰  <span className="highlighted">{magyarKoltseg[program.Cost] || "Ismeretlen"}</span></p>
         </div>
       )}
-  
+
       <div className="swipe-buttons">
         <button className="dislike-button" onClick={() => handleSwipe("dislike")}>Nem tetszik</button>
         <button className="like-button" onClick={() => handleSwipe("like")}>Tetszik</button>
       </div>
     </div>
   );
-  
+
 }
 
 export default ProgramSwipe;

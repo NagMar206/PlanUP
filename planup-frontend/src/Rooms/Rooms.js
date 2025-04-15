@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import '../Style/Rooms.css';
@@ -26,7 +26,18 @@ function Rooms({ apiUrl, userId }) {
     useEffect(() => {
         if (!socket) return;
         console.log("✅ Socket.io kapcsolat aktív Rooms.js-ben");
-    }, [socket]);
+
+        socket.on('receiveStartSwipe', ({ filters }) => {
+            setFilters(filters);
+            setFilterActive(true);
+            alert(`A host a következő szűrőket állította be:\n- Időtartam: ${filters.duration}\n- Ár: ${filters.cost}\n- Város: ${filters.city}`);
+            navigate(`/roomswipe/${roomCode}`);
+        });
+
+        return () => {
+            socket.off('receiveStartSwipe');
+        };
+    }, [socket, navigate, roomCode]);
 
     useEffect(() => {
         const fetchCities = async () => {
@@ -123,7 +134,9 @@ function Rooms({ apiUrl, userId }) {
     const fetchRoomUsers = async (roomCode) => {
         try {
             const response = await axios.get(`${apiUrl}/rooms/${roomCode}/users`, { withCredentials: true });
-            const uniqueUsers = Array.isArray(response.data.users) ? [...new Map(response.data.users.map(user => [user.UserID, user])).values()] : [];
+            const uniqueUsers = Array.isArray(response.data.users)
+                ? [...new Map(response.data.users.map(user => [user.UserID, user])).values()]
+                : [];
             setRoomUsers(uniqueUsers);
             setRoomCreator(response.data.creator || 'Ismeretlen felhasználó');
             socket.emit('refreshUsers', roomCode);
@@ -158,7 +171,13 @@ function Rooms({ apiUrl, userId }) {
             )}
             {!isInRoom && (
                 <div className="join-room">
-                    <input type="text" value={roomCode} onChange={(e) => setRoomCode(e.target.value)} placeholder="Szobakód beírása" className="room-input" />
+                    <input
+                        type="text"
+                        value={roomCode}
+                        onChange={(e) => setRoomCode(e.target.value)}
+                        placeholder="Szobakód beírása"
+                        className="room-input"
+                    />
                     <button onClick={joinRoom} className="join-room-button">Csatlakozás</button>
                 </div>
             )}
@@ -177,26 +196,39 @@ function Rooms({ apiUrl, userId }) {
                     <p><strong>Szoba létrehozója:</strong> {roomCreator || 'Ismeretlen felhasználó'}</p>
                     <button className="refresh-button" onClick={() => fetchRoomUsers(roomCode)}>🔄 Lista frissítése</button>
                     <ul>
-                        {roomUsers.length > 0 ? roomUsers.map((user, index) => (
-                            <li key={user.UserID || index}>{user.Username}</li>
-                        )) : <li key="no-users">Nincs jelenleg másik felhasználó a szobában.</li>}
+                        {roomUsers.length > 0
+                            ? roomUsers.map((user, index) => (
+                                <li key={user.UserID || index}>{user.Username}</li>
+                            ))
+                            : <li key="no-users">Nincs jelenleg másik felhasználó a szobában.</li>}
                     </ul>
 
                     {isRoomHost ? (
                         <>
-                            <FilterComponent 
+                            <FilterComponent
                                 filters={filters}
                                 setFilters={setFilters}
                                 filterActive={filterActive}
                                 setFilterActive={setFilterActive}
                                 cities={cities}
                             />
-                            <button onClick={() => navigate(`/roomswipe/${roomCode}`)}>
+                            <button
+                                className='swipe-button'
+                                onClick={() => {
+                                    socket.emit('startSwipe', { roomCode, filters });
+                                    navigate(`/roomswipe/${roomCode}`);
+                                }}
+                            >
                                 Válogass a programok közül
                             </button>
                         </>
                     ) : (
-                        <p>⏳ Várj a hostra, amíg elindítja a válogatást!</p>
+                        <button
+                            className="swipe-button"
+                            onClick={() => navigate(`/roomswipe/${roomCode}`)}
+                        >
+                            Válogass a programok közül
+                        </button>
                     )}
 
                     <button onClick={leaveRoom} className="leave-room-button">Kilépés a szobából</button>
