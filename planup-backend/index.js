@@ -41,26 +41,6 @@ server.listen(3001, () => {
   console.log('✅ Szerver fut a 3001-es porton');
 });
 
-io.on("connection", (socket) => {
-  console.log("🧩 Socket kapcsolódott:", socket.id);
-
-  socket.on("joinRoom", (roomCode, userId) => {
-    socket.join(roomCode);
-    console.log(`👥 Felhasználó ${userId} belépett a szobába: ${roomCode}`);
-  });
-
-  socket.on("startSwipe", ({ roomCode, filters }) => {
-    console.log("📢 startSwipe event fogadva. Szórás a szobára:", roomCode);
-    socket.to(roomCode).emit("receiveStartSwipe", { filters });
-  });
-
-
-  socket.on("disconnect", () => {
-    console.log("❌ Socket kapcsolat megszakadt:", socket.id);
-  });
-});
-
-
 // Middleware-ek
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -540,6 +520,3 @@ app.get('/api/auth/status', (req, res) => {
     res.json({ loggedIn: true, userId: decoded.userId, isAdmin: decoded.isAdmin === 1 || decoded.isAdmin === true });
   });
 });
-
-// Export más fáljokhoz
-module.exports = { app, io };
