@@ -18,14 +18,30 @@ function Rooms({ apiUrl, userId }) {
     const [filters, setFilters] = useState({ duration: '', cost: '', city: '' });
     const [filterActive, setFilterActive] = useState(false);
     const [cities, setCities] = useState([]);
+    const [swipeStarted, setSwipeStarted] = useState(false);
 
     const navigate = useNavigate();
     const { setRoomId } = useRoom();
     const socket = useSocket();
+    const roomCodeRef = useRef(roomCode);
+
+    useEffect(() => {
+        roomCodeRef.current = roomCode;
+    }, [roomCode]);
 
     useEffect(() => {
         if (!socket) return;
-        console.log("✅ Socket.io kapcsolat aktív Rooms.js-ben");
+
+        socket.on('receiveStartSwipe', ({ filters }) => {
+            setFilters(filters);
+            setFilterActive(true);
+            setSwipeStarted(true);
+            alert(`A host a következő szűrőket állította be:\n- Időtartam: ${filters.duration}\n- Ár: ${filters.cost}\n- Város: ${filters.city}`);
+        });
+
+        return () => {
+            socket.off('receiveStartSwipe');
+        };
     }, [socket]);
 
     useEffect(() => {
@@ -47,9 +63,8 @@ function Rooms({ apiUrl, userId }) {
                 if (response.data.roomCode) {
                     setRoomCode(response.data.roomCode);
                     fetchRoomUsers(response.data.roomCode);
-                    checkReadyStatus(response.data.roomCode);
                     setIsInRoom(true);
-                    socket.emit('joinRoom', response.data.roomCode);
+                    socket.emit('joinRoom', response.data.roomCode, userId);
 
                     const creatorRes = await axios.get(`${apiUrl}/rooms/${response.data.roomCode}/creatorId`);
                     if (creatorRes.data.creatorId === userId) {
@@ -98,7 +113,6 @@ function Rooms({ apiUrl, userId }) {
             setIsInRoom(true);
             socket.emit('joinRoom', response.data.roomCode, userId);
             fetchRoomUsers(roomCode);
-            checkReadyStatus(roomCode);
             setTimeout(() => setSuccessMessage(''), 3000);
         } catch (err) {
             setError('Nem sikerült csatlakozni a szobához.');
@@ -114,6 +128,7 @@ function Rooms({ apiUrl, userId }) {
             setRoomCode('');
             setIsInRoom(false);
             setIsRoomHost(false);
+            setSwipeStarted(false);
             setTimeout(() => setSuccessMessage(''), 3000);
         } catch (err) {
             setError('Nem sikerült kilépni a szobából.');
@@ -123,7 +138,9 @@ function Rooms({ apiUrl, userId }) {
     const fetchRoomUsers = async (roomCode) => {
         try {
             const response = await axios.get(`${apiUrl}/rooms/${roomCode}/users`, { withCredentials: true });
-            const uniqueUsers = Array.isArray(response.data.users) ? [...new Map(response.data.users.map(user => [user.UserID, user])).values()] : [];
+            const uniqueUsers = Array.isArray(response.data.users)
+                ? [...new Map(response.data.users.map(user => [user.UserID, user])).values()]
+                : [];
             setRoomUsers(uniqueUsers);
             setRoomCreator(response.data.creator || 'Ismeretlen felhasználó');
             socket.emit('refreshUsers', roomCode);
@@ -151,25 +168,30 @@ function Rooms({ apiUrl, userId }) {
             </p>
 
             {successMessage && <div className="success-message">{successMessage}</div>}
+
             {!isInRoom && (
-                <div className="create-room">
-                    <button onClick={createRoom} className="create-room-button">Szoba létrehozása</button>
-                </div>
+                <>
+                    <div className="create-room">
+                        <button onClick={createRoom} className="create-room-button">Szoba létrehozása</button>
+                    </div>
+                    <div className="join-room">
+                        <input
+                            type="text"
+                            value={roomCode}
+                            onChange={(e) => setRoomCode(e.target.value)}
+                            placeholder="Szobakód beírása"
+                            className="room-input"
+                        />
+                        <button onClick={joinRoom} className="join-room-button">Csatlakozás</button>
+                    </div>
+                </>
             )}
-            {!isInRoom && (
-                <div className="join-room">
-                    <input type="text" value={roomCode} onChange={(e) => setRoomCode(e.target.value)} placeholder="Szobakód beírása" className="room-input" />
-                    <button onClick={joinRoom} className="join-room-button">Csatlakozás</button>
-                </div>
-            )}
+
             {isInRoom && (
                 <div className="room-users">
                     <h3>Szobában lévő felhasználók:</h3>
                     <div className="room-info">
-                        <button
-                            className="room-code-button"
-                            onClick={() => copyToClipboard(roomCode)}
-                        >
+                        <button className="room-code-button" onClick={() => copyToClipboard(roomCode)}>
                             Szobakód: {roomCode}
                         </button>
                         {isCopied && <span className="copied-message">Másolva!</span>}
@@ -177,26 +199,41 @@ function Rooms({ apiUrl, userId }) {
                     <p><strong>Szoba létrehozója:</strong> {roomCreator || 'Ismeretlen felhasználó'}</p>
                     <button className="refresh-button" onClick={() => fetchRoomUsers(roomCode)}>🔄 Lista frissítése</button>
                     <ul>
-                        {roomUsers.length > 0 ? roomUsers.map((user, index) => (
-                            <li key={user.UserID || index}>{user.Username}</li>
-                        )) : <li key="no-users">Nincs jelenleg másik felhasználó a szobában.</li>}
+                        {roomUsers.length > 0
+                            ? roomUsers.map((user, index) => (
+                                <li key={user.UserID || index}>{user.Username}</li>
+                            ))
+                            : <li key="no-users">Nincs jelenleg másik felhasználó a szobában.</li>}
                     </ul>
 
                     {isRoomHost ? (
                         <>
-                            <FilterComponent 
+                            <FilterComponent
                                 filters={filters}
                                 setFilters={setFilters}
                                 filterActive={filterActive}
                                 setFilterActive={setFilterActive}
                                 cities={cities}
                             />
-                            <button onClick={() => navigate(`/roomswipe/${roomCode}`)}>
+                            <button
+                                className='swipe-button'
+                                onClick={() => {
+                                    socket.emit('startSwipe', { roomCode, filters });
+                                    setSwipeStarted(true);
+                                    navigate(`/roomswipe/${roomCode}`);
+                                }}
+                            >
                                 Válogass a programok közül
                             </button>
                         </>
                     ) : (
-                        <p>⏳ Várj a hostra, amíg elindítja a válogatást!</p>
+                        swipeStarted ? (
+                            <button className='swipe-button' onClick={() => navigate(`/roomswipe/${roomCode}`)}>
+                                Válogass a programok közül
+                            </button>
+                        ) : (
+                            <p>⏳ Várj a hostra, amíg elindítja a válogatást!</p>
+                        )
                     )}
 
                     <button onClick={leaveRoom} className="leave-room-button">Kilépés a szobából</button>
