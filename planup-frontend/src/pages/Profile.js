@@ -15,6 +15,17 @@ function Profile({ user, setUser }) {
   const navigate = useNavigate();
   const [showModal, setShowModal] = useState(false);
 
+  const welcomeMessages = [
+    "Hagyd ránk a tervezést!",
+    "Fedezd fel a legjobb programokat!",
+    "Válogass több mint egy tucat program közül!",
+    "PlanUP: Tervezz velünk!",
+    "Sikerült programot választani?",
+  ];
+  
+  const [welcomeMessage, setWelcomeMessage] = useState("");
+  
+  
 
   useEffect(() => {
     if (!user) return;
@@ -24,6 +35,10 @@ function Profile({ user, setUser }) {
         setUsername(response.data.username);
         setIsAdmin(response.data.isAdmin || false); // Ellenőrizzük, hogy admin-e
         setLoading(false);
+        const randomMessage =
+  welcomeMessages[Math.floor(Math.random() * welcomeMessages.length)];
+setWelcomeMessage(randomMessage);
+
       })
       .catch((error) => {
         console.error("Hiba a profil lekérésekor:", error);
@@ -110,15 +125,17 @@ function Profile({ user, setUser }) {
   return (
     <div className="profile-container">
       <h2><FaUser /> Profil</h2>
+      {username && <p className="welcome-message">👋 {welcomeMessage}</p>}
+
       {loading ? (
         <p className="loading"><FaSpinner className="spinner" /> Betöltés...</p>
       ) : username ? (
         <>
           <div className="profile-card">
-            <p><strong><FaUser /> Felhasználónév:</strong> {username}</p>
+            <p><FaUser /> Üdvözlünk <strong>{username}</strong></p>
           </div>
           <div className="profile-actions">
-            <input type="text" placeholder="Új név" value={newName} onChange={(e) => setNewName(e.target.value)} />
+            <input type="text" placeholder="Felhasználó név megváltozatása" value={newName} onChange={(e) => setNewName(e.target.value)} />
             <button onClick={handleUpdateName} className="update-btn"><FaEdit /> Név frissítése</button>
           </div>
           <h3><FaLock /> Jelszó módosítása</h3>
@@ -128,13 +145,16 @@ function Profile({ user, setUser }) {
             <button onClick={handleChangePassword} className="password-btn"><FaLock /> Jelszó frissítése</button>
           </div>
           <div className="profile-actions">
-            <button className="logout-btn" onClick={handleLogout}><FaSignOutAlt /> Kijelentkezés</button>
-            {isAdmin && (
-              <button className="admin-btn" onClick={navigateToAdmin}>
-                <FaShieldAlt /> Admin felület
+              {isAdmin && (
+                <button className="admin-btn" onClick={navigateToAdmin}>
+                  <FaShieldAlt /> Admin felület
+                </button>
+              )}
+              <button className="logout-btn" onClick={handleLogout}>
+                <FaSignOutAlt /> Kijelentkezés
               </button>
-            )}
-          </div>
+            </div>
+
         </>
       ) : (
         <p>⚠️ Nem található felhasználói adat.</p>

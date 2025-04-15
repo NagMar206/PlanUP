@@ -13,6 +13,12 @@
   border: 1px solid rgba(255, 255, 255, 0.06);
 }
 
+.welcome-message {
+  margin-bottom: 10px;
+  font-size: 1.1rem;
+}
+
+
 .profile-container::before {
   content: '';
   position: absolute;
@@ -35,10 +41,12 @@
   margin-bottom: 24px;
   font-weight: 900;
   background: linear-gradient(to right, #00f9ff, #ff79c6);
-  -webkit-background-clip: text;
+  background-clip: text;               
+  -webkit-background-clip: text;       
   -webkit-text-fill-color: transparent;
   animation: popFade 1.2s ease-out;
 }
+
 
 /* Input mezők */
 .profile-actions input {
@@ -62,6 +70,19 @@
   outline: none;
   box-shadow: 0 0 15px #00f9ff;
 }
+
+.profile-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px; /* Ez adja a gombok és mezők közti távolságot */
+  margin-top: 16px;
+}
+
+.profile-actions + h3 {
+  margin-top: 24px;
+}
+
 
 /* Gombok */
 .update-btn, .password-btn, .logout-btn, .admin-btn {
