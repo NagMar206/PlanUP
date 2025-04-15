@@ -42,17 +42,18 @@ server.listen(3001, () => {
 });
 
 io.on("connection", (socket) => {
-  console.log("🧩 Új socket kapcsolat:", socket.id);
+  console.log("🧩 Socket kapcsolódott:", socket.id);
 
   socket.on("joinRoom", (roomCode, userId) => {
     socket.join(roomCode);
-    console.log(`👥 Felhasználó ${userId} belépett a(z) ${roomCode} szobába.`);
+    console.log(`👥 Felhasználó ${userId} belépett a szobába: ${roomCode}`);
   });
 
   socket.on("startSwipe", ({ roomCode, filters }) => {
-    console.log(`🚀 Host elindította a válogatást szobában: ${roomCode}`);
+    console.log("📢 startSwipe event fogadva. Szórás a szobára:", roomCode);
     socket.to(roomCode).emit("receiveStartSwipe", { filters });
   });
+
 
   socket.on("disconnect", () => {
     console.log("❌ Socket kapcsolat megszakadt:", socket.id);
