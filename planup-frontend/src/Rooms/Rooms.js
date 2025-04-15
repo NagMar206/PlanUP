@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import '../Style/Rooms.css';
@@ -22,22 +22,26 @@ function Rooms({ apiUrl, userId }) {
     const navigate = useNavigate();
     const { setRoomId } = useRoom();
     const socket = useSocket();
+    const roomCodeRef = useRef(roomCode);
+
+    useEffect(() => {
+        roomCodeRef.current = roomCode;
+    }, [roomCode]);
 
     useEffect(() => {
         if (!socket) return;
-        console.log("✅ Socket.io kapcsolat aktív Rooms.js-ben");
 
         socket.on('receiveStartSwipe', ({ filters }) => {
             setFilters(filters);
             setFilterActive(true);
             alert(`A host a következő szűrőket állította be:\n- Időtartam: ${filters.duration}\n- Ár: ${filters.cost}\n- Város: ${filters.city}`);
-            navigate(`/roomswipe/${roomCode}`);
+            navigate(`/roomswipe/${roomCodeRef.current}`);
         });
 
         return () => {
             socket.off('receiveStartSwipe');
         };
-    }, [socket, navigate, roomCode]);
+    }, [socket, navigate]);
 
     useEffect(() => {
         const fetchCities = async () => {
@@ -60,7 +64,7 @@ function Rooms({ apiUrl, userId }) {
                     fetchRoomUsers(response.data.roomCode);
                     checkReadyStatus(response.data.roomCode);
                     setIsInRoom(true);
-                    socket.emit('joinRoom', response.data.roomCode);
+                    socket.emit('joinRoom', response.data.roomCode, userId);
 
                     const creatorRes = await axios.get(`${apiUrl}/rooms/${response.data.roomCode}/creatorId`);
                     if (creatorRes.data.creatorId === userId) {
