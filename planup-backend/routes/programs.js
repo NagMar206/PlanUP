@@ -227,7 +227,7 @@ router.get("/cities/with-programs", async (req, res) => {
 
     res.status(200).json(rows);
   } catch (error) {
-    console.error("⚠️ Hiba a városok lekérdezésekor:", error.message);
+    console.error("Hiba a városok lekérdezésekor:", error.message);
     res.status(500).json({ error: "Hiba történt a városok lekérdezése során." });
   }
 });

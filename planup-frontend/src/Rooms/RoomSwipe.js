@@ -17,8 +17,6 @@ function RoomSwipe({ apiUrl }) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
-  const [isHost, setIsHost] = useState(false);
-  const [filterUpdated, setFilterUpdated] = useState(false);
   const [filters, setFilters] = useState({ duration: "", cost: "", city: "" });
   const [filterActive, setFilterActive] = useState(false);
   const [cities, setCities] = useState([]);
@@ -28,7 +26,9 @@ function RoomSwipe({ apiUrl }) {
   useEffect(() => {
     const fetchCities = async () => {
       try {
-        const response = await axios.get(`${apiUrl}/programs/cities`);
+        const response = await axios.get(
+          `${apiUrl}/programs/cities/with-programs`
+        );
         setCities(response.data);
       } catch (err) {
         console.error("Hiba a városok betöltésekor:", err);
@@ -37,50 +37,25 @@ function RoomSwipe({ apiUrl }) {
     fetchCities();
   }, [apiUrl]);
 
-  useEffect(() => {
-    const checkHost = async () => {
-      try {
-        const res = await axios.get(`${apiUrl}/rooms/${roomCode}/creatorId`);
-        if (res.data.creatorId === userId) {
-          setIsHost(true);
-        }
-      } catch (err) {
-        console.error("Nem sikerült ellenőrizni a host jogosultságot:", err);
-      }
-    };
-    if (userId) checkHost();
-  }, [apiUrl, roomCode, userId]);
-
-  useEffect(() => {
-    if (!isHost && userId) {
-      axios
-        .get(`${apiUrl}/rooms/${roomCode}/filters`, { withCredentials: true })
-        .then((res) => {
-          if (res.data) {
-            setFilters(res.data);
-            setFilterActive(true);
-          }
-        })
-        .catch((err) => console.error("Nem sikerült lekérni a szűrőket:", err));
+  const fetchPrograms = async () => {
+    setLoading(true);
+    try {
+      const res = await axios.get(`${apiUrl}/rooms/${roomCode}/programs`, {
+        withCredentials: true,
+      });
+      setPrograms(res.data);
+      setCurrentIndex(0);
+    } catch (err) {
+      console.error("Nem sikerült lekérni a programokat:", err);
+      setError("Hiba történt a programok betöltésekor.");
+    } finally {
+      setLoading(false);
     }
-  }, [apiUrl, roomCode, isHost, userId]);
+  };
 
   useEffect(() => {
-    const fetchPrograms = async () => {
-      try {
-        const res = await axios.get(`${apiUrl}/rooms/${roomCode}/programs`, {
-          withCredentials: true,
-        });
-        setPrograms(res.data);
-      } catch (err) {
-        console.error("Nem sikerült lekérni a programokat:", err);
-        setError("Hiba történt a programok betöltésekor.");
-      } finally {
-        setLoading(false);
-      }
-    };
     fetchPrograms();
-  }, [apiUrl, roomCode, filterUpdated]);
+  }, [apiUrl, roomCode, filterActive]);
 
   useEffect(() => {
     if (!socket || !roomCode || !userId) return;
@@ -88,7 +63,7 @@ function RoomSwipe({ apiUrl }) {
     socket.emit("joinRoom", roomCode, userId);
 
     socket.on("filterUpdate", () => {
-      setFilterUpdated((prev) => !prev);
+      setFilterActive((prev) => !prev);
     });
 
     return () => {
@@ -114,8 +89,7 @@ function RoomSwipe({ apiUrl }) {
   const handleSwipe = async (liked) => {
     const currentProgram = programs[currentIndex];
     const finalUserId = userId || localUserId;
-
-    if (!finalUserId) return;
+    if (!finalUserId || !currentProgram) return;
 
     try {
       await axios.post(
@@ -165,27 +139,11 @@ function RoomSwipe({ apiUrl }) {
       <FilterComponent
         filters={filters}
         setFilters={(newFilters) => {
-          if (!isHost) return;
           setFilters(newFilters);
           setFilterActive(true);
-          axios
-            .post(
-              `${apiUrl}/rooms/${roomCode}/filters`,
-              {
-                duration: newFilters.duration,
-                cost: newFilters.cost,
-                city: newFilters.city,
-                userId,
-              },
-              { withCredentials: true }
-            )
-            .then(() => {
-              setFilterUpdated((prev) => !prev);
-              socket.emit("filterUpdate", roomCode);
-            });
         }}
         filterActive={filterActive}
-        setFilterActive={isHost ? setFilterActive : () => {}}
+        setFilterActive={setFilterActive}
         cities={cities}
       />
 
