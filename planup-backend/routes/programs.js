@@ -216,4 +216,21 @@ router.get("/liked", async (req, res) => {
   }
 });
 
+router.get("/cities/with-programs", async (req, res) => {
+  try {
+    const [rows] = await db.execute(`
+      SELECT DISTINCT c.CityID, c.Name
+      FROM Programs p
+      JOIN City c ON p.CityID = c.CityID
+      ORDER BY c.Name ASC
+    `);
+
+    res.status(200).json(rows);
+  } catch (error) {
+    console.error("⚠️ Hiba a városok lekérdezésekor:", error.message);
+    res.status(500).json({ error: "Hiba történt a városok lekérdezése során." });
+  }
+});
+
+
 module.exports = router;

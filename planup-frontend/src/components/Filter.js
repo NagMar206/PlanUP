@@ -6,9 +6,9 @@ const FilterComponent = ({
   setFilters,
   filterActive,
   setFilterActive,
-  cities,
 }) => {
   const [showPanel, setShowPanel] = useState(false);
+  const [availableCities, setAvailableCities] = useState([]);
 
   const magyarIdotartam = {
     half_day: "Fél napos",
@@ -20,6 +20,18 @@ const FilterComponent = ({
     free: "Ingyenes",
     paid: "Fizetős",
   };
+
+  useEffect(() => {
+    // Csak azok a városok, ahol van program
+    fetch("http://localhost:3001/programs/cities/with-programs")
+      .then((res) => res.json())
+      .then((data) => {
+        setAvailableCities(data);
+      })
+      .catch((err) => {
+        console.error("Városok betöltési hiba:", err);
+      });
+  }, []);
 
   const applyFilters = () => {
     setFilterActive(true);
@@ -89,7 +101,7 @@ const FilterComponent = ({
               onChange={(e) => setFilters({ ...filters, city: e.target.value })}
             >
               <option value="">Összes</option>
-              {cities.map((city) => (
+              {availableCities.map((city) => (
                 <option key={city.CityID} value={city.CityID}>
                   {city.Name}
                 </option>
