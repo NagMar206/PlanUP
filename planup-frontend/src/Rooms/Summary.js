@@ -29,6 +29,7 @@ function Summary({ apiUrl }) {
           `${apiUrl}/rooms/${roomCode}/liked-programs`,
           { withCredentials: true }
         );
+        console.log("Frontend oldalon kapott programok:", response.data);
         if (response.data && response.data.length > 0) {
           setLikedPrograms(response.data);
         } else {

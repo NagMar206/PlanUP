@@ -240,27 +240,28 @@ router.get("/:roomCode/liked-programs", async (req, res) => {
 
     const roomId = room[0].RoomID;
 
-    const [programs] = await db.query(
-      `
+    const [programs] = await db.query(`
       SELECT 
         p.ProgramID,
         p.Name,
         p.Description,
-        c.Name AS CityName,
         p.Location,
         p.Image,
         p.Duration,
         p.Cost,
+        p.MoreInfoLink,
+        c.Name AS CityName,
         COUNT(rsl.UserID) AS likeCount
       FROM RoomSwipeLikes rsl
       JOIN Programs p ON rsl.ProgramID = p.ProgramID
       LEFT JOIN City c ON p.CityID = c.CityID
       WHERE rsl.RoomID = ?
-      GROUP BY p.ProgramID
+      GROUP BY 
+        p.ProgramID, p.Name, p.Description, p.Location, p.Image,
+        p.Duration, p.Cost, p.MoreInfoLink, c.Name
       ORDER BY likeCount DESC
-    `,
-      [roomId]
-    );
+    `, [roomId]);
+    
 
     res.json(programs);
   } catch (err) {
