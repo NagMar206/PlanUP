@@ -1,5 +1,3 @@
-// ✅ MODOSÍTOTT RoomSwipe.js – UX tuning + új funkciók
-
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { useParams, useNavigate } from "react-router-dom";
@@ -8,7 +6,7 @@ import { FaCheck, FaTimes } from "react-icons/fa";
 import FilterComponent from "../components/Filter";
 import { useRoom } from "../context/RoomContext";
 import { useSocket } from "../context/SocketContext";
-import logo from "../images/logo.png"
+import logo from "../images/logo.png";
 
 function RoomSwipe({ apiUrl }) {
   const { roomCode } = useParams();
@@ -55,14 +53,15 @@ function RoomSwipe({ apiUrl }) {
 
   useEffect(() => {
     if (!isHost && userId) {
-      axios.get(`${apiUrl}/rooms/${roomCode}/filters`, { withCredentials: true })
+      axios
+        .get(`${apiUrl}/rooms/${roomCode}/filters`, { withCredentials: true })
         .then((res) => {
           if (res.data) {
             setFilters(res.data);
             setFilterActive(true);
           }
         })
-        .catch(err => console.error("Nem sikerült lekérni a szűrőket:", err));
+        .catch((err) => console.error("Nem sikerült lekérni a szűrőket:", err));
     }
   }, [apiUrl, roomCode, isHost, userId]);
 
@@ -89,7 +88,7 @@ function RoomSwipe({ apiUrl }) {
     socket.emit("joinRoom", roomCode, userId);
 
     socket.on("filterUpdate", () => {
-      setFilterUpdated(prev => !prev);
+      setFilterUpdated((prev) => !prev);
     });
 
     return () => {
@@ -99,7 +98,8 @@ function RoomSwipe({ apiUrl }) {
 
   useEffect(() => {
     if (!userId) {
-      axios.get(`${apiUrl}/api/auth/status`, { withCredentials: true })
+      axios
+        .get(`${apiUrl}/api/auth/status`, { withCredentials: true })
         .then((res) => {
           if (res.data && res.data.userId) {
             setLocalUserId(res.data.userId);
@@ -118,12 +118,16 @@ function RoomSwipe({ apiUrl }) {
     if (!finalUserId) return;
 
     try {
-      await axios.post(`${apiUrl}/summary/choose`, {
-        roomCode,
-        userId: finalUserId,
-        programId: currentProgram.ProgramID,
-        liked,
-      }, { withCredentials: true });
+      await axios.post(
+        `${apiUrl}/summary/choose`,
+        {
+          roomCode,
+          userId: finalUserId,
+          programId: currentProgram.ProgramID,
+          liked,
+        },
+        { withCredentials: true }
+      );
     } catch (err) {
       console.error("Mentési hiba:", err);
     }
@@ -158,41 +162,75 @@ function RoomSwipe({ apiUrl }) {
 
   return (
     <div className="program-swipe-container">
-      {isHost && (
-        <FilterComponent
-          filters={filters}
-          setFilters={(newFilters) => {
-            setFilters(newFilters);
-            setFilterActive(true);
-            axios.post(`${apiUrl}/rooms/${roomCode}/filters`, {
-              filters: newFilters, userId
-            }, { withCredentials: true });
-          }}
-          filterActive={filterActive}
-          setFilterActive={setFilterActive}
-          cities={cities}
-        />
-      )}
+      <FilterComponent
+        filters={filters}
+        setFilters={(newFilters) => {
+          if (!isHost) return;
+          setFilters(newFilters);
+          setFilterActive(true);
+          axios
+            .post(
+              `${apiUrl}/rooms/${roomCode}/filters`,
+              {
+                duration: newFilters.duration,
+                cost: newFilters.cost,
+                city: newFilters.city,
+                userId,
+              },
+              { withCredentials: true }
+            )
+            .then(() => {
+              setFilterUpdated((prev) => !prev);
+              socket.emit("filterUpdate", roomCode);
+            });
+        }}
+        filterActive={filterActive}
+        setFilterActive={isHost ? setFilterActive : () => {}}
+        cities={cities}
+      />
 
       <div className="program-card">
-        <img src={`http://localhost:3001/images/${program.Image}`} alt={program.Name} />
+        <img
+          src={`http://localhost:3001/images/${program.Image}`}
+          alt={program.Name}
+        />
         <h2>{program.Name}</h2>
         <p className="description">{program.Description}</p>
-        <p>🌍  <span className="highlighted">{program.CityName}</span></p>
-        <p>📍  <span className="highlighted">{program.Location}</span></p>
-        <p>💰  <span className="highlighted">{program.Cost === "paid" ? "Fizetős" : "Ingyenes"}</span></p>
-        <p>⏳ <span className="highlighted">{
-          program.Duration === 1 ? "Fél napos" :
-          program.Duration === 2 ? "Egész napos" :
-          "Hétvégés"
-        }</span></p>
+        <p>
+          🌍 <span className="highlighted">{program.CityName}</span>
+        </p>
+        <p>
+          📍 <span className="highlighted">{program.Location}</span>
+        </p>
+        <p>
+          💰{" "}
+          <span className="highlighted">
+            {program.Cost === 1 ? "Fizetős" : "Ingyenes"}
+          </span>
+        </p>
+        <p>
+          ⏳{" "}
+          <span className="highlighted">
+            {program.Duration === 1
+              ? "Fél napos"
+              : program.Duration === 2
+              ? "Egész napos"
+              : "Hétvégés"}
+          </span>
+        </p>
       </div>
 
       <div className="swipe-buttons">
-        <button className="dislike-button animate-dislike" onClick={() => handleSwipe(false)}>
+        <button
+          className="dislike-button animate-dislike"
+          onClick={() => handleSwipe(false)}
+        >
           <FaTimes /> Nem tetszik
         </button>
-        <button className="like-button animate-like" onClick={() => handleSwipe(true)}>
+        <button
+          className="like-button animate-like"
+          onClick={() => handleSwipe(true)}
+        >
           <FaCheck /> Tetszik
         </button>
       </div>

@@ -92,11 +92,11 @@ function ProgramSwipe({ apiUrl, userId }) {
         programId: program.ProgramID,
         roomCode: roomId || null
       });
-      console.log(`✅ ${action.toUpperCase()} művelet válasza:`, response.data);
+      console.log(`${action.toUpperCase()} művelet válasza:`, response.data);
       setProcessedPrograms((prev) => new Set([...prev, program.ProgramID]));
       fetchFilteredProgram();
     } catch (err) {
-      console.error(`❌ Nem sikerült végrehajtani a ${action} műveletet:`, err);
+      console.error(`Nem sikerült végrehajtani a ${action} műveletet:`, err);
       if (err.response && err.response.status === 400) {
         fetchFilteredProgram();
       } else {

@@ -17,11 +17,11 @@ export const SocketProvider = ({ children }) => {
         setSocket(newSocket);
 
         newSocket.on("connect", () => {
-            console.log("✅ WebSocket kapcsolat létrejött:", newSocket.id);
+            console.log("WebSocket kapcsolat létrejött:", newSocket.id);
         });
 
         newSocket.on("disconnect", () => {
-            console.log("🔴 WebSocket kapcsolat megszakadt!");
+            console.log(" WebSocket kapcsolat megszakadt!");
         });
 
         return () => newSocket.close();
