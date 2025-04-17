@@ -136,16 +136,7 @@ function RoomSwipe({ apiUrl }) {
 
   return (
     <div className="program-swipe-container">
-      <FilterComponent
-        filters={filters}
-        setFilters={(newFilters) => {
-          setFilters(newFilters);
-          setFilterActive(true);
-        }}
-        filterActive={filterActive}
-        setFilterActive={setFilterActive}
-        cities={cities}
-      />
+     
 
       <div className="program-card">
         <img
