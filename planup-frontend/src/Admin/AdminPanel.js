@@ -134,12 +134,7 @@ const AdminPanel = () => {
     }
   };
 
-  const deleteUser = async (id) => {
-    if (window.confirm("Biztosan törlöd ezt a felhasználót?")) {
-      await axios.delete(`${API_BASE}/users/${id}`, { withCredentials: true });
-      fetchUsers();
-    }
-  };
+ 
 
   const fetchRooms = async () => {
     try {
@@ -325,9 +320,9 @@ const AdminPanel = () => {
         <Table>
           <TableHead>
             <TableRow>
-              <TableCell>Név</TableCell>
-              <TableCell>Email</TableCell>
-              <TableCell>Művelet</TableCell>
+              <TableCell>Felhasználónév</TableCell>
+              <TableCell>E-mail cím</TableCell>
+              <TableCell>Regisztráció ideje</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
@@ -335,12 +330,9 @@ const AdminPanel = () => {
               <TableRow key={u.UserID}>
                 <TableCell>{u.Name || u.Username}</TableCell>
                 <TableCell>{u.Email}</TableCell>
-                <TableCell>
-                <IconButton color="error" size="large" onClick={() => deleteUser(users.UserID)}>
-                  <DeleteIcon fontSize="inherit" />
-                </IconButton>
+                <TableCell>{new Date(u.CreatedAt).toLocaleString("hu-HU")}</TableCell> {/* Dátum kiírás */}
+                
 
-                </TableCell>
               </TableRow>
             ))}
           </TableBody>
